@@ -1,6 +1,8 @@
 #include <Keyboard.h>     // Use built-in Keyboard library
 #include <HID_Buttons.h>  // Must import AFTER Keyboard.h
 
+#define LIVE 1
+
 #define nonprinting 136  // it's a non-printing key (not a modifier)
 
 #define KEY_F11 68 + nonprinting
@@ -36,111 +38,126 @@
 #define KEYPAD_0 98 + nonprinting
 #define KEYPAD_PERIOD 99 + nonprinting
 
-const uint8_t masterAlternator[] = { KEY_LEFT_ALT, 'a' };
-const uint8_t masterBattery[] = { KEY_LEFT_ALT, 'b' };
-const uint8_t master[] = { KEY_LEFT_SHIFT, 'm' };
-const uint8_t avionics[] = { KEY_PAGE_UP };
-const uint8_t atcKeys[] = { KEY_SCROLL_LOCK, KEY_HOME };
-const uint8_t gearKeys[] = { 'g' };
-const uint8_t carbHeatKeys[] = { KEY_LEFT_ALT, 'n' };
-const uint8_t mixturePin = 13;
-// const uint8_t mixtureIncreaseKeys[] = { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F3 };
-// const uint8_t mixtureDecreaseKeys[] = { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F2 };
-const uint8_t mixtureIncreaseKeys[] = { KEY_LEFT_CTRL, 'k' };
-const uint8_t mixtureDecreaseKeys[] = { KEY_LEFT_ALT, 'k' };
+struct keys {
+  uint8_t len;
+  uint8_t seq[];
+};
 
-const uint8_t navLightKeys[] = { KEY_LEFT_ALT, 'n' };
-const uint8_t strobeLightKeys[] = { 'o' };
-const uint8_t landingLightKeys[] = { KEY_LEFT_CTRL, 'l' };
-const uint8_t beaconLightKeys[] = { KEY_LEFT_ALT, 'h' };
-const uint8_t viewDashboardFirstKeys[] = { KEY_LEFT_CTRL, '1' };
-const uint8_t viewDashboardNextKeys[] = { 'a' };
+keys masterAlternatorKeys = { 2, { KEY_LEFT_ALT, 'a' } };
+keys masterBatteryKeys = { 2, { KEY_LEFT_ALT, 'b' } };
+keys masterKeys = { 2, { KEY_LEFT_SHIFT, 'm' } };
+keys avionics = { 1, { KEY_PAGE_UP } };
+keys atcKeys = { 2, { KEY_SCROLL_LOCK, KEY_HOME } };
+keys gearKeys = { 1, { 'g' } };
+keys carbHeatKeys = { 1, { 'h' } };
+keys pitotHeatKeys = { 2, { KEY_LEFT_SHIFT, 'h' } };
+keys mixtureIncreaseKeys = {3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F3 }};
+keys mixtureDecreaseKeys = {3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F2 }};
+// keys mixtureIncreaseKeys = { 2, { KEY_LEFT_CTRL, 'k' } };
+// keys mixtureDecreaseKeys = { 2, { KEY_LEFT_ALT, 'k' } };
+keys mixtureLeanKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F1 } };
+keys mixtureRichKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F4 } };
+keys taxiLightKeys = { 2, { KEY_LEFT_ALT, 'j' } };
+keys navLightKeys = { 2, { KEY_LEFT_ALT, 'n' } };
+keys strobeLightKeys = { 1, { 'o' } };
+keys landingLightKeys = { 2, { KEY_LEFT_CTRL, 'l' } };
+keys beaconLightKeys = { 2, { KEY_LEFT_ALT, 'h' } };
+keys viewDashboardFirstKeys = { 2, { KEY_LEFT_CTRL, '1' } };
+keys throtleIncreaseKeys = { 1, { KEY_F3 } };
+keys throtleDecreaseKeys = { 1, { KEY_F2 } };
+keys throtleCutKeys = { 1, {KEY_F1 } };
+keys viewDashboardNextKeys = { 1, { 'a' } };
+// keys trimDown = { 2, { KEY_LEFT_CTRL, 't' } };
+// keys trimUp = { 2, { KEY_LEFT_SHIFT, 't' } };
+keys trimDown = {1, { KEYPAD_7 }};  // NOTE: This does not seem to work - Apr 22
+keys trimUp = {1, { KEYPAD_1 }}; // This key does not seem to work
 
-const uint8_t trimDown[] = { KEY_LEFT_CTRL, 't' };
-const uint8_t trimUp[] = { KEY_LEFT_SHIFT, 't' };
-// const uint8_t trimDown[] = { KEYPAD_7 };  // NOTE: This does not seem to work - Apr 22
-// const uint8_t trimUp[] = { KEYPAD_1 }; // This key does not seem to work
+const uint8_t eventOn = 0;
+const uint8_t eventOff = 1;
+const uint8_t eventNext = 2;
+const uint8_t eventPrev = 3;
 
 struct button {
   String name;
   uint8_t pin;
-  uint8_t *onKeys;
-  int onLen;
-  uint8_t *offKeys;
-  int offLen;
+  keys *keys[4];
   bool state;
   unsigned long debounce;
   int count;
   int max;
 };
 
-const int nButtons = 10;
+const int nButtons = 14;
 button buttons[nButtons] = {
-  { "master", 2, master, sizeof(master), master, sizeof(master), 0, 0, 0, 0 },
-  { "avionics", 3, avionics, sizeof(avionics), avionics, sizeof(avionics), 0, 0 },
-  { "free", 6, NULL, 0, NULL, 0, 0, 0, 0, 0 },
-  // { "free", 7, NULL, 0, NULL, 0, 0, 0 ,0,0},
-  { "free", 8, NULL, 0, NULL, 0, 0, 0, 0, 0 },
-  // { "free", 7, NULL, 0, NULL, 0, 0, 0 ,0,0},
-  { "gear", 10, gearKeys, sizeof(gearKeys), gearKeys, sizeof(gearKeys), 0, 0, 0, 0 },
-  { "carby heat", 11, carbHeatKeys, sizeof(carbHeatKeys), carbHeatKeys, sizeof(carbHeatKeys), 0, 0, 0, 0 },
-  { "nav light", A5, navLightKeys, sizeof(navLightKeys), navLightKeys, sizeof(navLightKeys), 0, 0, 0, 0 },
-  { "strobe light", A4, strobeLightKeys, sizeof(strobeLightKeys), strobeLightKeys, sizeof(strobeLightKeys), 0, 0, 0, 0 },
-  { "landing lights", A3, landingLightKeys, sizeof(landingLightKeys), landingLightKeys, sizeof(landingLightKeys), 0, 0, 0, 0 },
-  { "beacon", A2, beaconLightKeys, sizeof(beaconLightKeys), beaconLightKeys, sizeof(beaconLightKeys), 0, 0, 0, 0 }
+  { "nav light", 0, { &navLightKeys, &navLightKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "strobe light", 1, { &strobeLightKeys, &strobeLightKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "landing lights", 2, { &landingLightKeys, &landingLightKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "beacon light", 3, { &beaconLightKeys, &beaconLightKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "taxi lights", 4, { &taxiLightKeys, &taxiLightKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "pitot heat", 5, { &pitotHeatKeys, &pitotHeatKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "free", 6, { NULL, NULL, NULL, NULL }, 0, 0, 0, 0 },
+  { "free", 7, { NULL, NULL, NULL, NULL }, 0, 0, 0, 0 },
+  { "master", 8, { &masterKeys, &masterKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "avionics", 9, { &avionics, &avionics, NULL, NULL }, 0, 0 },
+  { "gear", 10, { &gearKeys, &gearKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "carby heat", 11, { &carbHeatKeys, &carbHeatKeys, NULL, NULL }, 0, 0, 0, 0 },
 };
 
 const int nPressureButtons = 2;
 button pressureButtons[nPressureButtons] = {
-  { "atc", 9, atcKeys, sizeof(atcKeys), atcKeys, sizeof(atcKeys), 0, 0, 0, 0 },
-  { "view", 7, viewDashboardFirstKeys, sizeof(viewDashboardFirstKeys), viewDashboardNextKeys, sizeof(viewDashboardNextKeys), 0, 0, 0, 3 }
+  { "atc", 12, { &atcKeys, &atcKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "view", 13, { &viewDashboardFirstKeys, &viewDashboardNextKeys, NULL, NULL }, 0, 0, 0, 3 }
 };
 
-
+// https://docs.arduino.cc/learn/electronics/potentiometer-basics
+const unsigned long potDebounceDelay = 64;  // the debounce time; increase if the output flickers
+const int nPotButtons = 3;
+button potButtons[nPotButtons] = {
+  { "a1", A1, { &throtleIncreaseKeys, &throtleCutKeys, &throtleIncreaseKeys, &throtleDecreaseKeys }, 0, 0, 0, 1024 },
+  { "a2", A2, { &mixtureRichKeys, &mixtureLeanKeys, &mixtureIncreaseKeys, &mixtureDecreaseKeys }, 0, 0, 0, 1024 },
+  { "a3", A3, { NULL, NULL, NULL, NULL }, 0, 0, 0, 1024 }
+};
 
 // Rotary encoder for trim wheel
 // https://lastminuteengineers.com/rotary-encoder-arduino-tutorial/
-const uint8_t trimCLKPin = 4;
-const uint8_t trimDTPin = 5;
+const uint8_t trimCLKPin = A4;
+const uint8_t trimDTPin = A5;
 // const uint8_t trimSWPin =6;
 int trimCLKState;
 int trimCounter = 0;
 unsigned long trimDebounceTime = 0;  // the last time the output pin was toggled
+void pressKey(keys* keys, int repeat) {
+  if (keys == NULL) {
+    Serial.println("null keys");
+    return;
+  }
 
-
-
-
-// https://docs.arduino.cc/learn/electronics/potentiometer-basics
-
-const unsigned long potDebounceDelay = 64;  // the debounce time; increase if the output flickers
-
-const int nPotButtons = 1;
-button potButtons[nPotButtons] = {
-  { "mixture", A1, mixtureIncreaseKeys, sizeof(mixtureIncreaseKeys), mixtureDecreaseKeys, sizeof(mixtureDecreaseKeys), 0, 0, 0, 1024 }
-};
-
-void pressKey(uint8_t keys[], int n, int repeat) {
   unsigned const repeatDelay = 32;
   int i;
-  for (i = 0; i < n; i++) {
-    Keyboard.press(keys[i]);
+
+  for (i = 0; i < keys->len; i++) {
+#ifdef LIVE
+    Keyboard.press(keys->seq[i]);
+#endif
   }
-  repeat = repeatDelay*repeat;
-  if (repeat > 3000) { // maximum 3000 ms delay
+  repeat = repeatDelay * repeat;
+  if (repeat > 3000) {  // maximum 3000 ms delay
     repeat = 3000;
   }
-  if (repeat <= repeatDelay ) {
+  if (repeat <= repeatDelay) {
     repeat = repeatDelay;
   }
-  delay(repeat);    // xbox does not work without this delay; need time for os to accept key press
+  delay(repeat);  // xbox does not work without this delay; need time for os to accept key press
   if (repeat > repeatDelay) {
     Serial.print("delay=");
     Serial.println(repeat);
   }
 
-  for (i = n; i > 0;) {
-  i--;
-  Keyboard.release(keys[i]);
+  for (i = keys->len; i > 0;) {
+    i--;
+#ifdef LIVE
+    Keyboard.release(keys->seq[i]);
+#endif
   }
 
   // Keyboard.releaseAll(); // releaseAll send release with lower case characters only???
@@ -165,14 +182,13 @@ void processTrim() {
     // the encoder is rotating CCW so decrement
     if (digitalRead(trimDTPin) != clk) {
       trimCounter--;
-      pressKey(trimDown, sizeof(trimDown),1);
+      pressKey(&trimDown, 1);
       // delay(16);
       // pressKey(trimDown, sizeof(trimDown));
-
     } else {
       // Encoder is rotating CW so increment
       trimCounter++;
-      pressKey(trimUp, sizeof(trimUp),1);
+      pressKey(&trimUp, 1);
       // delay(16);
       // pressKey(trimUp, sizeof(trimUp));
     }
@@ -181,30 +197,9 @@ void processTrim() {
     Serial.println(trimCounter);
   }
   trimCLKState = clk;  // Remember last CLK state
-
-
-  /**
-	// Read the button state
-	int btnState = digitalRead(trimSWPin);
-
-	//If we detect LOW signal, button is pressed
-	if (btnState == LOW) {
-		//if 50ms have passed since last LOW pulse, it means that the
-		//button has been pressed, released and pressed again
-		if (millis() - lastButtonPress > 50) {
-			Serial.println("Button pressed!");
-		}
-
-		// Remember last button press event
-		lastButtonPress = millis();
-	}
-
-	// Put in a slight delay to help debounce the reading
-	delay(1);
-
-*/
 }
-void processPot(button *b) {
+
+void processPot(button* b) {
   int i;
   long t = millis();
   // if (t < b->debounce) {
@@ -213,36 +208,46 @@ void processPot(button *b) {
   int x = analogRead(b->pin);
   // reading may oscilate between +1 and -1 volts; ignore
   // https://forum.arduino.cc/t/debounce-a-potentiometer/75209
-  if (x >= b->count - 10 && x <= b->count + 10) {
+  if (x >= b->count - 1 && x <= b->count + 1) {
     return;
   }
   Serial.println(x);
 
+
   int difference = x - b->count;
+  b->count = x;
+
+  
   if (difference < 0) {
     Serial.print(b->name);
     Serial.print(" dec by");
     Serial.println(difference);
-    // for (i = 0; i > difference; i--) {
-    pressKey(b->offKeys, b->offLen, difference*-1 /10 +1);
-    // Serial.println(i);
-    // delay(16);
-    // pressKey(b->offKeys, b->offLen);
-    // }
+    pressKey(b->keys[eventPrev], difference * -1 / 10 + 1);
+    return;
   } else {
     Serial.print(b->name);
     Serial.print(" inc by");
     Serial.println(difference);
-    // for (i = 0; i < difference; i++) {
-    pressKey(b->onKeys, b->onLen, difference / 10 + 1);
-    // delay(16);
-    // pressKey(b->onKeys, b->onLen);
-    // }
+    pressKey(b->keys[eventNext], difference / 10 + 1);
   }
-  b->count = x;
+
+
+if (b->count ==0) {
+    pressKey(b->keys[eventOff],1);
+    Serial.print(b->name);
+    Serial.println("is off");
+    return;
+  }
+  if (b->count > b->max-2) {
+    pressKey(b->keys[eventOn],1);
+    Serial.print(b->name);
+    Serial.println("is at max");
+    return;
+  }
+
 }
 
-void toggle(button *b) {
+void toggle(button* b) {
   boolean x = digitalRead(b->pin);
   if (x == b->state) {
     return;
@@ -257,17 +262,43 @@ void toggle(button *b) {
   Serial.print(b->name);
   Serial.print("pin=");
   Serial.print(b->pin);
+    Serial.print(" keys=");
+  Serial.print(b->keys[eventOn]->seq[0]);
   Serial.print("=");
   Serial.println(b->state);
   if (b->state == HIGH) {
-    pressKey(b->onKeys, b->onLen,1);
+    pressKey(b->keys[eventOn], 1);
   } else {
-    pressKey(b->offKeys, b->offLen,1);
+    pressKey(b->keys[eventOff], 1);
   }
+}
+
+void processPressureButton(button* b) {
+  uint8_t x = digitalRead(b->pin);
+  if (x == HIGH && x != b->state) {
+    b->state = x;
+    if (b->count == 0) {
+      pressKey(b->keys[eventOn], 1);
+      Serial.print(b->name);
+      Serial.println(" pressed");
+    } else {
+      pressKey(b->keys[eventOff], 1);
+      Serial.print(b->name);
+      Serial.println(" released");
+    };
+    b->count++;
+    if (b->count > b->max) {
+      b->count = 0;
+    };
+  };
+  b->state = x;
 }
 
 void setup() {
   int i;
+  pinMode(LED_BUILTIN, OUTPUT);  // initialise led builtin as output
+  pinMode(A0, INPUT_PULLUP);     // initalise control A0 with digital resistor (built in the board)
+
   for (i = 0; i < nButtons; i++) {
     pinMode(buttons[i].pin, INPUT_PULLUP);
   }
@@ -276,26 +307,20 @@ void setup() {
     pinMode(pressureButtons[i].pin, INPUT_PULLUP);
   }
 
-  pinMode(LED_BUILTIN, OUTPUT);  // initialise led builtin as output
-  pinMode(A0, INPUT_PULLUP);     // initalise control A0 with digital resistor (built in the board)
-
-  // trim wheel
-  pinMode(trimCLKPin, INPUT_PULLUP);
-  pinMode(trimDTPin, INPUT_PULLUP);
-  // pinMode(trimSWPin, INPUT_PULLUP);
-  trimCLKState = digitalRead(trimCLKPin);  // Read the initial state of CLK
-
   for (i = 0; i < nPotButtons; i++) {
     pinMode(potButtons[i].pin, INPUT);
     potButtons[i].count = analogRead(potButtons[i].pin);
   }
 
+  // trim wheel
+  pinMode(trimCLKPin, INPUT_PULLUP);
+  pinMode(trimDTPin, INPUT_PULLUP);
+  trimCLKState = digitalRead(trimCLKPin);  // Read the initial state of CLK
+
   Keyboard.begin();
 }
 
-
 void loop() {
-
   // System Disabled
   if (digitalRead(A0) != 0) {
     digitalWrite(LED_BUILTIN, LOW);
@@ -312,45 +337,9 @@ void loop() {
     processPot(&potButtons[i]);
   }
 
-  button *b = &pressureButtons[0];
-  uint8_t x = digitalRead(b->pin);
-  if (x == HIGH && x != b->state) {
-    b->state = x;
-    if (b->count == 0) {
-      pressKey(b->onKeys, b->onLen,1);
-      Serial.print(b->name);
-      Serial.println(" is first");
-    } else {
-      pressKey(b->offKeys, b->offLen,1);
-      Serial.print(b->name);
-      Serial.println(" is next");
-    };
-    b->count++;
-    if (b->count > b->max) {
-      b->count = 0;
-    };
-  };
-  b->state = x;
-
-  b = &pressureButtons[1];
-  x = digitalRead(b->pin);
-  if (x == HIGH && x != b->state) {
-    b->state = x;
-    if (b->count == 0) {
-      pressKey(b->onKeys, b->onLen,1);
-      Serial.print(b->name);
-      Serial.println(" is first");
-    } else {
-      pressKey(b->offKeys, b->offLen,1);
-      Serial.print(b->name);
-      Serial.println(" is next");
-    };
-    b->count++;
-    if (b->count >= b->max) {
-      b->count = 0;
-    };
-  };
-  b->state = x;
+  for (i = 0; i < nPressureButtons; i++) {
+    processPressureButton(&pressureButtons[i]);
+  }
 
   processTrim();
 }
