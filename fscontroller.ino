@@ -1,10 +1,9 @@
 #include <Keyboard.h>     // Use built-in Keyboard library
 #include <HID_Buttons.h>  // Must import AFTER Keyboard.h
 
-#define LIVE 1
+// #define DEBUG 1
 
 #define nonprinting 136  // it's a non-printing key (not a modifier)
-
 #define KEY_F11 68 + nonprinting
 #define KEY_F12 69 + nonprinting
 #define KEY_PRINTSCREEN 70 + nonprinting
@@ -53,8 +52,6 @@ keys carbHeatKeys = { 1, { 'h' } };
 keys pitotHeatKeys = { 1, { 'H' } };
 keys mixtureIncreaseKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F3 } };
 keys mixtureDecreaseKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F2 } };
-// keys mixtureIncreaseKeys = { 2, { KEY_LEFT_CTRL, 'k' } };
-// keys mixtureDecreaseKeys = { 2, { KEY_LEFT_ALT, 'k' } };
 keys mixtureLeanKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F1 } };
 keys mixtureRichKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F4 } };
 keys fuelPumpKeys = { 2, { KEY_LEFT_CTRL, 'D' } };
@@ -68,10 +65,8 @@ keys throtleIncreaseKeys = { 1, { KEY_F3 } };
 keys throtleDecreaseKeys = { 1, { KEY_F2 } };
 keys throtleCutKeys = { 1, { KEY_F1 } };
 keys viewDashboardNextKeys = { 1, { 'a' } };
-// keys trimDown = { 2, { KEY_LEFT_CTRL, 't' } };
-// keys trimUp = { 1, { 'T' } };
-keys trimDown = {1, { KEYPAD_7 }};  
-keys trimUp = {1, { KEYPAD_1 }}; 
+keys trimDown = { 1, { KEYPAD_7 } };
+keys trimUp = { 1, { KEYPAD_1 } };
 
 const uint8_t eventOn = 0;
 const uint8_t eventOff = 1;
@@ -82,14 +77,14 @@ struct button {
   String name;
   uint8_t pin;
   keys* keys[4];
-  bool state;
-  unsigned long debounce;
+  int value;
+  int savedValue;
   int count;
   int max;
 };
 
-const int nButtons = 14;
-button buttons[nButtons] = {
+const int nSwitchButtons = 12;
+button switchButtons[nSwitchButtons] = {
   { "nav light", 0, { &navLightKeys, &navLightKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "strobe light", 1, { &strobeLightKeys, &strobeLightKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "landing lights", 2, { &landingLightKeys, &landingLightKeys, NULL, NULL }, 0, 0, 0, 0 },
@@ -107,14 +102,13 @@ button buttons[nButtons] = {
 const int nPressureButtons = 2;
 button pressureButtons[nPressureButtons] = {
   { "atc", 12, { &atcKeys, &atcKeys, NULL, NULL }, 0, 0, 0, 0 },
-  { "view", 13, { &viewDashboardFirstKeys, &viewDashboardNextKeys, NULL, NULL }, 0, 0, 0, 3 }
+  { "view", 13, { &viewDashboardFirstKeys, &viewDashboardNextKeys, &viewDashboardNextKeys, NULL }, 0, 0, 0, 3 }
 };
 
 // https://docs.arduino.cc/learn/electronics/potentiometer-basics
-const unsigned long potDebounceDelay = 64;  // the debounce time; increase if the output flickers
-const int nPotButtons = 2;
+const int nPotButtons = 3;
 button potButtons[nPotButtons] = {
-  // { "a1", A1, { &throtleIncreaseKeys, &throtleCutKeys, &throtleIncreaseKeys, &throtleDecreaseKeys }, 0, 0, 0, 1024 },
+  { "a1", A1, { &throtleIncreaseKeys, &throtleCutKeys, &throtleIncreaseKeys, &throtleDecreaseKeys }, 0, 0, 0, 1024 },
   { "a2", A2, { &mixtureRichKeys, &mixtureLeanKeys, &mixtureIncreaseKeys, &mixtureDecreaseKeys }, 0, 0, 0, 1024 },
   { "a3", A3, { NULL, NULL, NULL, NULL }, 0, 0, 0, 1024 }
 };
@@ -135,170 +129,109 @@ void pressKey(keys* keys, int repeat) {
     return;
   }
 
-  unsigned const repeatDelay = 32;
   int i;
 
   for (i = 0; i < keys->len; i++) {
-#ifdef LIVE
-    int ret = Keyboard.press(keys->seq[i]);
-    if (ret != 1) {
-#ifndef LIVE
+#ifndef DEBUG
+    if (Keyboard.press(keys->seq[i]) != 1) {
       Serial.println("error in press");
-#endif
       return;
     }
 #endif
   }
-  // repeat = repeatDelay * repeat;
-  if (repeat > 3000) {  // maximum 3000 ms delay
-    repeat = 3000;
-  }
-  if (repeat <= repeatDelay) {
-    repeat = repeatDelay;
-  }
-  delay(repeat);  // xbox does not work without this delay; need time for os to accept key press
-#ifndef LIVE
-  if (repeat > repeatDelay) {
-    Serial.print("delay=");
-    Serial.println(repeat);
-  }
-#endif
+
+  delay(32);  // xbox does not work without this delay; need time for os to accept key press
 
   for (i = keys->len; i > 0;) {
     i--;
-#ifdef LIVE
-    int ret = Keyboard.release(keys->seq[i]);
-    if (ret != 1) {
-#ifndef LIVE
+#ifndef DEBUG
+    if (Keyboard.release(keys->seq[i]) != 1) {
       Serial.println("error in release");
-#endif
       Keyboard.releaseAll();  // attempt to release numpad keys - fix bug of non stop repeating key
       return;
     }
 #endif
   }
-
-  // Keyboard.releaseAll(); // releaseAll send release with lower case characters only???
-  // delay(32);
 }
 
 void processTrim() {
-  // Read the current state of CLK
+  // Read the current savedValue of CLK
   int clk = digitalRead(trimCLKPin);
 
-  // If last and current state of CLK are different, then pulse occurred
-  // React to only 1 state change to avoid double count
+  // If last and current savedValue of CLK are different, then pulse occurred
+  // React to only 1 savedValue change to avoid double count
   if (clk != trimCLKState && clk == 1) {
-    long t = millis();
-
-    // if (t < trimDebounceTime) {
-    // return;
-    // }
-    trimDebounceTime = t + 16;
-
-    // If the DT state is different than the CLK state then
+    // If the DT savedValue is different than the CLK savedValue then
     // the encoder is rotating CCW so decrement
     if (digitalRead(trimDTPin) != clk) {
       trimCounter--;
       pressKey(&trimDown, 1);
       // delay(16);
-      // pressKey(trimDown, sizeof(trimDown));
     } else {
       // Encoder is rotating CW so increment
       trimCounter++;
       pressKey(&trimUp, 1);
-      // delay(16);
-      // pressKey(trimUp, sizeof(trimUp));
     }
 
     Serial.print("Counter: ");
     Serial.println(trimCounter);
   }
-  trimCLKState = clk;  // Remember last CLK state
+  trimCLKState = clk;  // Remember last CLK savedValue
 }
 
 void processPot(button* b) {
-  int i;
-  long t = millis();
-  // if (t < b->debounce) {
-  // return;
-  // }
-  int x = analogRead(b->pin);
-
-    if (x == 0 && b->count != 0) {
+  if (b->value == 0 && b->savedValue != 0) {
     pressKey(b->keys[eventOff], 1);
-
     Serial.print(b->name);
     Serial.println("is off");
-    b->count = 0;
-   return;
+    b->savedValue = 0;
+    return;
   }
-  if (x == 1023 && b->count != 1023) {
+
+  if (b->value == 1023 && b->savedValue != 1023) {
     pressKey(b->keys[eventOn], 1);
     Serial.print(b->name);
     Serial.println("is at max");
-    b->count = 1023;
+    b->savedValue = 1023;
     return;
   }
 
   // reading may oscilate between +1 and -1 volts; ignore
   // https://forum.arduino.cc/t/debounce-a-potentiometer/7509
-  if (x >= b->count - 64 && x <= b->count + 64) {
+  if (b->value >= b->savedValue - 32 && b->value <= b->savedValue + 32) {
     return;
   }
-#ifndef LIVE
-  Serial.println(x);
-#endif
 
-
-  int difference = x - b->count;
-  b->count = x;
-
-
-
+  int difference = b->value - b->savedValue;
+  b->savedValue = b->value;
 
   if (difference < 0) {
-
     Serial.print(b->name);
-    Serial.print(" dec by");
+    Serial.print(" dec by ");
     Serial.println(difference);
-// for (i=0; i> difference; i -= 10){
     pressKey(b->keys[eventPrev], 1);
-// }
   } else {
-
     Serial.print(b->name);
     Serial.print(" inc by");
     Serial.println(difference);
-// for (i=0; i < difference; i+=10){
     pressKey(b->keys[eventNext], 1);
-// }
   }
-// Keyboard.releaseAll(); // trying to fix repeating bug
-
-
 }
 
 void processSwitch(button* b) {
-  boolean x = digitalRead(b->pin);
-  if (x == b->state) {
+  if (b->value == b->savedValue) {
     return;
   }
+  b->savedValue = b->value;
 
-  long t = millis();
-  // if (t < b->debounce) {
-    // return;
-  // }
-  // b->debounce = t + potDebounceDelay;
-  b->state = x;
   Serial.print(b->name);
   Serial.print("pin=");
   Serial.print(b->pin);
-  Serial.print(" keys=");
-  Serial.print(b->keys[eventOn]->seq[0]);
+  // Serial.print(" keys=");
+  // Serial.print(b->keys[eventOn]->seq[0]);
   Serial.print("=");
-  Serial.println(b->state);
-  if (b->state == HIGH) {
+  Serial.println(b->value);
+  if (b->value == HIGH) {
     pressKey(b->keys[eventOn], 1);
   } else {
     pressKey(b->keys[eventOff], 1);
@@ -306,28 +239,29 @@ void processSwitch(button* b) {
 }
 
 void processPressureButton(button* b) {
-  uint8_t x = digitalRead(b->pin);
-  if (x == HIGH && x != b->state) {
-    b->state = x;
-    if (b->count == 0) {
+  if (b->value == b->savedValue) {
+    return;
+  }
+
+  b->savedValue = b->value;
+  if (b->value == HIGH) {
+    if (b->count == 0) {  // first press
+      b->count++;
       pressKey(b->keys[eventOn], 1);
-#ifndef LIVE
       Serial.print(b->name);
-      Serial.println(" pressed");
-#endif
-    } else {
-      pressKey(b->keys[eventOff], 1);
-#ifndef LIVE
+      Serial.println(" first pressed");
+    } else if (b->count >= b->max) {  // last press in series
+      b->count = 0;
+      pressKey(b->keys[eventOn], 1);
+      Serial.print(b->name);
+      Serial.println(" last pressed");
+    } else {  // next press
+      b->count++;
+      pressKey(b->keys[eventNext], 1);
       Serial.print(b->name);
       Serial.println(" released");
-#endif
-    };
-    b->count++;
-    if (b->count > b->max) {
-      b->count = 0;
     };
   };
-  b->state = x;
 }
 
 void setup() {
@@ -335,8 +269,8 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);  // initialise led builtin as output
   pinMode(A0, INPUT_PULLUP);     // initalise control A0 with digital resistor (built in the board)
 
-  for (i = 0; i < nButtons; i++) {
-    pinMode(buttons[i].pin, INPUT_PULLUP);
+  for (i = 0; i < nSwitchButtons; i++) {
+    pinMode(switchButtons[i].pin, INPUT_PULLUP);
   }
 
   for (i = 0; i < nPressureButtons; i++) {
@@ -365,9 +299,21 @@ void loop() {
   }
   digitalWrite(LED_BUILTIN, HIGH);  // Turn indicator light on.
 
+  // read all pins first
   int i;
-  for (i = 0; i < nButtons; i++) {
-    processSwitch(&buttons[i]);
+  for (i = 0; i < nSwitchButtons; i++) {
+    switchButtons[i].value = digitalRead(switchButtons[i].pin);
+  }
+  for (i = 0; i < nPotButtons; i++) {
+    potButtons[i].value = analogRead(potButtons[i].pin);
+  }
+  for (i = 0; i < nPressureButtons; i++) {
+    pressureButtons[i].value = digitalRead(pressureButtons[i].pin);
+  }
+
+  // process all pins
+  for (i = 0; i < nSwitchButtons; i++) {
+    processSwitch(&switchButtons[i]);
   }
 
   for (i = 0; i < nPotButtons; i++) {
