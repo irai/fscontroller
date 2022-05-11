@@ -54,7 +54,7 @@ keys mixtureIncreaseKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F3 } };
 keys mixtureDecreaseKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F2 } };
 keys mixtureLeanKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F1 } };
 keys mixtureRichKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F4 } };
-keys fuelPumpKeys = { 2, { KEY_LEFT_CTRL, 'D' } };
+keys fuelPumpKeys = { 2, { KEY_LEFT_ALT, 'p' } };
 keys taxiLightKeys = { 2, { KEY_LEFT_ALT, 'j' } };
 keys navLightKeys = { 2, { KEY_LEFT_ALT, 'n' } };
 keys strobeLightKeys = { 1, { 'o' } };
@@ -101,16 +101,16 @@ button switchButtons[nSwitchButtons] = {
 
 const int nPressureButtons = 2;
 button pressureButtons[nPressureButtons] = {
-  { "atc", 12, { &atcKeys, &atcKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "atc", 12, { &atcKeys, NULL, NULL, NULL }, 0, 0, 0, 0 },
   { "view", 13, { &viewDashboardFirstKeys, &viewDashboardNextKeys, &viewDashboardNextKeys, NULL }, 0, 0, 0, 3 }
 };
 
 // https://docs.arduino.cc/learn/electronics/potentiometer-basics
 const int nPotButtons = 3;
 button potButtons[nPotButtons] = {
-  { "a1", A1, { &throtleIncreaseKeys, &throtleCutKeys, &throtleIncreaseKeys, &throtleDecreaseKeys }, 0, 0, 0, 1024 },
-  { "a2", A2, { &mixtureRichKeys, &mixtureLeanKeys, &mixtureIncreaseKeys, &mixtureDecreaseKeys }, 0, 0, 0, 1024 },
-  { "a3", A3, { NULL, NULL, NULL, NULL }, 0, 0, 0, 1024 }
+  { "a1", A1, { &throtleIncreaseKeys, &throtleCutKeys, &throtleIncreaseKeys, &throtleDecreaseKeys }, 0, 0, 4, 1024 }, // in steps of 4
+  { "a2", A2, { &mixtureRichKeys, &mixtureLeanKeys, &mixtureIncreaseKeys, &mixtureDecreaseKeys }, 0, 0, 2, 1024 }, // in steps of 2
+  { "a3", A3, { NULL, NULL, NULL, NULL }, 0, 0, 1, 1024 }
 };
 
 // Rotary encoder for trim wheel
@@ -198,23 +198,30 @@ void processPot(button* b) {
 
   // reading may oscilate between +1 and -1 volts; ignore
   // https://forum.arduino.cc/t/debounce-a-potentiometer/7509
-  if (b->value >= b->savedValue - 32 && b->value <= b->savedValue + 32) {
+  if (b->value >= b->savedValue - b->count && b->value <= b->savedValue + b->count) {
     return;
   }
 
   int difference = b->value - b->savedValue;
-  b->savedValue = b->value;
 
   if (difference < 0) {
     Serial.print(b->name);
-    Serial.print(" dec by ");
-    Serial.println(difference);
+    Serial.print(" dec value ");
+    Serial.println(b->value);
     pressKey(b->keys[eventPrev], 1);
-  } else {
+    b->savedValue -= b->count; 
+    if (b->savedValue <= 0) { // never set to zero - only when value is zero - see begining of function
+    b->savedValue = 1;
+    }
+  } else if (difference > 0 ) {
     Serial.print(b->name);
-    Serial.print(" inc by");
-    Serial.println(difference);
+    Serial.print(" inc value");
+    Serial.println(b->value);
     pressKey(b->keys[eventNext], 1);
+    b->savedValue += b->count;
+    if (b->savedValue >= 1023) { // never set to 1023 - only when value is 1023 - see begining of function
+    b->savedValue = 1022;
+    }
   }
 }
 
@@ -279,7 +286,7 @@ void setup() {
 
   for (i = 0; i < nPotButtons; i++) {
     pinMode(potButtons[i].pin, INPUT);
-    potButtons[i].count = analogRead(potButtons[i].pin);
+    potButtons[i].savedValue = analogRead(potButtons[i].pin);
   }
 
   // trim wheel
