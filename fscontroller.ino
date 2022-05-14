@@ -63,10 +63,15 @@ keys beaconLightKeys = { 2, { KEY_LEFT_ALT, 'h' } };
 keys viewDashboardFirstKeys = { 2, { KEY_LEFT_CTRL, '1' } };
 keys throtleIncreaseKeys = { 1, { KEY_F3 } };
 keys throtleDecreaseKeys = { 1, { KEY_F2 } };
+keys throtleMaxKeys = { 2, { KEY_LEFT_SHIFT, '0' } };  // no max key available - set a custom key in FS Throtle 1 Full
 keys throtleCutKeys = { 1, { KEY_F1 } };
 keys viewDashboardNextKeys = { 1, { 'a' } };
 keys trimDown = { 1, { KEYPAD_7 } };
 keys trimUp = { 1, { KEYPAD_1 } };
+keys propellerHiKeys = { 2, { KEY_LEFT_CTRL, KEY_F1 } };
+keys propellerLowKeys = { 2, { KEY_LEFT_CTRL, KEY_F4 } };
+keys propellerIncreaseKeys = { 2, { KEY_LEFT_CTRL, KEY_F3 } };
+keys propellerDecreaseKeys = { 2, { KEY_LEFT_CTRL, KEY_F2 } };
 
 const uint8_t eventOn = 0;
 const uint8_t eventOff = 1;
@@ -85,12 +90,12 @@ struct button {
 
 const int nSwitchButtons = 12;
 button switchButtons[nSwitchButtons] = {
-  { "nav light", 0, { &navLightKeys, &navLightKeys, NULL, NULL }, 0, 0, 0, 0 },
-  { "strobe light", 1, { &strobeLightKeys, &strobeLightKeys, NULL, NULL }, 0, 0, 0, 0 },
-  { "landing lights", 2, { &landingLightKeys, &landingLightKeys, NULL, NULL }, 0, 0, 0, 0 },
-  { "beacon light", 3, { &beaconLightKeys, &beaconLightKeys, NULL, NULL }, 0, 0, 0, 0 },
-  { "taxi lights", 4, { &taxiLightKeys, &taxiLightKeys, NULL, NULL }, 0, 0, 0, 0 },
-  { "pitot heat", 5, { &pitotHeatKeys, &pitotHeatKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "strobe light", 0, { &strobeLightKeys, &strobeLightKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "nav light", 1, { &navLightKeys, &navLightKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "taxi lights", 2, { &taxiLightKeys, &taxiLightKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "landing lights", 3, { &landingLightKeys, &landingLightKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "beacon light", 4, { &beaconLightKeys, &beaconLightKeys, NULL, NULL }, 0, 0, 0, 0 },
+H  { "pitot heat", 5, { &pitotHeatKeys, &pitotHeatKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "fuel pump", 6, { &fuelPumpKeys, &fuelPumpKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "free", 7, { NULL, NULL, NULL, NULL }, 0, 0, 0, 0 },
   { "master", 8, { &masterKeys, &masterKeys, NULL, NULL }, 0, 0, 0, 0 },
@@ -108,9 +113,9 @@ button pressureButtons[nPressureButtons] = {
 // https://docs.arduino.cc/learn/electronics/potentiometer-basics
 const int nPotButtons = 3;
 button potButtons[nPotButtons] = {
-  { "a1", A1, { &throtleIncreaseKeys, &throtleCutKeys, &throtleIncreaseKeys, &throtleDecreaseKeys }, 0, 0, 4, 1024 }, // in steps of 4
-  { "a2", A2, { &mixtureRichKeys, &mixtureLeanKeys, &mixtureIncreaseKeys, &mixtureDecreaseKeys }, 0, 0, 2, 1024 }, // in steps of 2
-  { "a3", A3, { NULL, NULL, NULL, NULL }, 0, 0, 1, 1024 }
+  { "throtle", A1, { &throtleMaxKeys, &throtleCutKeys, &throtleIncreaseKeys, &throtleDecreaseKeys }, 0, 0, 8, 1024 },    // in steps of 4
+  { "mixture", A2, { &mixtureRichKeys, &mixtureLeanKeys, &mixtureIncreaseKeys, &mixtureDecreaseKeys }, 0, 0, 16, 1024 },  // in steps of 2
+  { "propeller", A3, { &propellerHiKeys, &propellerLowKeys, &propellerIncreaseKeys, &propellerDecreaseKeys }, 0, 0, 64, 1024 }
 };
 
 // Rotary encoder for trim wheel
@@ -137,6 +142,7 @@ void pressKey(keys* keys, int repeat) {
       Serial.println("error in press");
       return;
     }
+    delay(8);
 #endif
   }
 
@@ -150,8 +156,11 @@ void pressKey(keys* keys, int repeat) {
       Keyboard.releaseAll();  // attempt to release numpad keys - fix bug of non stop repeating key
       return;
     }
+    delay(8);
 #endif
   }
+    delay(32);  // xbox does not work without this delay; need time for os to accept key press
+
 }
 
 void processTrim() {
@@ -166,8 +175,7 @@ void processTrim() {
     if (digitalRead(trimDTPin) != clk) {
       trimCounter--;
       pressKey(&trimDown, 1);
-      // delay(16);
-    } else {
+       } else {
       // Encoder is rotating CW so increment
       trimCounter++;
       pressKey(&trimUp, 1);
@@ -180,19 +188,23 @@ void processTrim() {
 }
 
 void processPot(button* b) {
-  if (b->value == 0 && b->savedValue != 0) {
-    pressKey(b->keys[eventOff], 1);
-    Serial.print(b->name);
-    Serial.println("is off");
-    b->savedValue = 0;
+  if (b->value <= 3) {  // if value is < 3 assume it is set to zero
+    if (b->savedValue != 0) {
+      pressKey(b->keys[eventOff], 1);
+      Serial.print(b->name);
+      Serial.println("is off");
+      b->savedValue = 0;
+    }
     return;
   }
 
-  if (b->value == 1023 && b->savedValue != 1023) {
-    pressKey(b->keys[eventOn], 1);
-    Serial.print(b->name);
-    Serial.println("is at max");
-    b->savedValue = 1023;
+  if (b->value >= 1023 - 3) {  // if value is > 1020 assume it is set to max
+    if (b->savedValue != 1023) {
+      pressKey(b->keys[eventOn], 1);
+      Serial.print(b->name);
+      Serial.println("is at max");
+      b->savedValue = 1023;
+    }
     return;
   }
 
@@ -209,18 +221,18 @@ void processPot(button* b) {
     Serial.print(" dec value ");
     Serial.println(b->value);
     pressKey(b->keys[eventPrev], 1);
-    b->savedValue -= b->count; 
-    if (b->savedValue <= 0) { // never set to zero - only when value is zero - see begining of function
-    b->savedValue = 1;
+    b->savedValue -= b->count;
+    if (b->savedValue <= 0) {  // never set to zero - only when value is zero - see begining of function
+      b->savedValue = 1;
     }
-  } else if (difference > 0 ) {
+  } else if (difference > 0) {
     Serial.print(b->name);
     Serial.print(" inc value");
     Serial.println(b->value);
     pressKey(b->keys[eventNext], 1);
     b->savedValue += b->count;
-    if (b->savedValue >= 1023) { // never set to 1023 - only when value is 1023 - see begining of function
-    b->savedValue = 1022;
+    if (b->savedValue >= 1023) {  // never set to 1023 - only when value is 1023 - see begining of function
+      b->savedValue = 1022;
     }
   }
 }
