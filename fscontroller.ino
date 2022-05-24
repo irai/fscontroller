@@ -72,6 +72,17 @@ keys propellerHiKeys = { 2, { KEY_LEFT_CTRL, KEY_F1 } };
 keys propellerLowKeys = { 2, { KEY_LEFT_CTRL, KEY_F4 } };
 keys propellerIncreaseKeys = { 2, { KEY_LEFT_CTRL, KEY_F3 } };
 keys propellerDecreaseKeys = { 2, { KEY_LEFT_CTRL, KEY_F2 } };
+keys parkingBreakKeys = { 2, { KEY_LEFT_CTRL, KEYPAD_PERIOD } };
+keys magnetoStartKeys = { 2, { KEY_LEFT_ALT, 'G' } };
+keys magnetoLeftKeys = { 2, {  KEY_LEFT_ALT, 'S' } };
+keys magnetoRightKeys = { 2, {  KEY_LEFT_ALT, 'D' } };
+keys magnetoBothKeys = { 2, {  KEY_LEFT_ALT, 'F' } };
+keys magnetoOffKeys = { 2, {  KEY_LEFT_ALT, 'Q' } };
+keys flapsRetractKeys = { 1, { KEY_F5 } };
+keys flapsIncreaseKeys = { 1, { KEY_F7 } };
+keys flapsDecreaseKeys = { 1, { KEY_F6 } };
+keys flapsFullKeys = { 1, { KEY_F8 } };
+keys fuelValveKeys = { 2, { KEY_LEFT_ALT, 'v' } };
 
 const uint8_t eventOn = 0;
 const uint8_t eventOff = 1;
@@ -88,6 +99,7 @@ struct button {
   int max;
 };
 
+#ifdef FIRST_BOX
 const int nSwitchButtons = 12;
 button switchButtons[nSwitchButtons] = {
   { "strobe light", 0, { &strobeLightKeys, &strobeLightKeys, NULL, NULL }, 0, 0, 0, 0 },
@@ -95,7 +107,7 @@ button switchButtons[nSwitchButtons] = {
   { "taxi lights", 2, { &taxiLightKeys, &taxiLightKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "landing lights", 3, { &landingLightKeys, &landingLightKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "beacon light", 4, { &beaconLightKeys, &beaconLightKeys, NULL, NULL }, 0, 0, 0, 0 },
-H  { "pitot heat", 5, { &pitotHeatKeys, &pitotHeatKeys, NULL, NULL }, 0, 0, 0, 0 },
+  H{ "pitot heat", 5, { &pitotHeatKeys, &pitotHeatKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "fuel pump", 6, { &fuelPumpKeys, &fuelPumpKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "free", 7, { NULL, NULL, NULL, NULL }, 0, 0, 0, 0 },
   { "master", 8, { &masterKeys, &masterKeys, NULL, NULL }, 0, 0, 0, 0 },
@@ -113,10 +125,41 @@ button pressureButtons[nPressureButtons] = {
 // https://docs.arduino.cc/learn/electronics/potentiometer-basics
 const int nPotButtons = 3;
 button potButtons[nPotButtons] = {
-  { "throtle", A1, { &throtleMaxKeys, &throtleCutKeys, &throtleIncreaseKeys, &throtleDecreaseKeys }, 0, 0, 8, 1024 },    // in steps of 4
+  { "throtle", A1, { &throtleMaxKeys, &throtleCutKeys, &throtleIncreaseKeys, &throtleDecreaseKeys }, 0, 0, 8, 1024 },     // in steps of 4
   { "mixture", A2, { &mixtureRichKeys, &mixtureLeanKeys, &mixtureIncreaseKeys, &mixtureDecreaseKeys }, 0, 0, 16, 1024 },  // in steps of 2
   { "propeller", A3, { &propellerHiKeys, &propellerLowKeys, &propellerIncreaseKeys, &propellerDecreaseKeys }, 0, 0, 64, 1024 }
 };
+
+#else
+
+// Second controller box
+
+// The power is inverted in the the switches, swap on/off for now
+
+const int nSwitchButtons = 12;
+button switchButtons[nSwitchButtons] = {
+  { "ignition off", 2, { NULL, &magnetoOffKeys,  NULL, NULL }, 0, 0, 0, 0 },
+  { "mag left", 3, { NULL, &magnetoLeftKeys,  NULL, NULL }, 0, 0, 0, 0 },
+  { "mag right", 4, { NULL, &magnetoRightKeys,  NULL, NULL }, 0, 0, 0, 0 },
+  { "mag both", 5, { NULL, &magnetoBothKeys,  NULL, NULL }, 0, 0, 0, 0 },
+  { "ignition start", 6, { NULL, &magnetoStartKeys,  NULL, NULL }, 0, 0, 0, 0 },
+  { "no flaps", 7, { NULL, &flapsRetractKeys,  NULL, NULL }, 0, 0, 0, 0 },
+  { "10% flaps", 8, { NULL, &flapsIncreaseKeys,  NULL, NULL }, 0, 0, 0, 0 },
+  { "20% flaps", 9, { NULL, &flapsIncreaseKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "30% flaps", 10, { &flapsDecreaseKeys, &flapsFullKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "Parking break", 11, { &parkingBreakKeys, &parkingBreakKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "Fuel valve", 12, { &fuelValveKeys, &fuelValveKeys, NULL, NULL }, 0, 0, 0, 0 }
+  // { "Fuel pump", 13, { &strobeLightKeys, &strobeLightKeys, NULL, NULL }, 0, 0, 0, 0 },
+
+};
+const int nPressureButtons = 0;
+button pressureButtons[nPressureButtons] = {};
+
+const int nPotButtons = 1;
+button potButtons[nPotButtons] = {
+  { "switch", A1, { &throtleMaxKeys, &throtleCutKeys, &throtleIncreaseKeys, &throtleDecreaseKeys }, 0, 0, 256, 1024 }  // in steps of 4
+};
+
 
 // Rotary encoder for trim wheel
 // https://lastminuteengineers.com/rotary-encoder-arduino-tutorial/
@@ -127,6 +170,7 @@ int trimCLKState;
 int trimCounter = 0;
 unsigned long trimDebounceTime = 0;  // the last time the output pin was toggled
 
+#endif
 
 void pressKey(keys* keys, int repeat) {
   if (keys == NULL) {
@@ -159,10 +203,10 @@ void pressKey(keys* keys, int repeat) {
     delay(8);
 #endif
   }
-    delay(32);  // xbox does not work without this delay; need time for os to accept key press
-
+  delay(32);  // xbox does not work without this delay; need time for os to accept key press
 }
 
+#ifdef FIRST_BOX
 void processTrim() {
   // Read the current savedValue of CLK
   int clk = digitalRead(trimCLKPin);
@@ -175,7 +219,7 @@ void processTrim() {
     if (digitalRead(trimDTPin) != clk) {
       trimCounter--;
       pressKey(&trimDown, 1);
-       } else {
+    } else {
       // Encoder is rotating CW so increment
       trimCounter++;
       pressKey(&trimUp, 1);
@@ -186,6 +230,7 @@ void processTrim() {
   }
   trimCLKState = clk;  // Remember last CLK savedValue
 }
+#endif
 
 void processPot(button* b) {
   if (b->value <= 3) {  // if value is < 3 assume it is set to zero
@@ -244,7 +289,7 @@ void processSwitch(button* b) {
   b->savedValue = b->value;
 
   Serial.print(b->name);
-  Serial.print("pin=");
+  Serial.print(" pin=");
   Serial.print(b->pin);
   // Serial.print(" keys=");
   // Serial.print(b->keys[eventOn]->seq[0]);
@@ -301,10 +346,12 @@ void setup() {
     potButtons[i].savedValue = analogRead(potButtons[i].pin);
   }
 
+#ifdef FIRST_BOX
   // trim wheel
   pinMode(trimCLKPin, INPUT_PULLUP);
   pinMode(trimDTPin, INPUT_PULLUP);
   trimCLKState = digitalRead(trimCLKPin);  // Read the initial state of CLK
+#endif
 
   Keyboard.begin();
   Keyboard.releaseAll();  // release any key that is pressed
@@ -343,5 +390,7 @@ void loop() {
     processPressureButton(&pressureButtons[i]);
   }
 
+#ifdef FIRST_BOX
   processTrim();
+#endif
 }
