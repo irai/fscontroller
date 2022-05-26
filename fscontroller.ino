@@ -2,6 +2,7 @@
 #include <HID_Buttons.h>  // Must import AFTER Keyboard.h
 
 // #define DEBUG 1
+#define FIRST_BOX 1
 
 #define nonprinting 136  // it's a non-printing key (not a modifier)
 #define KEY_F11 68 + nonprinting
@@ -47,7 +48,8 @@ keys masterBatteryKeys = { 2, { KEY_LEFT_ALT, 'b' } };
 keys masterKeys = { 1, { 'M' } };
 keys avionics = { 1, { KEY_PAGE_UP } };
 keys atcKeys = { 2, { KEY_SCROLL_LOCK, KEY_HOME } };
-keys gearKeys = { 1, { 'g' } };
+keys gearDownKeys = { 2, { KEY_LEFT_CTRL, 'g' } };
+keys gearUpKeys = { 2, { KEY_RIGHT_ALT, 'g' } };
 keys carbHeatKeys = { 1, { 'h' } };
 keys pitotHeatKeys = { 1, { 'H' } };
 keys mixtureIncreaseKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F3 } };
@@ -63,7 +65,7 @@ keys beaconLightKeys = { 2, { KEY_LEFT_ALT, 'h' } };
 keys viewDashboardFirstKeys = { 2, { KEY_LEFT_CTRL, '1' } };
 keys throtleIncreaseKeys = { 1, { KEY_F3 } };
 keys throtleDecreaseKeys = { 1, { KEY_F2 } };
-keys throtleMaxKeys = { 2, { KEY_LEFT_SHIFT, '0' } };  // no max key available - set a custom key in FS Throtle 1 Full
+keys throtleMaxKeys = { 2, { KEY_LEFT_SHIFT, '0' } };  // no max key available - set a custom key in FS - Throtle 1 Full
 keys throtleCutKeys = { 1, { KEY_F1 } };
 keys viewDashboardNextKeys = { 1, { 'a' } };
 keys trimDown = { 1, { KEYPAD_7 } };
@@ -79,8 +81,8 @@ keys magnetoRightKeys = { 2, {  KEY_LEFT_ALT, 'D' } };
 keys magnetoBothKeys = { 2, {  KEY_LEFT_ALT, 'F' } };
 keys magnetoOffKeys = { 2, {  KEY_LEFT_ALT, 'Q' } };
 keys flapsRetractKeys = { 1, { KEY_F5 } };
-keys flapsIncreaseKeys = { 1, { KEY_F7 } };
-keys flapsDecreaseKeys = { 1, { KEY_F6 } };
+keys flaps10Keys = { 2, { KEY_LEFT_ALT, 'f' } };  // not available - set custom key in FS - Flaps 1
+keys flaps20Keys = { 2, { KEY_LEFT_ALT, 'g' } };  // not available - set custom key in FS - Flaps 2
 keys flapsFullKeys = { 1, { KEY_F8 } };
 keys fuelValveKeys = { 2, { KEY_LEFT_ALT, 'v' } };
 
@@ -92,7 +94,7 @@ const uint8_t eventPrev = 3;
 struct button {
   String name;
   uint8_t pin;
-  keys* keys[4];
+  keys* keys[4]; // On, Off, Next, Prev
   int value;
   int savedValue;
   int count;
@@ -107,12 +109,12 @@ button switchButtons[nSwitchButtons] = {
   { "taxi lights", 2, { &taxiLightKeys, &taxiLightKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "landing lights", 3, { &landingLightKeys, &landingLightKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "beacon light", 4, { &beaconLightKeys, &beaconLightKeys, NULL, NULL }, 0, 0, 0, 0 },
-  H{ "pitot heat", 5, { &pitotHeatKeys, &pitotHeatKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "pitot heat", 5, { &pitotHeatKeys, &pitotHeatKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "fuel pump", 6, { &fuelPumpKeys, &fuelPumpKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "free", 7, { NULL, NULL, NULL, NULL }, 0, 0, 0, 0 },
   { "master", 8, { &masterKeys, &masterKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "avionics", 9, { &avionics, &avionics, NULL, NULL }, 0, 0 },
-  { "gear", 10, { &gearKeys, &gearKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "gear", 10, { &gearDownKeys, &gearDownKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "carby heat", 11, { &carbHeatKeys, &carbHeatKeys, NULL, NULL }, 0, 0, 0, 0 }
 };
 
@@ -139,18 +141,17 @@ button potButtons[nPotButtons] = {
 const int nSwitchButtons = 12;
 button switchButtons[nSwitchButtons] = {
   { "ignition off", 2, { NULL, &magnetoOffKeys,  NULL, NULL }, 0, 0, 0, 0 },
-  { "mag left", 3, { NULL, &magnetoLeftKeys,  NULL, NULL }, 0, 0, 0, 0 },
-  { "mag right", 4, { NULL, &magnetoRightKeys,  NULL, NULL }, 0, 0, 0, 0 },
+  { "mag right", 3, { NULL, &magnetoRightKeys,  NULL, NULL }, 0, 0, 0, 0 },
+  { "mag left", 4, { NULL, &magnetoLeftKeys,  NULL, NULL }, 0, 0, 0, 0 },
   { "mag both", 5, { NULL, &magnetoBothKeys,  NULL, NULL }, 0, 0, 0, 0 },
   { "ignition start", 6, { NULL, &magnetoStartKeys,  NULL, NULL }, 0, 0, 0, 0 },
   { "no flaps", 7, { NULL, &flapsRetractKeys,  NULL, NULL }, 0, 0, 0, 0 },
-  { "10% flaps", 8, { NULL, &flapsIncreaseKeys,  NULL, NULL }, 0, 0, 0, 0 },
-  { "20% flaps", 9, { NULL, &flapsIncreaseKeys, NULL, NULL }, 0, 0, 0, 0 },
-  { "30% flaps", 10, { &flapsDecreaseKeys, &flapsFullKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "10% flaps", 8, { NULL, &flaps10Keys,  NULL, NULL }, 0, 0, 0, 0 },
+  { "20% flaps", 9, { NULL, &flaps20Keys, NULL, NULL }, 0, 0, 0, 0 },
+  { "30% flaps", 10, { NULL, &flapsFullKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "Parking break", 11, { &parkingBreakKeys, &parkingBreakKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "Fuel valve", 12, { &fuelValveKeys, &fuelValveKeys, NULL, NULL }, 0, 0, 0, 0 }
   // { "Fuel pump", 13, { &strobeLightKeys, &strobeLightKeys, NULL, NULL }, 0, 0, 0, 0 },
-
 };
 const int nPressureButtons = 0;
 button pressureButtons[nPressureButtons] = {};
@@ -159,7 +160,6 @@ const int nPotButtons = 1;
 button potButtons[nPotButtons] = {
   { "switch", A1, { &throtleMaxKeys, &throtleCutKeys, &throtleIncreaseKeys, &throtleDecreaseKeys }, 0, 0, 256, 1024 }  // in steps of 4
 };
-
 
 // Rotary encoder for trim wheel
 // https://lastminuteengineers.com/rotary-encoder-arduino-tutorial/
