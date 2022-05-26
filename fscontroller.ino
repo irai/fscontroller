@@ -1,7 +1,7 @@
 #include <Keyboard.h>     // Use built-in Keyboard library
 #include <HID_Buttons.h>  // Must import AFTER Keyboard.h
 
-// #define DEBUG 1
+//M#define DEBUG 1
 #define FIRST_BOX 1
 
 #define nonprinting 136  // it's a non-printing key (not a modifier)
@@ -57,11 +57,21 @@ keys mixtureDecreaseKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F2 } };
 keys mixtureLeanKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F1 } };
 keys mixtureRichKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F4 } };
 keys fuelPumpKeys = { 2, { KEY_LEFT_ALT, 'p' } };
-keys taxiLightKeys = { 2, { KEY_LEFT_ALT, 'j' } };
-keys navLightKeys = { 2, { KEY_LEFT_ALT, 'n' } };
-keys strobeLightKeys = { 1, { 'o' } };
-keys landingLightKeys = { 2, { KEY_LEFT_CTRL, 'l' } };
-keys beaconLightKeys = { 2, { KEY_LEFT_ALT, 'h' } };
+keys taxiLightToggleh = { 2, { KEY_LEFT_ALT, 'j' } };
+keys taxiLightOnKeys = { 2, { KEY_RIGHT_CTRL, 't' } }; // custom key
+keys taxiLightOffKeys = { 2, { KEY_RIGHT_ALT, 't' } }; // custom key
+keys navLightToggleKeys = { 2, { KEY_LEFT_ALT, 'n' } };
+keys navLightOnKeys = { 2, { KEY_RIGHT_CTRL, 'n' } }; // custom key
+keys navLightOffKeys = { 2, { KEY_RIGHT_ALT, 'n' } }; // custom key
+keys strobeLightToggleKeys = { 1, { 'o' } };
+keys strobeLightOnKeys = { 2, { KEY_RIGHT_CTRL, 's' } }; // custom key
+keys strobeLightOffKeys = { 2, { KEY_RIGHT_ALT, 's' } }; // custom key
+keys beaconLightToggleKeys = { 2, { KEY_LEFT_ALT, 'h' } };
+keys beaconLightOnKeys = { 2, { KEY_RIGHT_CTRL, 'b' } }; // custom key
+keys beaconLightOffKeys = { 2, { KEY_RIGHT_ALT, 'b' } }; // custom key
+keys landingLightToggleKeys = { 2, { KEY_LEFT_CTRL, 'l' } };
+keys landingLightOnKeys = { 2, { KEY_RIGHT_CTRL, 'l' } }; // custom key
+keys landingLightOffKeys = { 2, { KEY_RIGHT_ALT, 'l' } }; // custom key
 keys viewDashboardFirstKeys = { 2, { KEY_LEFT_CTRL, '1' } };
 keys throtleIncreaseKeys = { 1, { KEY_F3 } };
 keys throtleDecreaseKeys = { 1, { KEY_F2 } };
@@ -104,17 +114,17 @@ struct button {
 #ifdef FIRST_BOX
 const int nSwitchButtons = 12;
 button switchButtons[nSwitchButtons] = {
-  { "strobe light", 0, { &strobeLightKeys, &strobeLightKeys, NULL, NULL }, 0, 0, 0, 0 },
-  { "nav light", 1, { &navLightKeys, &navLightKeys, NULL, NULL }, 0, 0, 0, 0 },
-  { "taxi lights", 2, { &taxiLightKeys, &taxiLightKeys, NULL, NULL }, 0, 0, 0, 0 },
-  { "landing lights", 3, { &landingLightKeys, &landingLightKeys, NULL, NULL }, 0, 0, 0, 0 },
-  { "beacon light", 4, { &beaconLightKeys, &beaconLightKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "strobe light", 0, { &strobeLightOnKeys, &strobeLightOffKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "nav light", 1, { &navLightOnKeys, &navLightOffKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "taxi lights", 2, { &taxiLightOnKeys, &taxiLightOffKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "landing lights", 3, { &landingLightOnKeys, &landingLightOffKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "beacon light", 4, { &beaconLightOnKeys, &beaconLightOffKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "pitot heat", 5, { &pitotHeatKeys, &pitotHeatKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "fuel pump", 6, { &fuelPumpKeys, &fuelPumpKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "free", 7, { NULL, NULL, NULL, NULL }, 0, 0, 0, 0 },
   { "master", 8, { &masterKeys, &masterKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "avionics", 9, { &avionics, &avionics, NULL, NULL }, 0, 0 },
-  { "gear", 10, { &gearDownKeys, &gearDownKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "gear", 10, { &gearDownKeys, &gearUpKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "carby heat", 11, { &carbHeatKeys, &carbHeatKeys, NULL, NULL }, 0, 0, 0, 0 }
 };
 
@@ -131,6 +141,15 @@ button potButtons[nPotButtons] = {
   { "mixture", A2, { &mixtureRichKeys, &mixtureLeanKeys, &mixtureIncreaseKeys, &mixtureDecreaseKeys }, 0, 0, 16, 1024 },  // in steps of 2
   { "propeller", A3, { &propellerHiKeys, &propellerLowKeys, &propellerIncreaseKeys, &propellerDecreaseKeys }, 0, 0, 64, 1024 }
 };
+
+// Rotary encoder for trim wheel
+// https://lastminuteengineers.com/rotary-encoder-arduino-tutorial/
+const uint8_t trimCLKPin = A5;
+const uint8_t trimDTPin = A4;
+// const uint8_t trimSWPin =6;
+int trimCLKState;
+int trimCounter = 0;
+unsigned long trimDebounceTime = 0;  // the last time the output pin was toggled
 
 #else
 
@@ -161,14 +180,6 @@ button potButtons[nPotButtons] = {
   { "switch", A1, { &throtleMaxKeys, &throtleCutKeys, &throtleIncreaseKeys, &throtleDecreaseKeys }, 0, 0, 256, 1024 }  // in steps of 4
 };
 
-// Rotary encoder for trim wheel
-// https://lastminuteengineers.com/rotary-encoder-arduino-tutorial/
-const uint8_t trimCLKPin = A5;
-const uint8_t trimDTPin = A4;
-// const uint8_t trimSWPin =6;
-int trimCLKState;
-int trimCounter = 0;
-unsigned long trimDebounceTime = 0;  // the last time the output pin was toggled
 
 #endif
 
@@ -296,9 +307,9 @@ void processSwitch(button* b) {
   Serial.print("=");
   Serial.println(b->value);
   if (b->value == HIGH) {
-    pressKey(b->keys[eventOn], 1);
+    pressKey(b->keys[eventOn], 1); // inverted???
   } else {
-    pressKey(b->keys[eventOff], 1);
+    pressKey(b->keys[eventOff], 1); // inverted???
   }
 }
 
