@@ -1,7 +1,7 @@
 #include <Keyboard.h>     // Use built-in Keyboard library
 #include <HID_Buttons.h>  // Must import AFTER Keyboard.h
 
-//M#define DEBUG 1
+// #define DEBUG 1
 #define FIRST_BOX 1
 
 #define nonprinting 136  // it's a non-printing key (not a modifier)
@@ -44,19 +44,35 @@ struct keys {
 };
 
 keys masterAlternatorKeys = { 2, { KEY_LEFT_ALT, 'a' } };
+keys masterAlternatorOnKeys = { 2, { KEY_RIGHT_CTRL, 'a' } }; // custom key
+keys masterAlternatorOffKeys = { 2, { KEY_RIGHT_ALT, 'a' } }; // custom key
 keys masterBatteryKeys = { 2, { KEY_LEFT_ALT, 'b' } };
+keys masterBatteryOnKeys = { 2, { KEY_RIGHT_CTRL, 'b' } }; // custom Key
+keys masterBatteryOffKeys = { 2, { KEY_RIGHT_ALT, 'b' } }; // custom Key
 keys masterKeys = { 1, { 'M' } };
+keys masterOnKeys = { 2, { KEY_RIGHT_CTRL, 'M' } }; // custom Key
+keys masterOffKeys = { 2, { KEY_RIGHT_ALT, 'M' } }; // custom Key
 keys avionics = { 1, { KEY_PAGE_UP } };
+keys avionicsOnKeys = { 2, { KEY_RIGHT_CTRL, KEY_PAGE_UP } }; // custom Key
+keys avionicsOffKeys = { 2, { KEY_RIGHT_ALT, KEY_PAGE_UP } }; // custom Key
 keys atcKeys = { 2, { KEY_SCROLL_LOCK, KEY_HOME } };
 keys gearDownKeys = { 2, { KEY_LEFT_CTRL, 'g' } };
 keys gearUpKeys = { 2, { KEY_RIGHT_ALT, 'g' } };
 keys carbHeatKeys = { 1, { 'h' } };
+keys carbHeatOnKeys = { 2, { KEY_RIGHT_CTRL, 'h' } };
+keys carbHeatOffKeys = { 2, { KEY_RIGHT_ALT, 'h' } };
 keys pitotHeatKeys = { 1, { 'H' } };
-keys mixtureIncreaseKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F3 } };
-keys mixtureDecreaseKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F2 } };
+keys pitotHeatOnKeys = { 2, { KEY_RIGHT_CTRL, 'H' } };
+keys pitotHeatOffKeys = { 2, { KEY_RIGHT_ALT, 'H' } };
+// keys mixtureIncreaseDefaultKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F3 } };
+keys mixtureIncreaseKeys = { 2, { KEY_RIGHT_CTRL, KEY_F3 } }; // custom key
+// keys mixtureDecreaseDefaultKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F2 } };
+keys mixtureDecreaseKeys = { 2, { KEY_RIGHT_ALT, KEY_F3 } }; // custom key
 keys mixtureLeanKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F1 } };
 keys mixtureRichKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F4 } };
 keys fuelPumpKeys = { 2, { KEY_LEFT_ALT, 'p' } };
+keys fuelPumpOnKeys = { 2, { KEY_RIGHT_CTRL, 'p' } }; // custom key
+keys fuelPumpOffKeys = { 2, { KEY_RIGHT_ALT, 'p' } }; // custom key
 keys taxiLightToggleh = { 2, { KEY_LEFT_ALT, 'j' } };
 keys taxiLightOnKeys = { 2, { KEY_RIGHT_CTRL, 't' } }; // custom key
 keys taxiLightOffKeys = { 2, { KEY_RIGHT_ALT, 't' } }; // custom key
@@ -105,10 +121,11 @@ struct button {
   String name;
   uint8_t pin;
   keys* keys[4]; // On, Off, Next, Prev
-  int value;
-  int savedValue;
+  int value; // pin current value
+  int savedValue; // pin saved value
   int count;
   int max;
+  // unsigned long debounceTime; // minimum time to enable debounce
 };
 
 #ifdef FIRST_BOX
@@ -119,13 +136,13 @@ button switchButtons[nSwitchButtons] = {
   { "taxi lights", 2, { &taxiLightOnKeys, &taxiLightOffKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "landing lights", 3, { &landingLightOnKeys, &landingLightOffKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "beacon light", 4, { &beaconLightOnKeys, &beaconLightOffKeys, NULL, NULL }, 0, 0, 0, 0 },
-  { "pitot heat", 5, { &pitotHeatKeys, &pitotHeatKeys, NULL, NULL }, 0, 0, 0, 0 },
-  { "fuel pump", 6, { &fuelPumpKeys, &fuelPumpKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "pitot heat", 5, { &pitotHeatOnKeys, &pitotHeatOffKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "fuel pump", 6, { &fuelPumpOnKeys, &fuelPumpOffKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "free", 7, { NULL, NULL, NULL, NULL }, 0, 0, 0, 0 },
   { "master", 8, { &masterKeys, &masterKeys, NULL, NULL }, 0, 0, 0, 0 },
-  { "avionics", 9, { &avionics, &avionics, NULL, NULL }, 0, 0 },
+  { "avionics", 9, { &avionicsOnKeys, &avionicsOffKeys, NULL, NULL }, 0, 0 },
   { "gear", 10, { &gearDownKeys, &gearUpKeys, NULL, NULL }, 0, 0, 0, 0 },
-  { "carby heat", 11, { &carbHeatKeys, &carbHeatKeys, NULL, NULL }, 0, 0, 0, 0 }
+  { "carby heat", 11, { &carbHeatOnKeys, &carbHeatOffKeys, NULL, NULL }, 0, 0, 0, 0 }
 };
 
 const int nPressureButtons = 2;
@@ -137,8 +154,8 @@ button pressureButtons[nPressureButtons] = {
 // https://docs.arduino.cc/learn/electronics/potentiometer-basics
 const int nPotButtons = 3;
 button potButtons[nPotButtons] = {
-  { "throtle", A1, { &throtleMaxKeys, &throtleCutKeys, &throtleIncreaseKeys, &throtleDecreaseKeys }, 0, 0, 8, 1024 },     // in steps of 4
-  { "mixture", A2, { &mixtureRichKeys, &mixtureLeanKeys, &mixtureIncreaseKeys, &mixtureDecreaseKeys }, 0, 0, 16, 1024 },  // in steps of 2
+  { "throtle", A1, { &throtleMaxKeys, &throtleCutKeys, &throtleIncreaseKeys, &throtleDecreaseKeys }, 0, 0, 1024/100, 1024 },     // in 100 steps - Cesna 172
+  { "mixture", A2, { &mixtureRichKeys, &mixtureLeanKeys, &mixtureIncreaseKeys, &mixtureDecreaseKeys }, 0, 0, 1024/65, 1024 },  // in 64 stepsC - Cesna 172
   { "propeller", A3, { &propellerHiKeys, &propellerLowKeys, &propellerIncreaseKeys, &propellerDecreaseKeys }, 0, 0, 64, 1024 }
 };
 
@@ -276,6 +293,7 @@ void processPot(button* b) {
     Serial.print(b->name);
     Serial.print(" dec value ");
     Serial.println(b->value);
+    // Serial.println(b->savedValue);
     pressKey(b->keys[eventPrev], 1);
     b->savedValue -= b->count;
     if (b->savedValue <= 0) {  // never set to zero - only when value is zero - see begining of function
