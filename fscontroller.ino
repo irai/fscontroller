@@ -2,7 +2,7 @@
 #include <HID_Buttons.h>  // Must import AFTER Keyboard.h
 
 // #define DEBUG 1
-#define FIRST_BOX 1
+// #define FIRST_BOX 1
 
 #define nonprinting 136  // it's a non-printing key (not a modifier)
 #define KEY_F11 68 + nonprinting
@@ -59,11 +59,11 @@ keys atcKeys = { 2, { KEY_SCROLL_LOCK, KEY_HOME } };
 keys gearDownKeys = { 2, { KEY_LEFT_CTRL, 'g' } };
 keys gearUpKeys = { 2, { KEY_RIGHT_ALT, 'g' } };
 keys carbHeatKeys = { 1, { 'h' } };
-keys carbHeatOnKeys = { 2, { KEY_RIGHT_CTRL, 'h' } };
-keys carbHeatOffKeys = { 2, { KEY_RIGHT_ALT, 'h' } };
+keys carbHeatOnKeys = { 2, { KEY_RIGHT_CTRL, 'i' } }; // anti ice in cesna 152
+keys carbHeatOffKeys = { 2, { KEY_RIGHT_ALT, 'i' } };  // anti ice in cesna 152
 keys pitotHeatKeys = { 1, { 'H' } };
-keys pitotHeatOnKeys = { 2, { KEY_RIGHT_CTRL, 'H' } };
-keys pitotHeatOffKeys = { 2, { KEY_RIGHT_ALT, 'H' } };
+keys pitotHeatOnKeys = { 2, { KEY_RIGHT_CTRL, 'h' } };
+keys pitotHeatOffKeys = { 2, { KEY_RIGHT_ALT,'h' } };
 // keys mixtureIncreaseDefaultKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F3 } };
 keys mixtureIncreaseKeys = { 2, { KEY_RIGHT_CTRL, KEY_F3 } }; // custom key
 // keys mixtureDecreaseDefaultKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F2 } };
@@ -73,6 +73,10 @@ keys mixtureRichKeys = { 3, { KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_F4 } };
 keys fuelPumpKeys = { 2, { KEY_LEFT_ALT, 'p' } };
 keys fuelPumpOnKeys = { 2, { KEY_RIGHT_CTRL, 'p' } }; // custom key
 keys fuelPumpOffKeys = { 2, { KEY_RIGHT_ALT, 'p' } }; // custom key
+keys fuelValveKeys = { 2, { KEY_LEFT_ALT, 'v' } };
+keys fuelTankOff = { 2, { KEY_LEFT_ALT, 'v' } };
+keys fuelTankLeft = { 2, { KEY_RIGHT_CTRL, 'o' } }; // custom key
+keys fuelTankRight = { 2, { KEY_RIGHT_ALT, 'o' } }; // custom key
 keys taxiLightToggleh = { 2, { KEY_LEFT_ALT, 'j' } };
 keys taxiLightOnKeys = { 2, { KEY_RIGHT_CTRL, 't' } }; // custom key
 keys taxiLightOffKeys = { 2, { KEY_RIGHT_ALT, 't' } }; // custom key
@@ -110,7 +114,6 @@ keys flapsRetractKeys = { 1, { KEY_F5 } };
 keys flaps10Keys = { 2, { KEY_LEFT_ALT, 'f' } };  // not available - set custom key in FS - Flaps 1
 keys flaps20Keys = { 2, { KEY_LEFT_ALT, 'g' } };  // not available - set custom key in FS - Flaps 2
 keys flapsFullKeys = { 1, { KEY_F8 } };
-keys fuelValveKeys = { 2, { KEY_LEFT_ALT, 'v' } };
 
 const uint8_t eventOn = 0;
 const uint8_t eventOff = 1;
@@ -140,7 +143,7 @@ button switchButtons[nSwitchButtons] = {
   { "fuel pump", 6, { &fuelPumpOnKeys, &fuelPumpOffKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "free", 7, { NULL, NULL, NULL, NULL }, 0, 0, 0, 0 },
   { "master", 8, { &masterKeys, &masterKeys, NULL, NULL }, 0, 0, 0, 0 },
-  { "avionics", 9, { &avionicsOnKeys, &avionicsOffKeys, NULL, NULL }, 0, 0 },
+  { "avionics", 9, { &avionics, &avionics, NULL, NULL }, 0, 0 },
   { "gear", 10, { &gearDownKeys, &gearUpKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "carby heat", 11, { &carbHeatOnKeys, &carbHeatOffKeys, NULL, NULL }, 0, 0, 0, 0 }
 };
@@ -174,7 +177,7 @@ unsigned long trimDebounceTime = 0;  // the last time the output pin was toggled
 
 // The power is inverted in the the switches, swap on/off for now
 
-const int nSwitchButtons = 12;
+const int nSwitchButtons = 15;
 button switchButtons[nSwitchButtons] = {
   { "ignition off", 2, { NULL, &magnetoOffKeys,  NULL, NULL }, 0, 0, 0, 0 },
   { "mag right", 3, { NULL, &magnetoRightKeys,  NULL, NULL }, 0, 0, 0, 0 },
@@ -186,15 +189,18 @@ button switchButtons[nSwitchButtons] = {
   { "20% flaps", 9, { NULL, &flaps20Keys, NULL, NULL }, 0, 0, 0, 0 },
   { "30% flaps", 10, { NULL, &flapsFullKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "Parking break", 11, { &parkingBreakKeys, &parkingBreakKeys, NULL, NULL }, 0, 0, 0, 0 },
-  { "Fuel valve", 12, { &fuelValveKeys, &fuelValveKeys, NULL, NULL }, 0, 0, 0, 0 }
+  { "Fuel valve", 12, { &fuelValveKeys, &fuelValveKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "Fuel off", A1, { NULL, &fuelTankOff, NULL, NULL }, 0, 0, 0, 0 },
+  { "Fuel left", A2, { NULL, &fuelTankLeft, NULL, NULL }, 0, 0, 0, 0 },
+  { "Fuel right", A3, { NULL, &fuelTankRight, NULL, NULL }, 0, 0, 0, 0 }
   // { "Fuel pump", 13, { &strobeLightKeys, &strobeLightKeys, NULL, NULL }, 0, 0, 0, 0 },
 };
 const int nPressureButtons = 0;
 button pressureButtons[nPressureButtons] = {};
 
-const int nPotButtons = 1;
+const int nPotButtons = 0;
 button potButtons[nPotButtons] = {
-  { "switch", A1, { &throtleMaxKeys, &throtleCutKeys, &throtleIncreaseKeys, &throtleDecreaseKeys }, 0, 0, 256, 1024 }  // in steps of 4
+  // { "switch", A1, { &throtleMaxKeys, &throtleCutKeys, &throtleIncreaseKeys, &throtleDecreaseKeys }, 0, 0, 256, 1024 }  // in steps of 4
 };
 
 
