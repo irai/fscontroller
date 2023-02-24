@@ -4,8 +4,9 @@
 #include "electronics.h"
 #include "simkeys.h"
 
-#define DEBUG true
-#define Serial if(DEBUG)Serial  // enable printing if debuging
+const bool DEBUG = false;
+#define Serial \
+  if (DEBUG) Serial  // enable printing if debuging
 
 
 // #define FIRST_BOX 1
@@ -37,8 +38,8 @@ button pressureButtons[nPressureButtons] = {
 // https://docs.arduino.cc/learn/electronics/potentiometer-basics
 const int nPotButtons = 3;
 button potButtons[nPotButtons] = {
-  { "throtle", A1, { &throtleMaxKeys, &throtleCutKeys, &throtleIncreaseKeys, &throtleDecreaseKeys }, 0, 0, 1024/100, 1024 },     // in 100 steps - Cesna 172
-  { "mixture", A2, { &mixtureRichKeys, &mixtureLeanKeys, &mixtureIncreaseKeys, &mixtureDecreaseKeys }, 0, 0, 1024/65, 1024 },  // in 64 stepsC - Cesna 172
+  { "throtle", A1, { &throtleMaxKeys, &throtleCutKeys, &throtleIncreaseKeys, &throtleDecreaseKeys }, 0, 0, 1024 / 100, 1024 },   // in 100 steps - Cesna 172
+  { "mixture", A2, { &mixtureRichKeys, &mixtureLeanKeys, &mixtureIncreaseKeys, &mixtureDecreaseKeys }, 0, 0, 1024 / 65, 1024 },  // in 64 stepsC - Cesna 172
   { "propeller", A3, { &propellerHiKeys, &propellerLowKeys, &propellerIncreaseKeys, &propellerDecreaseKeys }, 0, 0, 64, 1024 }
 };
 
@@ -55,13 +56,13 @@ rotary rotaryControls[nRotaryControls] = {
 
 const int nSwitchButtons = 15;
 button switchButtons[nSwitchButtons] = {
-  { "ignition off", 2, { NULL, &magnetoOffKeys,  NULL, NULL }, 0, 0, 0, 0 },
-  { "mag right", 3, { NULL, &magnetoRightKeys,  NULL, NULL }, 0, 0, 0, 0 },
-  { "mag left", 4, { NULL, &magnetoLeftKeys,  NULL, NULL }, 0, 0, 0, 0 },
-  { "mag both", 5, { NULL, &magnetoBothKeys,  NULL, NULL }, 0, 0, 0, 0 },
-  { "ignition start", 6, { NULL, &magnetoStartKeys,  NULL, NULL }, 0, 0, 0, 0 },
-  { "no flaps", 7, { NULL, &flapsRetractKeys,  NULL, NULL }, 0, 0, 0, 0 },
-  { "10% flaps", 8, { NULL, &flaps10Keys,  NULL, NULL }, 0, 0, 0, 0 },
+  { "ignition off", 2, { NULL, &magnetoOffKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "mag right", 3, { NULL, &magnetoRightKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "mag left", 4, { NULL, &magnetoLeftKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "mag both", 5, { NULL, &magnetoBothKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "ignition start", 6, { NULL, &magnetoStartKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "no flaps", 7, { NULL, &flapsRetractKeys, NULL, NULL }, 0, 0, 0, 0 },
+  { "10% flaps", 8, { NULL, &flaps10Keys, NULL, NULL }, 0, 0, 0, 0 },
   { "20% flaps", 9, { NULL, &flaps20Keys, NULL, NULL }, 0, 0, 0, 0 },
   { "30% flaps", 10, { NULL, &flapsFullKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "Parking break", 11, { &parkingBreakKeys, &parkingBreakKeys, NULL, NULL }, 0, 0, 0, 0 },
@@ -80,8 +81,7 @@ button potButtons[nPotButtons] = {
 };
 
 const int nRotaryControls = 0;
-rotary rotaryControls[nRotaryControls] = {
-};
+rotary rotaryControls[nRotaryControls] = {};
 
 #else
 
@@ -111,27 +111,20 @@ void pressKey(cmd* keys, int repeat) {
   int i;
 
   for (i = 0; i < keys->len; i++) {
-#ifndef DEBUG
-    if (Keyboard.press(keys->seq[i]) != 1) {
-      Serial.println("error in press");
-      return;
+    if (!DEBUG) {
+      Keyboard.press(keys->seq[i]);
+      delay(8);
     }
-    delay(8);
-#endif
   }
 
   delay(32);  // xbox does not work without this delay; need time for os to accept key press
 
   for (i = keys->len; i > 0;) {
     i--;
-#ifndef DEBUG
-    if (Keyboard.release(keys->seq[i]) != 1) {
-      Serial.println("error in release");
-      Keyboard.releaseAll();  // attempt to release numpad keys - fix bug of non stop repeating key
-      return;
+    if (!DEBUG) {
+      Keyboard.release(keys->seq[i]);
+      delay(8);
     }
-    delay(8);
-#endif
   }
   delay(32);  // xbox does not work without this delay; need time for os to accept key press
 }
