@@ -8,7 +8,12 @@ const bool DEBUG = true;
 #define Serial \
   if (DEBUG) Serial  // enable printing if debuging
 
- #define PIN_ON_OFF A0
+// Avoid using reserved pins
+// PIN 2 - RX
+// PIN 3 - TX
+// PIN 6 - Led
+
+ #define PIN_ON_OFF A0  // first pin after GND on Teensy 2.0++
 
 // #define FIRST_BOX 1
 // #define SECOND_BOX 1
@@ -85,14 +90,14 @@ const int nRotaryControls = 0;
 rotary rotaryControls[nRotaryControls] = {};
 
 #else
-// Third BOX - G1000
+// Third BOX - G1000 - Teensy 2.0++
 
 const int nSwitchButtons = 0;
 button switchButtons[nSwitchButtons] = {};
 
 const int nPressureButtons = 1;
 button pressureButtons[nPressureButtons] = {
-  { "com swap", 12, { &com1StbSwapKeys, NULL, &com1StbSwapKeys, NULL }, 0, 0, 0, 1 }
+  { "com swap", 17, { &com1StbSwapKeys, NULL, &com1StbSwapKeys, NULL }, 0, 0, 0, 1 }
 };
 
 const int nPotButtons = 0;
@@ -100,10 +105,10 @@ button potButtons[nPotButtons] = {};
 
 const int nRotaryControls = 4;
 rotary rotaryControls[nRotaryControls] = {
-  { "com freq", A1, &com1StbFreqUpKeys, A2, &com1StbFreqDownKeys, PIN_D6, &com1StbSwapKeys, 0, 0, 0 },
-  { "com freq dec", 3, &com1StbFreqDecUpKeys, 4, &com1StbFreqDecDownKeys, 5, NULL, 0, 0, 0 },
-  { "heading bug", 6, &incHeadingBugKeys, 7, &decHeadingBugKeys, 8, &setHeadingBugKeys, 0, 0, 0 },
-  { "altitude", 9, &increaseAltKeys, 10, &decreaseAltKeys, 11, NULL, 0, 0, 0 }
+  { "com freq", 27, &com1StbFreqUpKeys, 0, &com1StbFreqDownKeys, 1, &com1StbSwapKeys, 0, 0, 0 },
+  { "com freq dec", 8, &com1StbFreqDecUpKeys, 9, &com1StbFreqDecDownKeys, 10, NULL, 0, 0, 0 },
+  { "heading bug", 11, &incHeadingBugKeys, 12, &decHeadingBugKeys, 13, &setHeadingBugKeys, 0, 0, 0 },
+  { "altitude", 14, &increaseAltKeys, 15, &decreaseAltKeys, 16, NULL, 0, 0, 0 }
 };
 
 #endif
