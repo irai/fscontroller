@@ -15,16 +15,24 @@ void processRotary(rotary* r) {
     // If the B value is different than A value,
     // the encoder is rotating anti-clockwise
     r->bState = digitalRead(r->bPin);
+      Serial.print("PIN ");
+      Serial.print(r->aPin);
+      Serial.print("=");
+      Serial.print(r->aState);
+      Serial.print(" PIN ");
+      Serial.print(r->bPin);
+      Serial.print("=");
+      Serial.print(r->bState);
+      Serial.print(" ");
+      Serial.print(r->name);
     if (r->bState != r->aState) {
       r->counter--;
       pressKey(r->bKeys, 1);
-      Serial.print(r->name);
       Serial.println(" decrease");
     } else {
       // Encoder is rotating clockwise
       r->counter++;
       pressKey(r->aKeys, 1);
-      Serial.print(r->name);
       Serial.println(" increase");
     }
   }

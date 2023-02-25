@@ -4,10 +4,11 @@
 #include "electronics.h"
 #include "simkeys.h"
 
-const bool DEBUG = false;
+const bool DEBUG = true;
 #define Serial \
   if (DEBUG) Serial  // enable printing if debuging
 
+ #define PIN_ON_OFF A0
 
 // #define FIRST_BOX 1
 // #define SECOND_BOX 1
@@ -84,20 +85,25 @@ const int nRotaryControls = 0;
 rotary rotaryControls[nRotaryControls] = {};
 
 #else
+// Third BOX - G1000
 
 const int nSwitchButtons = 0;
 button switchButtons[nSwitchButtons] = {};
 
-const int nPressureButtons = 0;
-button pressureButtons[nPressureButtons] = {};
+const int nPressureButtons = 1;
+button pressureButtons[nPressureButtons] = {
+  { "com swap", 12, { &com1StbSwapKeys, NULL, &com1StbSwapKeys, NULL }, 0, 0, 0, 1 }
+};
 
 const int nPotButtons = 0;
 button potButtons[nPotButtons] = {};
 
-const int nRotaryControls = 1;
+const int nRotaryControls = 4;
 rotary rotaryControls[nRotaryControls] = {
   { "com freq", A1, &com1StbFreqUpKeys, A2, &com1StbFreqDownKeys, PIN_D6, &com1StbSwapKeys, 0, 0, 0 },
-  //{ "com freq dec", A3, &com1StbFreqUpKeys, A4, &com1StbFreqDownKeys, PIN_D6, &com1StbSwapKeys, 0, 0, 0 }
+  { "com freq dec", 3, &com1StbFreqDecUpKeys, 4, &com1StbFreqDecDownKeys, 5, NULL, 0, 0, 0 },
+  { "heading bug", 6, &incHeadingBugKeys, 7, &decHeadingBugKeys, 8, &setHeadingBugKeys, 0, 0, 0 },
+  { "altitude", 9, &increaseAltKeys, 10, &decreaseAltKeys, 11, NULL, 0, 0, 0 }
 };
 
 #endif
@@ -135,7 +141,7 @@ void setup() {
 
   int i;
   pinMode(LED_BUILTIN, OUTPUT);  // initialise led builtin as output
-  pinMode(A0, INPUT_PULLUP);     // initalise control A0 with digital resistor (built in the board)
+  pinMode(PIN_ON_OFF, INPUT_PULLUP);     // initalise control 1 with digital resistor (built in the board)
 
   for (i = 0; i < nSwitchButtons; i++) {
     pinMode(switchButtons[i].pin, INPUT_PULLUP);
@@ -164,10 +170,9 @@ void setup() {
   Keyboard.begin();
   Keyboard.releaseAll();  // release any key that is pressed
 }
-
 void loop() {
   // System Disabled?
-  if (digitalRead(A0) != 0) {
+  if (digitalRead(PIN_ON_OFF) != 0) {
     digitalWrite(LED_BUILTIN, LOW);
     return;
   }

@@ -115,5 +115,10 @@ cmd com1StbFreqDownKeys = { 3, { 'c', KEY_LEFT_CTRL, KEYPAD_MINUS } };
 cmd com1StbFreqDecUpKeys = { 4, { 'c', 'c', KEY_LEFT_CTRL, KEYPAD_PLUS } };
 cmd com1StbFreqDecDownKeys = { 4, { 'c', 'c', KEY_LEFT_CTRL, KEYPAD_MINUS } };
 cmd com1StbSwapKeys = { 1, { 'x' } };
+cmd increaseAltKeys = { 1, { KEY_PAGE_UP } };
+cmd decreaseAltKeys = { 1, { KEY_PAGE_DOWN } };
+cmd incHeadingBugKeys = { 2, { KEY_LEFT_CTRL, KEY_DELETE } };
+cmd decHeadingBugKeys = { 2, { KEY_LEFT_CTRL , KEY_INSERT} };
+cmd setHeadingBugKeys = { 2, { KEY_LEFT_CTRL , KEY_INSERT} };
 
 #endif
