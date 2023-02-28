@@ -4,7 +4,7 @@
 #include "electronics.h"
 #include "simkeys.h"
 
-const bool DEBUG = true;
+const bool DEBUG = false;
 #define Serial \
   if (DEBUG) Serial  // enable printing if debuging
 
@@ -95,20 +95,23 @@ rotary rotaryControls[nRotaryControls] = {};
 const int nSwitchButtons = 0;
 button switchButtons[nSwitchButtons] = {};
 
-const int nPressureButtons = 1;
+const int nPressureButtons = 3;
 button pressureButtons[nPressureButtons] = {
-  { "com swap", 17, { &com1StbSwapKeys, NULL, &com1StbSwapKeys, NULL }, 0, 0, 0, 1 }
+  { "com swap", 1, { &com1StbSwapKeys, NULL, &com1StbSwapKeys, NULL }, 0, 0, 0, 1 },
+  { "set heading bug", 11, { &setHeadingBugKeys, NULL, &setHeadingBugKeys, NULL }, 0, 0, 0, 1 },
+    { "set altitude", 16, { &setHeadingBugKeys, NULL, &setHeadingBugKeys, NULL }, 0, 0, 0, 1 }
 };
 
 const int nPotButtons = 0;
 button potButtons[nPotButtons] = {};
 
-const int nRotaryControls = 4;
+const int nRotaryControls = 5;
 rotary rotaryControls[nRotaryControls] = {
   { "com freq", 27, &com1StbFreqUpKeys, 0, &com1StbFreqDownKeys, 1, &com1StbSwapKeys, 0, 0, 0 },
-  { "com freq dec", 8, &com1StbFreqDecUpKeys, 9, &com1StbFreqDecDownKeys, 10, NULL, 0, 0, 0 },
-  { "heading bug", 11, &incHeadingBugKeys, 12, &decHeadingBugKeys, 13, &setHeadingBugKeys, 0, 0, 0 },
-  { "altitude", 14, &increaseAltKeys, 15, &decreaseAltKeys, 16, NULL, 0, 0, 0 }
+  { "com freq dec", 7, &com1StbFreqDecUpKeys, 8, &com1StbFreqDecDownKeys, 1, NULL, 0, 0, 0 },
+  { "heading bug",9 , &incHeadingBugKeys, 10, &decHeadingBugKeys, 11, &setHeadingBugKeys, 0, 0, 0 },
+  { "altitude", 12, &increaseAltKeys, 13, &decreaseAltKeys, 16, NULL, 0, 0, 0 },
+  { "altitude dec", 14, &increaseAltKeys, 15, &decreaseAltKeys, 16, NULL, 0, 0, 0 }
 };
 
 #endif
@@ -164,7 +167,7 @@ void setup() {
   for (i = 0; i < nRotaryControls; i++) {
     pinMode(rotaryControls[i].aPin, INPUT_PULLUP);
     pinMode(rotaryControls[i].bPin, INPUT_PULLUP);
-    pinMode(rotaryControls[i].buttonPin, INPUT_PULLUP);
+    // pinMode(rotaryControls[i].buttonPin, INPUT_PULLUP);
     rotaryControls[i].aState = digitalRead(rotaryControls[i].aPin);
     rotaryControls[i].aStatePrevious = rotaryControls[i].aState;
     rotaryControls[i].bState = digitalRead(rotaryControls[i].bPin);
@@ -197,7 +200,6 @@ void loop() {
   }
   for (i = 0; i < nRotaryControls; i++) {
     rotaryControls[i].aState = digitalRead(rotaryControls[i].aPin);
-    delay(5);
     rotaryControls[i].bState = digitalRead(rotaryControls[i].bPin);
   }
 

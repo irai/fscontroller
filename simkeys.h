@@ -110,15 +110,15 @@ cmd flapsRetractKeys = { 1, { KEY_F5 } };
 cmd flaps10Keys = { 2, { KEY_LEFT_ALT, 'f' } };  // not available - set custom key in FS - Flaps 1
 cmd flaps20Keys = { 2, { KEY_LEFT_ALT, 'g' } };  // not available - set custom key in FS - Flaps 2
 cmd flapsFullKeys = { 1, { KEY_F8 } };
-cmd com1StbFreqUpKeys = { 3, { 'c', KEY_LEFT_CTRL, KEYPAD_PLUS } };
-cmd com1StbFreqDownKeys = { 3, { 'c', KEY_LEFT_CTRL, KEYPAD_MINUS } };
-cmd com1StbFreqDecUpKeys = { 4, { 'c', 'c', KEY_LEFT_CTRL, KEYPAD_PLUS } };
-cmd com1StbFreqDecDownKeys = { 4, { 'c', 'c', KEY_LEFT_CTRL, KEYPAD_MINUS } };
+cmd com1StbFreqUpKeys = { 4, { 't','c', KEY_LEFT_CTRL, KEYPAD_PLUS } };
+cmd com1StbFreqDownKeys = { 4, { 't','c', KEY_LEFT_CTRL, KEYPAD_MINUS } };
+cmd com1StbFreqDecUpKeys = { 5, { 't','c', 'c', KEY_LEFT_CTRL, KEYPAD_PLUS } };
+cmd com1StbFreqDecDownKeys = { 5, { 't', 'c', 'c', KEY_LEFT_CTRL, KEYPAD_MINUS } };
 cmd com1StbSwapKeys = { 1, { 'x' } };
-cmd increaseAltKeys = { 1, { KEY_PAGE_UP } };
-cmd decreaseAltKeys = { 1, { KEY_PAGE_DOWN } };
+cmd increaseAltKeys = { 2, { KEY_LEFT_CTRL, KEY_PAGE_UP } };
+cmd decreaseAltKeys = { 2, { KEY_LEFT_CTRL, KEY_PAGE_DOWN } };
 cmd incHeadingBugKeys = { 2, { KEY_LEFT_CTRL, KEY_DELETE } };
 cmd decHeadingBugKeys = { 2, { KEY_LEFT_CTRL , KEY_INSERT} };
-cmd setHeadingBugKeys = { 2, { KEY_LEFT_CTRL , KEY_INSERT} };
+cmd setHeadingBugKeys = { 3, { KEY_LEFT_SHIFT , KEY_LEFT_CTRL, 'h'} };
 
 #endif
