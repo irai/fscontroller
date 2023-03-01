@@ -119,6 +119,6 @@ cmd increaseAltKeys = { 2, { KEY_LEFT_CTRL, KEY_PAGE_UP } };
 cmd decreaseAltKeys = { 2, { KEY_LEFT_CTRL, KEY_PAGE_DOWN } };
 cmd incHeadingBugKeys = { 2, { KEY_LEFT_CTRL, KEY_DELETE } };
 cmd decHeadingBugKeys = { 2, { KEY_LEFT_CTRL , KEY_INSERT} };
-cmd setHeadingBugKeys = { 3, { KEY_LEFT_SHIFT , KEY_LEFT_CTRL, 'h'} };
+cmd setHeadingBugKeys = { 2, { KEY_LEFT_CTRL, 'H'} };
 
 #endif

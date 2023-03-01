@@ -13,7 +13,7 @@ const bool DEBUG = false;
 // PIN 3 - TX
 // PIN 6 - Led
 
- #define PIN_ON_OFF A0  // first pin after GND on Teensy 2.0++
+#define PIN_ON_OFF A0  // first pin after GND on Teensy 2.0++
 
 // #define FIRST_BOX 1
 // #define SECOND_BOX 1
@@ -95,11 +95,12 @@ rotary rotaryControls[nRotaryControls] = {};
 const int nSwitchButtons = 0;
 button switchButtons[nSwitchButtons] = {};
 
-const int nPressureButtons = 3;
+const int nPressureButtons = 4;
 button pressureButtons[nPressureButtons] = {
-  { "com swap", 1, { &com1StbSwapKeys, NULL, &com1StbSwapKeys, NULL }, 0, 0, 0, 1 },
+  { "com 1/2 switch", 1, { &com1StbSwapKeys, &com1StbSwapKeys, &com1StbSwapKeys, &com1StbSwapKeys }, 0, 0, 0, 1 },
   { "set heading bug", 11, { &setHeadingBugKeys, NULL, &setHeadingBugKeys, NULL }, 0, 0, 0, 1 },
-    { "set altitude", 16, { &setHeadingBugKeys, NULL, &setHeadingBugKeys, NULL }, 0, 0, 0, 1 }
+  { "set altitude", 16, { &setHeadingBugKeys, NULL, &setHeadingBugKeys, NULL }, 0, 0, 0, 1 },
+  { "swap com stdby", 26, { &com1StbSwapKeys, NULL, NULL, NULL }, 0, 0, 0, 0 }
 };
 
 const int nPotButtons = 0;
@@ -109,14 +110,66 @@ const int nRotaryControls = 5;
 rotary rotaryControls[nRotaryControls] = {
   { "com freq", 27, &com1StbFreqUpKeys, 0, &com1StbFreqDownKeys, 1, &com1StbSwapKeys, 0, 0, 0 },
   { "com freq dec", 7, &com1StbFreqDecUpKeys, 8, &com1StbFreqDecDownKeys, 1, NULL, 0, 0, 0 },
-  { "heading bug",9 , &incHeadingBugKeys, 10, &decHeadingBugKeys, 11, &setHeadingBugKeys, 0, 0, 0 },
+  { "heading bug", 9, &incHeadingBugKeys, 10, &decHeadingBugKeys, 11, &setHeadingBugKeys, 0, 0, 0 },
   { "altitude", 12, &increaseAltKeys, 13, &decreaseAltKeys, 16, NULL, 0, 0, 0 },
   { "altitude dec", 14, &increaseAltKeys, 15, &decreaseAltKeys, 16, NULL, 0, 0, 0 }
 };
 
 #endif
 
+// USB Keyboard speed is limited to 500 keystrokes per second, and some operating systems may limit the speed
+// to only 62.5 keystrokes per second. There is nothing you can do about these limits.
+// https://www.pjrc.com/teensy/td_keyboard.html
 void pressKey(cmd* keys, int repeat) {
+  if (keys == NULL) {
+    Serial.println("null keys");
+    return;
+  }
+
+
+  unsigned int modifier = 0;
+  int i;
+
+  for (i = 0; i < keys->len; i++) {
+    if (!DEBUG) {
+      Keyboard.press(keys->seq[i]);
+    }
+    Serial.print("press ");
+    Serial.print(keys->seq[i]);
+    delay(32);
+
+    switch (keys->seq[i]) {
+      case KEY_LEFT_CTRL:
+      case KEY_RIGHT_CTRL:
+      case KEY_LEFT_ALT:
+      case KEY_RIGHT_ALT:
+      case KEY_LEFT_SHIFT:
+      case KEY_RIGHT_SHIFT:
+        modifier = keys->seq[i];
+        break;
+
+        default:
+      if (!DEBUG) {
+        Keyboard.release(keys->seq[i]);
+      }
+      delay(32);
+      Serial.print(" rel ");
+      Serial.print(keys->seq[i]);
+    }
+  }
+
+  if (modifier != 0) {
+    if (!DEBUG) {
+      Keyboard.release(modifier);
+    }
+    Serial.print(" rel mod ");
+    Serial.print(modifier);
+    delay(32);  // xbox does not work without this delay; need time for os to accept key press
+  }
+  Serial.println(".");
+}
+
+void pressKeyOrig(cmd* keys, int repeat) {
   if (keys == NULL) {
     Serial.println("null keys");
     return;
@@ -148,8 +201,8 @@ void setup() {
   // while (!Serial) ;
 
   int i;
-  pinMode(LED_BUILTIN, OUTPUT);  // initialise led builtin as output
-  pinMode(PIN_ON_OFF, INPUT_PULLUP);     // initalise control 1 with digital resistor (built in the board)
+  pinMode(LED_BUILTIN, OUTPUT);       // initialise led builtin as output
+  pinMode(PIN_ON_OFF, INPUT_PULLUP);  // initalise control 1 with digital resistor (built in the board)
 
   for (i = 0; i < nSwitchButtons; i++) {
     pinMode(switchButtons[i].pin, INPUT_PULLUP);
