@@ -100,7 +100,7 @@ button pressureButtons[nPressureButtons] = {
   { "com 1/2 switch", 1, { &com1StbSwapKeys, &com1StbSwapKeys, &com1StbSwapKeys, &com1StbSwapKeys }, 0, 0, 0, 1 },
   { "set heading bug", 11, { &setHeadingBugKeys, NULL, &setHeadingBugKeys, NULL }, 0, 0, 0, 1 },
   { "set altitude", 16, { &setHeadingBugKeys, NULL, &setHeadingBugKeys, NULL }, 0, 0, 0, 1 },
-  { "swap com stdby", 26, { &com1StbSwapKeys, NULL, NULL, NULL }, 0, 0, 0, 0 }
+  { "swap com stdby", 26, { &com1StbSwapKeys, NULL, NULL, NULL }, 0, 0, 0, 1 }
 };
 
 const int nPotButtons = 0;
@@ -206,10 +206,12 @@ void setup() {
 
   for (i = 0; i < nSwitchButtons; i++) {
     pinMode(switchButtons[i].pin, INPUT_PULLUP);
+    switchButtons[i].savedValue = digitalRead(switchButtons[i].pin);
   }
 
   for (i = 0; i < nPressureButtons; i++) {
     pinMode(pressureButtons[i].pin, INPUT_PULLUP);
+    pressureButtons[i].savedValue = digitalRead(pressureButtons[i].pin);
   }
 
   for (i = 0; i < nPotButtons; i++) {

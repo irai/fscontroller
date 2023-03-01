@@ -116,6 +116,8 @@ void processPressureButton(button* b) {
   }
 
   b->savedValue = b->value;
+  // Serial.print("pressure ");
+  // Serial.println(b->value);
   if (b->value == HIGH) {
     if (b->count == 0) {  // first press
       b->count++;
@@ -124,7 +126,7 @@ void processPressureButton(button* b) {
       Serial.println(" first pressed");
     } else if (b->count >= b->max) {  // last press in series
       b->count = 0;
-      pressKey(b->cmd[eventOn], 1);
+      pressKey(b->cmd[eventOff], 1);
       Serial.print(b->name);
       Serial.println(" last pressed");
     } else {  // next press
