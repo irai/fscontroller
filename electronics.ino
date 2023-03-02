@@ -27,12 +27,12 @@ void processRotary(rotary* r) {
       Serial.print(r->name);
     if (r->bState != r->aState) {
       r->counter--;
-      pressKey(r->bKeys, 1);
+      queueKeys(r->bKeys);
       Serial.println(" decrease");
     } else {
       // Encoder is rotating clockwise
       r->counter++;
-      pressKey(r->aKeys, 1);
+      queueKeys(r->aKeys);
       Serial.println(" increase");
     }
   }
@@ -42,7 +42,7 @@ void processRotary(rotary* r) {
 void processPot(button* b) {
   if (b->value <= 3) {  // if value is < 3 assume it is set to zero
     if (b->savedValue != 0) {
-      pressKey(b->cmd[eventOff], 1);
+      queueKeys(b->cmd[eventOff]);
       Serial.print(b->name);
       Serial.println("is off");
       b->savedValue = 0;
@@ -52,7 +52,7 @@ void processPot(button* b) {
 
   if (b->value >= 1023 - 3) {  // if value is > 1020 assume it is set to max
     if (b->savedValue != 1023) {
-      pressKey(b->cmd[eventOn], 1);
+      queueKeys(b->cmd[eventOn]);
       Serial.print(b->name);
       Serial.println("is at max");
       b->savedValue = 1023;
@@ -73,7 +73,7 @@ void processPot(button* b) {
     Serial.print(" dec value ");
     Serial.println(b->value);
     // Serial.println(b->savedValue);
-    pressKey(b->cmd[eventPrev], 1);
+    queueKeys(b->cmd[eventPrev]);
     b->savedValue -= b->count;
     if (b->savedValue <= 0) {  // never set to zero - only when value is zero - see begining of function
       b->savedValue = 1;
@@ -82,7 +82,7 @@ void processPot(button* b) {
     Serial.print(b->name);
     Serial.print(" inc value");
     Serial.println(b->value);
-    pressKey(b->cmd[eventNext], 1);
+    queueKeys(b->cmd[eventNext]);
     b->savedValue += b->count;
     if (b->savedValue >= 1023) {  // never set to 1023 - only when value is 1023 - see begining of function
       b->savedValue = 1022;
@@ -104,9 +104,9 @@ void processSwitch(button* b) {
   Serial.print("=");
   Serial.println(b->value);
   if (b->value == HIGH) {
-    pressKey(b->cmd[eventOn], 1);  // inverted???
+    queueKeys(b->cmd[eventOn]);  // inverted???
   } else {
-    pressKey(b->cmd[eventOff], 1);  // inverted???
+   queueKeys (b->cmd[eventOff]);  // inverted???
   }
 }
 
@@ -116,22 +116,22 @@ void processPressureButton(button* b) {
   }
 
   b->savedValue = b->value;
-  // Serial.print("pressure ");
-  // Serial.println(b->value);
+  Serial.print("pressure ");
+  Serial.println(b->value);
   if (b->value == HIGH) {
     if (b->count == 0) {  // first press
       b->count++;
-      pressKey(b->cmd[eventOn], 1);
+      queueKeys(b->cmd[eventOn]);
       Serial.print(b->name);
       Serial.println(" first pressed");
     } else if (b->count >= b->max) {  // last press in series
       b->count = 0;
-      pressKey(b->cmd[eventOff], 1);
+      queueKeys(b->cmd[eventOff]);
       Serial.print(b->name);
       Serial.println(" last pressed");
     } else {  // next press
       b->count++;
-      pressKey(b->cmd[eventNext], 1);
+      queueKeys(b->cmd[eventNext]);
       Serial.print(b->name);
       Serial.println(" released");
     };

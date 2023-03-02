@@ -4,7 +4,7 @@
 #include "electronics.h"
 #include "simkeys.h"
 
-const bool DEBUG = false;
+const bool DEBUG = true;
 #define Serial \
   if (DEBUG) Serial  // enable printing if debuging
 
@@ -117,87 +117,8 @@ rotary rotaryControls[nRotaryControls] = {
 
 #endif
 
-// USB Keyboard speed is limited to 500 keystrokes per second, and some operating systems may limit the speed
-// to only 62.5 keystrokes per second. There is nothing you can do about these limits.
-// https://www.pjrc.com/teensy/td_keyboard.html
-void pressKey(cmd* keys, int repeat) {
-  if (keys == NULL) {
-    Serial.println("null keys");
-    return;
-  }
-
-
-  unsigned int modifier = 0;
-  int i;
-
-  for (i = 0; i < keys->len; i++) {
-    if (!DEBUG) {
-      Keyboard.press(keys->seq[i]);
-    }
-    Serial.print("press ");
-    Serial.print(keys->seq[i]);
-    delay(32);
-
-    switch (keys->seq[i]) {
-      case KEY_LEFT_CTRL:
-      case KEY_RIGHT_CTRL:
-      case KEY_LEFT_ALT:
-      case KEY_RIGHT_ALT:
-      case KEY_LEFT_SHIFT:
-      case KEY_RIGHT_SHIFT:
-        modifier = keys->seq[i];
-        break;
-
-        default:
-      if (!DEBUG) {
-        Keyboard.release(keys->seq[i]);
-      }
-      delay(32);
-      Serial.print(" rel ");
-      Serial.print(keys->seq[i]);
-    }
-  }
-
-  if (modifier != 0) {
-    if (!DEBUG) {
-      Keyboard.release(modifier);
-    }
-    Serial.print(" rel mod ");
-    Serial.print(modifier);
-    delay(32);  // xbox does not work without this delay; need time for os to accept key press
-  }
-  Serial.println(".");
-}
-
-void pressKeyOrig(cmd* keys, int repeat) {
-  if (keys == NULL) {
-    Serial.println("null keys");
-    return;
-  }
-
-  int i;
-
-  for (i = 0; i < keys->len; i++) {
-    if (!DEBUG) {
-      Keyboard.press(keys->seq[i]);
-      delay(8);
-    }
-  }
-
-  delay(32);  // xbox does not work without this delay; need time for os to accept key press
-
-  for (i = keys->len; i > 0;) {
-    i--;
-    if (!DEBUG) {
-      Keyboard.release(keys->seq[i]);
-      delay(8);
-    }
-  }
-  delay(32);  // xbox does not work without this delay; need time for os to accept key press
-}
-
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200); // safe with 9600
   // while (!Serial) ;
 
   int i;
@@ -274,4 +195,6 @@ void loop() {
   for (i = 0; i < nRotaryControls; i++) {
     processRotary(&rotaryControls[i]);
   }
+
+  sendKey();
 }

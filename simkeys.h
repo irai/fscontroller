@@ -117,8 +117,8 @@ cmd com1StbFreqDecDownKeys = { 5, { 't', 'c', 'c', KEY_LEFT_CTRL, KEYPAD_MINUS }
 cmd com1StbSwapKeys = { 2, { KEY_LEFT_ALT, 'u' } };
 cmd increaseAltKeys = { 2, { KEY_LEFT_CTRL, KEY_PAGE_UP } };
 cmd decreaseAltKeys = { 2, { KEY_LEFT_CTRL, KEY_PAGE_DOWN } };
-cmd incHeadingBugKeys = { 2, { KEY_LEFT_CTRL, KEY_DELETE } };
-cmd decHeadingBugKeys = { 2, { KEY_LEFT_CTRL , KEY_INSERT} };
+cmd incHeadingBugKeys = { 2, { KEY_LEFT_CTRL, KEY_INSERT } };
+cmd decHeadingBugKeys = { 2, { KEY_LEFT_CTRL , KEY_DELETE} };
 cmd setHeadingBugKeys = { 2, { KEY_LEFT_CTRL, 'H'} };
 
 #endif
