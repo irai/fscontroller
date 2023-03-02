@@ -4,16 +4,15 @@
 // to only 62.5 keystrokes per second. There is nothing you can do about these limits.
 // https://www.pjrc.com/teensy/td_keyboard.html
 //
-// XBOX seems to require a delay of 32ms for each key message.
-//
+// XBOX seems to require a delay of 32ms for each key message. It loses key strokes if less.
+#define KEYBOARD_DELAY 32
 
-static cmd* keyboardBuffer[4];
+static cmd* keyboardBuffer[64];
 static unsigned int keyboardBufHead = 0;
 static unsigned int keyboardBufTail = 0;
 static unsigned long keyboardTimer = 0;
 static int keyboardPos = 0;
 static unsigned int keyboardModifier = 0;
-#define KEYBOARD_DELAY 32
 
 void queueKeys(cmd* keys) {
   if (keys == NULL || keys->len < 1) {
