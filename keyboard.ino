@@ -25,9 +25,6 @@ void queueKeys(cmd* keys) {
     Serial.println("Keyboard buffer full - ignoring");
     return;
   }
-  Serial.print(keyboardBufHead);
-  Serial.print(" head/tail ");
-  Serial.println(keyboardBufTail);
 
   // add to the end of buffer
   keyboardBuffer[keyboardBufTail] = keys;
