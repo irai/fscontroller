@@ -14,26 +14,38 @@ void processRotary(rotary* r) {
   if (r->aStatePrevious != r->aState) {
     // If the B value is different than A value,
     // the encoder is rotating anti-clockwise
-    r->bState = digitalRead(r->bPin);
-      Serial.print("PIN ");
-      Serial.print(r->aPin);
-      Serial.print("=");
-      Serial.print(r->aState);
-      Serial.print(" PIN ");
-      Serial.print(r->bPin);
-      Serial.print("=");
-      Serial.print(r->bState);
-      Serial.print(" ");
-      Serial.print(r->name);
+    //r->bState = digitalRead(r->bPin);
+    
+    // set focus condition if any
+    if (r->focus != NULL) {
+ 
+      (*r->focus)(r);
+    }
+
+    Serial.print("Rotary PIN ");
+    Serial.print(r->aPin);
+    Serial.print("=");
+    Serial.print(r->aState);
+    Serial.print(" PIN ");
+    Serial.print(r->bPin);
+    Serial.print("=");
+    Serial.print(r->bState);
+    Serial.print(" ");
+    Serial.print(r->name);
+
+
+
     if (r->bState != r->aState) {
       r->counter--;
+            Serial.println(" decrease");
       queueKeys(r->bKeys);
-      Serial.println(" decrease");
+
     } else {
       // Encoder is rotating clockwise
       r->counter++;
-      queueKeys(r->aKeys);
       Serial.println(" increase");
+      queueKeys(r->aKeys);
+      
     }
   }
   r->aStatePrevious = r->aState;  // Remember last A
@@ -106,7 +118,7 @@ void processSwitch(button* b) {
   if (b->value == HIGH) {
     queueKeys(b->cmd[eventOn]);  // inverted???
   } else {
-   queueKeys (b->cmd[eventOff]);  // inverted???
+    queueKeys(b->cmd[eventOff]);  // inverted???
   }
 }
 

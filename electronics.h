@@ -24,6 +24,7 @@ typedef struct button_t {
 
 typedef struct rotary {
   String name;
+  void (*focus)(rotary*);
   uint8_t aPin;  // A or Clock pin
   cmd* aKeys;
   uint8_t bPin; // B or data pin 

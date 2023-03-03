@@ -15,7 +15,7 @@ const bool DEBUG = true;
 
 #define PIN_ON_OFF A0  // first pin after GND on Teensy 2.0++
 
-// #define FIRST_BOX 1
+//#define FIRST_BOX 1
 // #define SECOND_BOX 1
 
 #ifdef FIRST_BOX
@@ -108,11 +108,11 @@ button potButtons[nPotButtons] = {};
 
 const int nRotaryControls = 5;
 rotary rotaryControls[nRotaryControls] = {
-  { "com freq", 27, &com1StbFreqUpKeys, 0, &com1StbFreqDownKeys, 1, &com1StbSwapKeys, 0, 0, 0 },
-  { "com freq dec", 7, &com1StbFreqDecUpKeys, 8, &com1StbFreqDecDownKeys, 1, NULL, 0, 0, 0 },
-  { "heading bug", 9, &incHeadingBugKeys, 10, &decHeadingBugKeys, 11, &setHeadingBugKeys, 0, 0, 0 },
-  { "altitude", 12, &increaseAltKeys, 13, &decreaseAltKeys, 16, NULL, 0, 0, 0 },
-  { "altitude dec", 14, &increaseAltKeys, 15, &decreaseAltKeys, 16, NULL, 0, 0, 0 }
+  { "com freq", &focusFrequency, 27, &com1StbFreqUpKeys, 0, &com1StbFreqDownKeys, 1, &com1StbSwapKeys, 0, 0, 0 },
+  { "com freq dec", &focusFrequencyDec, 7, &com1StbFreqDecUpKeys, 8, &com1StbFreqDecDownKeys, 1, NULL, 0, 0, 0 },
+  { "heading bug", NULL, 9, &incHeadingBugKeys, 10, &decHeadingBugKeys, 11, &setHeadingBugKeys, 0, 0, 0 },
+  { "altitude", NULL, 12, &increaseAltKeys, 13, &decreaseAltKeys, 16, NULL, 0, 0, 0 },
+  { "altitude dec", NULL, 14, &increaseAltKeys, 15, &decreaseAltKeys, 16, NULL, 0, 0, 0 }
 };
 
 #endif

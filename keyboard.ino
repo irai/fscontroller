@@ -163,3 +163,23 @@ void pressKey(cmd* keys, int repeat) {
   Serial.println(".");
 }
 
+static cmd* keyboardFocusKeys;
+void focusFrequency(rotary *r){
+  if (keyboardFocusKeys == &com1StbFreqFocusKeys) {
+    return;
+  }
+       Serial.println("focus "+r->name);
+
+  queueKeys(&com1StbFreqFocusKeys);
+  keyboardFocusKeys = &com1StbFreqFocusKeys;
+}
+
+void focusFrequencyDec(rotary *r){
+  if (keyboardFocusKeys == &com1StbFreqDecFocusKeys) {
+    return;
+  }
+       Serial.println("focus "+r->name);
+  queueKeys(&com1StbFreqDecFocusKeys);
+  keyboardFocusKeys = &com1StbFreqDecFocusKeys;
+}
+

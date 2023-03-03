@@ -110,15 +110,20 @@ cmd flapsRetractKeys = { 1, { KEY_F5 } };
 cmd flaps10Keys = { 2, { KEY_LEFT_ALT, 'f' } };  // not available - set custom key in FS - Flaps 1
 cmd flaps20Keys = { 2, { KEY_LEFT_ALT, 'g' } };  // not available - set custom key in FS - Flaps 2
 cmd flapsFullKeys = { 1, { KEY_F8 } };
-cmd com1StbFreqUpKeys = { 4, { 't','c', KEY_LEFT_CTRL, KEYPAD_PLUS } };
-cmd com1StbFreqDownKeys = { 4, { 't','c', KEY_LEFT_CTRL, KEYPAD_MINUS } };
-cmd com1StbFreqDecUpKeys = { 5, { 't','c', 'c', KEY_LEFT_CTRL, KEYPAD_PLUS } };
-cmd com1StbFreqDecDownKeys = { 5, { 't', 'c', 'c', KEY_LEFT_CTRL, KEYPAD_MINUS } };
+cmd com1StbFreqFocusKeys = { 1, { 'c'} }; // pre condition to set focus
+cmd com1StbFreqUpKeys = { 2, { KEY_LEFT_CTRL, KEYPAD_PLUS } };
+cmd com1StbFreqDownKeys = { 2, { KEY_LEFT_CTRL, KEYPAD_MINUS } };
+cmd com1StbFreqDecFocusKeys = { 2, { 'c', 'c'} }; // pre condition to set focus
+cmd com1StbFreqDecUpKeys = { 2, { KEY_LEFT_CTRL, KEYPAD_PLUS } };
+cmd com1StbFreqDecDownKeys = { 2, { KEY_LEFT_CTRL, KEYPAD_MINUS } };
 cmd com1StbSwapKeys = { 2, { KEY_LEFT_ALT, 'u' } };
 cmd increaseAltKeys = { 2, { KEY_LEFT_CTRL, KEY_PAGE_UP } };
 cmd decreaseAltKeys = { 2, { KEY_LEFT_CTRL, KEY_PAGE_DOWN } };
 cmd incHeadingBugKeys = { 2, { KEY_LEFT_CTRL, KEY_INSERT } };
 cmd decHeadingBugKeys = { 2, { KEY_LEFT_CTRL , KEY_DELETE} };
 cmd setHeadingBugKeys = { 2, { KEY_LEFT_CTRL, 'H'} };
+
+extern void focusFrequency(rotary *);
+extern void focusFrequencyDec(rotary *);
 
 #endif
