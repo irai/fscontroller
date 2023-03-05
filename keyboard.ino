@@ -4,16 +4,17 @@
 // to only 62.5 keystrokes per second. There is nothing you can do about these limits.
 // https://www.pjrc.com/teensy/td_keyboard.html
 //
-// XBOX seems to require a delay of 32ms for each key message. It loses key strokes if less.
-#define KEYBOARD_DELAY 32
+// XBOX seems to require a delay of 32ms for each key press message. It loses key strokes if less.
+#define KEYBOARD_PRESS_DELAY 32
+#define KEYBOARD_RELEASE_DELAY 12 // release delay can be a bit smaller for xbox - 12 ms seems to work
 
 static cmd* keyboardBuffer[512];
 static unsigned int keyboardBufHead = 0;
 static unsigned int keyboardBufTail = 0;
 static unsigned long keyboardTimer = 0;
 static int keyboardPos = 0;
-static unsigned int keyboardModifier[6];
-static int keyboardModifierCounter = 0;
+// static unsigned int keyboardModifier[6];
+// static int keyboardModifierCounter = 0;
 
 void queueKeys(cmd* keys) {
   if (keys == NULL || keys->len < 1) {
@@ -55,68 +56,70 @@ void sendKey() {
 }
 
 void sendPress(unsigned long now) {
+ unsigned int key =  keyboardBuffer[keyboardBufHead]->seq[keyboardPos];
+
   if (!DEBUG) {
-    Keyboard.press(keyboardBuffer[keyboardBufHead]->seq[keyboardPos]);
+    Keyboard.press(key);
   }
   Serial.print(" press ");
-  Serial.print(keyboardBuffer[keyboardBufHead]->seq[keyboardPos]);
-  keyboardTimer = now + KEYBOARD_DELAY;
+  Serial.print(key);
+  keyboardTimer = now + KEYBOARD_PRESS_DELAY;
 
-  switch (keyboardBuffer[keyboardBufHead]->seq[keyboardPos]) {
+  /*
+  switch (key) {
     case KEY_LEFT_CTRL:
     case KEY_RIGHT_CTRL:
     case KEY_LEFT_ALT:
     case KEY_RIGHT_ALT:
     case KEY_LEFT_SHIFT:
-    case KEY_RIGHT_SHIFT:
+    case KEY_RIGHT_SHIFT: 
       keyboardModifier[keyboardModifierCounter] = keyboardBuffer[keyboardBufHead]->seq[keyboardPos];
       keyboardModifierCounter++;
       break;
   }
+  */
 }
 
 void sendRelease(unsigned long now) {
-  switch (keyboardBuffer[keyboardBufHead]->seq[keyboardPos]) {
-    case KEY_LEFT_CTRL:
-    case KEY_RIGHT_CTRL:
-    case KEY_LEFT_ALT:
-    case KEY_RIGHT_ALT:
-    case KEY_LEFT_SHIFT:
-    case KEY_RIGHT_SHIFT:  // don't release modifiers
-      break;
+  unsigned int key = (keyboardBuffer[keyboardBufHead]->seq[keyboardPos]);
+  keyboardPos++;
 
-    default:
-      if (!DEBUG) {
-        Keyboard.release(keyboardBuffer[keyboardBufHead]->seq[keyboardPos]);
-      }
-      Serial.print(" rel ");
-      Serial.print(keyboardBuffer[keyboardBufHead]->seq[keyboardPos]);
-      keyboardTimer = now + KEYBOARD_DELAY;
+  if (keyboardPos < keyboardBuffer[keyboardBufHead]->len) {  // not the last key in sequence?
+    switch (key) {
+      case KEY_LEFT_CTRL:
+      case KEY_RIGHT_CTRL:
+      case KEY_LEFT_ALT:
+      case KEY_RIGHT_ALT:
+      case KEY_LEFT_SHIFT:
+      case KEY_RIGHT_SHIFT:  // don't release modifiers
+        break;
+
+      default:
+        if (!DEBUG) {
+          Keyboard.release(key);  // release single key
+        }
+        Serial.print(" rel ");
+        Serial.print(key);
+        // keyboardTimer = now + KEYBOARD_RELEASE_DELAY;
+        keyboardTimer = now + KEYBOARD_PRESS_DELAY; // use longer delay; it does not work for multiple chars otherwise
+    }
+    return;
   }
 
-  keyboardPos++;
-  if (keyboardPos >= keyboardBuffer[keyboardBufHead]->len) {  // last key in sequence?
-    if (keyboardModifierCounter > 0) {                        // release any modifiers
-      int i;
-      for (i = keyboardModifierCounter - 1; i >= 0; i--) {
-        if (!DEBUG) {
-          Keyboard.release(keyboardModifier[i]);
-        }
-        Serial.print(" rel mod ");
-        Serial.print(keyboardModifier[i]);
-      }
-      keyboardModifierCounter = 0;
-      keyboardTimer = now + KEYBOARD_DELAY;
-    }
-    Serial.println(".");
+  // If we pass here, this is the last key in sequence
+  // release all
+  if (!DEBUG) {
+    Keyboard.releaseAll();
+  }
+  Serial.println(" release all");
+  keyboardTimer = now + KEYBOARD_RELEASE_DELAY;
+  keyboardBufHead++;
+  keyboardPos = 0;
 
-    keyboardBufHead++;
-    keyboardPos = 0;
-    // last queue element? reset queue
-    if (keyboardBufHead >= keyboardBufTail) {
-      keyboardBufHead = 0;
-      keyboardBufTail = 0;
-    }
+  // last queue element? reset queue
+  if (keyboardBufHead >= keyboardBufTail) {
+    keyboardBufHead = 0;
+    keyboardBufTail = 0;
   }
 }
 
@@ -187,4 +190,8 @@ void focusFrequencyDec(rotary* r) {
   Serial.println("focus " + r->name);
   queueKeys(&com1StbFreqDecFocusKeys);
   keyboardFocusKeys = &com1StbFreqDecFocusKeys;
+}
+
+void focusReset(rotary * r) {
+  keyboardFocusKeys = NULL;
 }

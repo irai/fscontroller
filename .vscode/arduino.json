@@ -1,0 +1,6 @@
+{
+    "port": "COM6",
+    "configuration": "usb=serial,speed=16,keys=en-us",
+    "board": "teensy:avr:teensypp2",
+    "sketch": "fscontroller.ino"
+}

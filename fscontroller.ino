@@ -4,7 +4,7 @@
 #include "electronics.h"
 #include "simkeys.h"
 
-const bool DEBUG = true;
+const bool DEBUG = false;
 #define Serial \
   if (DEBUG) Serial  // enable printing if debuging
 
@@ -15,8 +15,9 @@ const bool DEBUG = true;
 
 #define PIN_ON_OFF A0  // first pin after GND on Teensy 2.0++
 
-//#define FIRST_BOX 1
+// #define FIRST_BOX 1
 // #define SECOND_BOX 1
+#define THIRD_BOX 1
 
 #ifdef FIRST_BOX
 const int nSwitchButtons = 12;
@@ -51,7 +52,7 @@ button potButtons[nPotButtons] = {
 
 const int nRotaryControls = 1;
 rotary rotaryControls[nRotaryControls] = {
-  { "trim", A5, &trimDown, A4, &trimUp, PIN_D6, NULL, 0, 0, 0 },
+  { "trim", NULL, A5, &trimDown, A4, &trimUp, 0, NULL, 0, 0, 0 },
 };
 
 #elif SECOND_BOX
@@ -110,9 +111,9 @@ const int nRotaryControls = 5;
 rotary rotaryControls[nRotaryControls] = {
   { "com freq", &focusFrequency, 27, &com1StbFreqUpKeys, 0, &com1StbFreqDownKeys, 1, &com1StbSwapKeys, 0, 0, 0 },
   { "com freq dec", &focusFrequencyDec, 7, &com1StbFreqDecUpKeys, 8, &com1StbFreqDecDownKeys, 1, NULL, 0, 0, 0 },
-  { "heading bug", NULL, 9, &incHeadingBugKeys, 10, &decHeadingBugKeys, 11, &setHeadingBugKeys, 0, 0, 0 },
-  { "altitude", NULL, 12, &increaseAltKeys, 13, &decreaseAltKeys, 16, NULL, 0, 0, 0 },
-  { "altitude dec", NULL, 14, &increaseAltKeys, 15, &decreaseAltKeys, 16, NULL, 0, 0, 0 }
+  { "heading bug", &focusReset, 9, &incHeadingBugKeys, 10, &decHeadingBugKeys, 11, &setHeadingBugKeys, 0, 0, 0 },
+  { "altitude", &focusReset, 12, &increaseAltKeys, 13, &decreaseAltKeys, 16, NULL, 0, 0, 0 },
+  { "altitude dec", &focusReset, 14, &increaseAltKeys, 15, &decreaseAltKeys, 16, NULL, 0, 0, 0 }
 };
 
 #endif

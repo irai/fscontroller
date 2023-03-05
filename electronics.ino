@@ -12,15 +12,12 @@ const uint8_t eventPrev = 3;
 void processRotary(rotary* r) {
   // If A state changed, then wheel has moved
   if (r->aStatePrevious != r->aState) {
-    // If the B value is different than A value,
-    // the encoder is rotating anti-clockwise
-    //r->bState = digitalRead(r->bPin);
+    r->bState = digitalRead(r->bPin); // for accuracy, must read again after a change to pin A
     
     // set focus condition if any
     if (r->focus != NULL) {
- 
       (*r->focus)(r);
-    }
+    } 
 
     Serial.print("Rotary PIN ");
     Serial.print(r->aPin);
@@ -33,8 +30,8 @@ void processRotary(rotary* r) {
     Serial.print(" ");
     Serial.print(r->name);
 
-
-
+    // If the B value is different than A value,
+    // the encoder is rotating anti-clockwise
     if (r->bState != r->aState) {
       r->counter--;
             Serial.println(" decrease");

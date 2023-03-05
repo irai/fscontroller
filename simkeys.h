@@ -113,7 +113,7 @@ cmd flapsFullKeys = { 1, { KEY_F8 } };
 cmd com1StbFreqFocusKeys = { 1, { 'c'} }; // pre condition to set focus
 cmd com1StbFreqUpKeys = { 2, { KEY_LEFT_CTRL, KEYPAD_PLUS } };
 cmd com1StbFreqDownKeys = { 2, { KEY_LEFT_CTRL, KEYPAD_MINUS } };
-cmd com1StbFreqDecFocusKeys = { 2, { 'c', 'c'} }; // pre condition to set focus
+cmd com1StbFreqDecFocusKeys = { 3, { 't', 'c', 'c'} }; // pre condition to set focus
 cmd com1StbFreqDecUpKeys = { 2, { KEY_LEFT_CTRL, KEYPAD_PLUS } };
 cmd com1StbFreqDecDownKeys = { 2, { KEY_LEFT_CTRL, KEYPAD_MINUS } };
 cmd com1StbSwapKeys = { 2, { KEY_LEFT_ALT, 'u' } };
@@ -125,5 +125,6 @@ cmd setHeadingBugKeys = { 2, { KEY_LEFT_CTRL, 'H'} };
 
 extern void focusFrequency(rotary *);
 extern void focusFrequencyDec(rotary *);
+extern void focusReset(rotary *);
 
 #endif
