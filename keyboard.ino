@@ -7,12 +7,13 @@
 // XBOX seems to require a delay of 32ms for each key message. It loses key strokes if less.
 #define KEYBOARD_DELAY 32
 
-static cmd* keyboardBuffer[64];
+static cmd* keyboardBuffer[512];
 static unsigned int keyboardBufHead = 0;
 static unsigned int keyboardBufTail = 0;
 static unsigned long keyboardTimer = 0;
 static int keyboardPos = 0;
-static unsigned int keyboardModifier = 0;
+static unsigned int keyboardModifier[6];
+static int keyboardModifierCounter = 0;
 
 void queueKeys(cmd* keys) {
   if (keys == NULL || keys->len < 1) {
@@ -20,7 +21,7 @@ void queueKeys(cmd* keys) {
     return;
   }
 
-  if (keyboardBufTail >= sizeof(keyboardBuffer)/sizeof(cmd*)) {
+  if (keyboardBufTail >= sizeof(keyboardBuffer) / sizeof(cmd*)) {
     Serial.println("Keyboard buffer full - ignoring");
     return;
   }
@@ -68,7 +69,8 @@ void sendPress(unsigned long now) {
     case KEY_RIGHT_ALT:
     case KEY_LEFT_SHIFT:
     case KEY_RIGHT_SHIFT:
-      keyboardModifier = keyboardBuffer[keyboardBufHead]->seq[keyboardPos];
+      keyboardModifier[keyboardModifierCounter] = keyboardBuffer[keyboardBufHead]->seq[keyboardPos];
+      keyboardModifierCounter++;
       break;
   }
 }
@@ -94,12 +96,16 @@ void sendRelease(unsigned long now) {
 
   keyboardPos++;
   if (keyboardPos >= keyboardBuffer[keyboardBufHead]->len) {  // last key in sequence?
-    if (keyboardModifier != 0) {                              // release any modifiers
-      if (!DEBUG) {
-        Keyboard.release(keyboardModifier);
+    if (keyboardModifierCounter > 0) {                        // release any modifiers
+      int i;
+      for (i = keyboardModifierCounter - 1; i >= 0; i--) {
+        if (!DEBUG) {
+          Keyboard.release(keyboardModifier[i]);
+        }
+        Serial.print(" rel mod ");
+        Serial.print(keyboardModifier[i]);
       }
-      Serial.print(" rel mod ");
-      Serial.print(keyboardModifier);
+      keyboardModifierCounter = 0;
       keyboardTimer = now + KEYBOARD_DELAY;
     }
     Serial.println(".");
@@ -164,22 +170,21 @@ void pressKey(cmd* keys, int repeat) {
 }
 
 static cmd* keyboardFocusKeys;
-void focusFrequency(rotary *r){
+void focusFrequency(rotary* r) {
   if (keyboardFocusKeys == &com1StbFreqFocusKeys) {
     return;
   }
-       Serial.println("focus "+r->name);
+  Serial.println("focus " + r->name);
 
   queueKeys(&com1StbFreqFocusKeys);
   keyboardFocusKeys = &com1StbFreqFocusKeys;
 }
 
-void focusFrequencyDec(rotary *r){
+void focusFrequencyDec(rotary* r) {
   if (keyboardFocusKeys == &com1StbFreqDecFocusKeys) {
     return;
   }
-       Serial.println("focus "+r->name);
+  Serial.println("focus " + r->name);
   queueKeys(&com1StbFreqDecFocusKeys);
   keyboardFocusKeys = &com1StbFreqDecFocusKeys;
 }
-
