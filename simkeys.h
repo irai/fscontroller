@@ -2,7 +2,7 @@
 #define SIMKEYS_H
 
 // Define missing keys for Arduino. These are defined for Teensy.
-#ifndef KEY_PAGE_UP
+#ifndef KEYPAD_MINUS
 #define nonprinting 136  // it's a non-printing key (not a modifier)
 #define KEY_F11 68 + nonprinting
 #define KEY_F12 69 + nonprinting
