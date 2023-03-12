@@ -8,6 +8,8 @@
 #define KEYBOARD_PRESS_DELAY 32
 #define KEYBOARD_RELEASE_DELAY 12 // release delay can be a bit smaller for xbox - 12 ms seems to work
 
+
+
 static cmd* keyboardBuffer[512];
 static unsigned int keyboardBufHead = 0;
 static unsigned int keyboardBufTail = 0;
@@ -31,6 +33,8 @@ void queueKeys(cmd* keys) {
   keyboardBuffer[keyboardBufTail] = keys;
   keyboardBufTail++;
 }
+
+#ifndef NO_KEYBOARD
 
 void sendKey() {
   static int state = 0;
@@ -195,3 +199,5 @@ void focusFrequencyDec(rotary* r) {
 void focusReset(rotary * r) {
   keyboardFocusKeys = NULL;
 }
+
+#endif

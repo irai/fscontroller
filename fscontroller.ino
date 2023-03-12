@@ -1,12 +1,17 @@
+
+
 #include <Keyboard.h>     // Use built-in Keyboard library
 #include <HID_Buttons.h>  // Must import AFTER Keyboard.h
+
+#define NO_KEYBOARD 1  // remove keyboard calls for non-usb keyboard boards like the mega
+
 
 #include "electronics.h"
 #include "simkeys.h"
 
-const bool DEBUG = false;
-#define Serial \
-  if (DEBUG) Serial  // enable printing if debuging
+// #define DEBUG 1
+// #define Serial \
+  // if (DEBUG) Serial  // enable printing if debuging
 
 // Avoid using reserved pins
 // PIN 2 - RX
@@ -15,9 +20,11 @@ const bool DEBUG = false;
 
 #define PIN_ON_OFF A0  // first pin after GND on Teensy 2.0++
 
+
 // #define FIRST_BOX 1
 // #define SECOND_BOX 1
-#define THIRD_BOX 1
+// #define THIRD_BOX 1
+#define SERIAL_BOX 1
 
 #ifdef FIRST_BOX
 const int nSwitchButtons = 12;
@@ -90,7 +97,7 @@ button potButtons[nPotButtons] = {
 const int nRotaryControls = 0;
 rotary rotaryControls[nRotaryControls] = {};
 
-#else
+#elif THIRD_BOX
 // Third BOX - G1000 - Teensy 2.0++
 
 const int nSwitchButtons = 0;
@@ -116,10 +123,33 @@ rotary rotaryControls[nRotaryControls] = {
   { "altitude dec", &focusReset, 14, &increaseAltKeys, 15, &decreaseAltKeys, 16, NULL, 0, 0, 0 }
 };
 
+#else
+// Generic serial box - Testing
+
+const int nSwitchButtons = 1;
+button switchButtons[nSwitchButtons] = {
+  { "test switch", 2, { NULL, NULL, NULL, NULL }, 0, 0, 0, 0 }
+};
+
+const int nPressureButtons = 1;
+button pressureButtons[nPressureButtons] = {
+  { "pressure button", 13, { NULL, NULL, NULL, NULL }, 0, 0, 0, 0 }
+
+};
+
+const int nPotButtons = 1;
+button potButtons[nPotButtons] = {
+  { "test pot", A2, { NULL, NULL, NULL, NULL}, 0, 0, 1024 / 100, 1024 }   // in 100 steps - Cesna 172
+};
+
+const int nRotaryControls = 0;
+rotary rotaryControls[nRotaryControls] = {};
+
 #endif
 
 void setup() {
-  Serial.begin(115200); // safe with 9600
+  // Serial.begin(115200); // safe with 9600
+  Serial.begin(9600);  // safe with 9600
   // while (!Serial) ;
 
   int i;
@@ -151,10 +181,12 @@ void setup() {
     rotaryControls[i].bStatePrevious = rotaryControls[i].bState;
   }
 
-
+#ifndef NO_KEYBOARD
   Keyboard.begin();
   Keyboard.releaseAll();  // release any key that is pressed
+#endif
 }
+
 void loop() {
   // System Disabled?
   if (digitalRead(PIN_ON_OFF) != 0) {
@@ -197,5 +229,9 @@ void loop() {
     processRotary(&rotaryControls[i]);
   }
 
+#ifndef NO_KEYBOARD
   sendKey();
+#endif
+
+  // testSerial();
 }

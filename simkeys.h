@@ -38,7 +38,7 @@
 #define KEYPAD_PERIOD 99 + nonprinting
 #endif
 
-
+#ifndef NO_KEYBOARD
 cmd masterAlternatorKeys = { 2, { KEY_LEFT_ALT, 'a' } };
 cmd masterAlternatorOnKeys = { 2, { KEY_RIGHT_CTRL, 'a' } }; // custom key
 cmd masterAlternatorOffKeys = { 2, { KEY_RIGHT_ALT, 'a' } }; // custom key
@@ -122,6 +122,8 @@ cmd decreaseAltKeys = { 2, { KEY_LEFT_CTRL, KEY_PAGE_DOWN } };
 cmd incHeadingBugKeys = { 2, { KEY_LEFT_CTRL, KEY_INSERT } };
 cmd decHeadingBugKeys = { 2, { KEY_LEFT_CTRL , KEY_DELETE} };
 cmd setHeadingBugKeys = { 2, { KEY_LEFT_CTRL, 'H'} };
+
+#endif
 
 extern void focusFrequency(rotary *);
 extern void focusFrequencyDec(rotary *);

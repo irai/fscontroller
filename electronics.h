@@ -20,6 +20,7 @@ typedef struct button_t {
   int savedValue; // pin saved value
   int count;
   int max;
+   long debounceTime;  // the last time the output pin was toggled
 } button;
 
 typedef struct rotary {

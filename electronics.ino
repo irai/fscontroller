@@ -12,13 +12,9 @@ const uint8_t eventPrev = 3;
 void processRotary(rotary* r) {
   // If A state changed, then wheel has moved
   if (r->aStatePrevious != r->aState) {
-    r->bState = digitalRead(r->bPin); // for accuracy, must read again after a change to pin A
-    
-    // set focus condition if any
-    if (r->focus != NULL) {
-      (*r->focus)(r);
-    } 
+    r->bState = digitalRead(r->bPin);  // for accuracy, must read again after a change to pin A
 
+#ifdef DEBUG
     Serial.print("Rotary PIN ");
     Serial.print(r->aPin);
     Serial.print("=");
@@ -28,121 +24,75 @@ void processRotary(rotary* r) {
     Serial.print("=");
     Serial.print(r->bState);
     Serial.print(" ");
-    Serial.print(r->name);
+    Serial.println(r->name);
+#endif
 
     // If the B value is different than A value,
     // the encoder is rotating anti-clockwise
     if (r->bState != r->aState) {
       r->counter--;
-            Serial.println(" decrease");
-      queueKeys(r->bKeys);
+      txRotary(r->aPin, -1);
 
     } else {
       // Encoder is rotating clockwise
       r->counter++;
-      Serial.println(" increase");
-      queueKeys(r->aKeys);
-      
+      txRotary(r->aPin, +1);
     }
   }
   r->aStatePrevious = r->aState;  // Remember last A
 }
 
 void processPot(button* b) {
-  if (b->value <= 3) {  // if value is < 3 assume it is set to zero
-    if (b->savedValue != 0) {
-      queueKeys(b->cmd[eventOff]);
-      Serial.print(b->name);
-      Serial.println("is off");
-      b->savedValue = 0;
-    }
-    return;
-  }
-
-  if (b->value >= 1023 - 3) {  // if value is > 1020 assume it is set to max
-    if (b->savedValue != 1023) {
-      queueKeys(b->cmd[eventOn]);
-      Serial.print(b->name);
-      Serial.println("is at max");
-      b->savedValue = 1023;
-    }
-    return;
-  }
-
   // reading may oscilate between +1 and -1 volts; ignore
   // https://forum.arduino.cc/t/debounce-a-potentiometer/7509
-  if (b->value >= b->savedValue - b->count && b->value <= b->savedValue + b->count) {
+  if ((b->value >= b->savedValue -1 && b->value <= b->savedValue +1) || b->debounceTime > millis()) {
     return;
   }
-
-  int difference = b->value - b->savedValue;
-
-  if (difference < 0) {
-    Serial.print(b->name);
-    Serial.print(" dec value ");
-    Serial.println(b->value);
-    // Serial.println(b->savedValue);
-    queueKeys(b->cmd[eventPrev]);
-    b->savedValue -= b->count;
-    if (b->savedValue <= 0) {  // never set to zero - only when value is zero - see begining of function
-      b->savedValue = 1;
-    }
-  } else if (difference > 0) {
-    Serial.print(b->name);
-    Serial.print(" inc value");
-    Serial.println(b->value);
-    queueKeys(b->cmd[eventNext]);
-    b->savedValue += b->count;
-    if (b->savedValue >= 1023) {  // never set to 1023 - only when value is 1023 - see begining of function
-      b->savedValue = 1022;
-    }
-  }
-}
-
-void processSwitch(button* b) {
-  if (b->value == b->savedValue) {
-    return;
-  }
+  b->debounceTime = millis()+2;
   b->savedValue = b->value;
 
+#ifdef DEBUG
   Serial.print(b->name);
   Serial.print(" pin=");
   Serial.print(b->pin);
-  // Serial.print(" cmd=");
-  // Serial.print(b->cmd[eventOn]->seq[0]);
-  Serial.print("=");
+  Serial.print(" value=");
   Serial.println(b->value);
-  if (b->value == HIGH) {
-    queueKeys(b->cmd[eventOn]);  // inverted???
-  } else {
-    queueKeys(b->cmd[eventOff]);  // inverted???
+#endif
+  txPot(b->pin, b->value);
+}
+
+void processSwitch(button* b) {
+  if (b->value == b->savedValue || b->debounceTime > millis()) {
+    return;
   }
+  b->debounceTime = millis()+2;
+  b->savedValue = b->value;
+
+#ifdef DEBUG
+  Serial.print(b->name);
+  Serial.print(" pin=");
+  Serial.print(b->pin);
+  Serial.print(" value=");
+  Serial.println(b->value);
+#endif
+
+  txSwitch(b->pin, b->value);
 }
 
 void processPressureButton(button* b) {
-  if (b->value == b->savedValue) {
+  if (b->value == b->savedValue|| b->debounceTime > millis()) {
     return;
   }
-
+    b->debounceTime = millis()+2;
   b->savedValue = b->value;
-  Serial.print("pressure ");
+
+#ifdef DEBUG
+  Serial.print(b->name);
+  Serial.print(" pin=");
+  Serial.print(b->pin);
+  Serial.print(" value=");
   Serial.println(b->value);
-  if (b->value == HIGH) {
-    if (b->count == 0) {  // first press
-      b->count++;
-      queueKeys(b->cmd[eventOn]);
-      Serial.print(b->name);
-      Serial.println(" first pressed");
-    } else if (b->count >= b->max) {  // last press in series
-      b->count = 0;
-      queueKeys(b->cmd[eventOff]);
-      Serial.print(b->name);
-      Serial.println(" last pressed");
-    } else {  // next press
-      b->count++;
-      queueKeys(b->cmd[eventNext]);
-      Serial.print(b->name);
-      Serial.println(" released");
-    };
-  };
+#endif
+
+  txButton(b->pin, b->value);
 }
