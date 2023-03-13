@@ -8,7 +8,7 @@
 #define KEYBOARD_PRESS_DELAY 32
 #define KEYBOARD_RELEASE_DELAY 12  // release delay can be a bit smaller for xbox - 12 ms seems to work
 
-
+#define NO_KEYBOARD
 
 static cmd* keyboardBuffer[512];
 static unsigned int keyboardBufHead = 0;
@@ -34,7 +34,7 @@ void queueKeys(cmd* keys) {
   keyboardBufTail++;
 }
 
-
+#ifdef USE_KEYBOARD
 
 void sendKey() {
   static int state = 0;
@@ -175,3 +175,5 @@ void pressKey(cmd* keys, int repeat) {
   }
   Serial.println(".");
 }
+
+#endif

@@ -3,12 +3,12 @@
 #include <Keyboard.h>     // Use built-in Keyboard library
 #include <HID_Buttons.h>  // Must import AFTER Keyboard.h
 
-#define NO_KEYBOARD 1  // remove keyboard calls for non-usb keyboard boards like the mega
+// #define USE_KEYBOARD 1  // add usb keyboard calls usb keyboard boards like the Teensy
 
 
 #include "electronics.h"
 
-// #define DEBUG 1
+#define DEBUG 1
 // #define Serial \
   // if (DEBUG) Serial  // enable printing if debuging
 
@@ -154,18 +154,30 @@ button potButtons[nPotButtons] = {
 const int nRotaryControls = 0;
 rotary rotaryControls[nRotaryControls] = {};
 
-HardwareSerial piHandler = Serial1;
-Serial_ xboxHandler = Serial;
+
 
 #endif
 
+HardwareSerial *piHandler;
+HardwareSerial *xboxHandler;
 
 
 void setup() {
   // Serial.begin(115200); // safe with 9600
-  piHandler.begin(9600);    // safe with 9600
-  xboxHandler.begin(9600);  // safe with 9600
-  // while (!Serial) ;
+  Serial.begin(9600);    // safe with 9600
+  Serial1.begin(9600);  // safe with 9600
+  while (!Serial) ;
+
+  Serial.println("serial ");
+  Serial1.println("serial 1");
+
+ piHandler = &Serial;
+ xboxHandler = &Serial1;
+
+piHandler->println("pi serial");
+  xboxHandler->println("xbox serial");
+
+
 
   int i;
   pinMode(LED_BUILTIN, OUTPUT);       // initialise led builtin as output
@@ -196,7 +208,7 @@ void setup() {
     rotaryControls[i].bStatePrevious = rotaryControls[i].bState;
   }
 
-#ifndef NO_KEYBOARD
+#ifdef USE_KEYBOARD
   Keyboard.begin();
   Keyboard.releaseAll();  // release any key that is pressed
 #endif
@@ -229,26 +241,23 @@ void loop() {
 
   // process all pins
   for (i = 0; i < nSwitchButtons; i++) {
-    processSwitch((&piHandler), &switchButtons[i]);
+    processSwitch(piHandler, &switchButtons[i]);
   }
 
   for (i = 0; i < nPotButtons; i++) {
-    processPot(&piHandler, &(potButtons[i]));
+    processPot(piHandler, &(potButtons[i]));
   }
 
   for (i = 0; i < nPressureButtons; i++) {
-    processPressureButton(&piHandler, &pressureButtons[i]);
+    processPressureButton(piHandler, &pressureButtons[i]);
   }
 
   for (i = 0; i < nRotaryControls; i++) {
-    processRotary(&piHandler, &rotaryControls[i]);
+    processRotary(piHandler, &rotaryControls[i]);
   }
 
-  readPi(&xboxHandler);
+  readPi(piHandler);
 
-#ifndef NO_KEYBOARD
-    sendKey();
-#endif
 
   // testSerial(&Serial);
   // testSerial(&Serial1);
