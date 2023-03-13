@@ -7,7 +7,6 @@
 
 
 #include "electronics.h"
-#include "simkeys.h"
 
 // #define DEBUG 1
 // #define Serial \
@@ -62,6 +61,10 @@ rotary rotaryControls[nRotaryControls] = {
   { "trim", NULL, A5, &trimDown, A4, &trimUp, 0, NULL, 0, 0, 0 },
 };
 
+HardwareSerial piHandler = Serial;
+Serial_ xboxHandler = Serial;
+
+
 #elif SECOND_BOX
 
 // Second controller box
@@ -97,6 +100,9 @@ button potButtons[nPotButtons] = {
 const int nRotaryControls = 0;
 rotary rotaryControls[nRotaryControls] = {};
 
+HardwareSerial piHandler = Serial;
+Serial_ xboxHandler = Serial;
+
 #elif THIRD_BOX
 // Third BOX - G1000 - Teensy 2.0++
 
@@ -123,33 +129,42 @@ rotary rotaryControls[nRotaryControls] = {
   { "altitude dec", &focusReset, 14, &increaseAltKeys, 15, &decreaseAltKeys, 16, NULL, 0, 0, 0 }
 };
 
+HardwareSerial piHandler = Serial1;
+Serial_ xboxHandler = Serial;
+
 #else
 // Generic serial box - Testing
 
 const int nSwitchButtons = 1;
 button switchButtons[nSwitchButtons] = {
-  { "test switch", 2, { NULL, NULL, NULL, NULL }, 0, 0, 0, 0 }
+  { "test switch", 2 }
 };
 
 const int nPressureButtons = 1;
 button pressureButtons[nPressureButtons] = {
-  { "pressure button", 13, { NULL, NULL, NULL, NULL }, 0, 0, 0, 0 }
+  { "pressure button", 13 }
 
 };
 
 const int nPotButtons = 1;
 button potButtons[nPotButtons] = {
-  { "test pot", A2, { NULL, NULL, NULL, NULL}, 0, 0, 1024 / 100, 1024 }   // in 100 steps - Cesna 172
+  { "test pot", A2 }
 };
 
 const int nRotaryControls = 0;
 rotary rotaryControls[nRotaryControls] = {};
 
+HardwareSerial piHandler = Serial1;
+Serial_ xboxHandler = Serial;
+
 #endif
+
+
 
 void setup() {
   // Serial.begin(115200); // safe with 9600
-  Serial.begin(9600);  // safe with 9600
+  piHandler.begin(9600);    // safe with 9600
+  xboxHandler.begin(9600);  // safe with 9600
   // while (!Serial) ;
 
   int i;
@@ -214,24 +229,37 @@ void loop() {
 
   // process all pins
   for (i = 0; i < nSwitchButtons; i++) {
-    processSwitch(&switchButtons[i]);
+    processSwitch((&piHandler), &switchButtons[i]);
   }
 
   for (i = 0; i < nPotButtons; i++) {
-    processPot(&potButtons[i]);
+    processPot(&piHandler, &(potButtons[i]));
   }
 
   for (i = 0; i < nPressureButtons; i++) {
-    processPressureButton(&pressureButtons[i]);
+    processPressureButton(&piHandler, &pressureButtons[i]);
   }
 
   for (i = 0; i < nRotaryControls; i++) {
-    processRotary(&rotaryControls[i]);
+    processRotary(&piHandler, &rotaryControls[i]);
   }
 
+  readPi(&xboxHandler);
+
 #ifndef NO_KEYBOARD
-  sendKey();
+    sendKey();
 #endif
 
-  // testSerial();
+  // testSerial(&Serial);
+  // testSerial(&Serial1);
+}
+
+void readPi(Stream* s) {
+  int inByte;
+  if (s->available() > 0) {
+    // get incoming byte:
+    inByte = s->read();
+    Serial.print("got char=");
+    Serial.println(inByte);
+  }
 }

@@ -6,7 +6,7 @@
 //
 // XBOX seems to require a delay of 32ms for each key press message. It loses key strokes if less.
 #define KEYBOARD_PRESS_DELAY 32
-#define KEYBOARD_RELEASE_DELAY 12 // release delay can be a bit smaller for xbox - 12 ms seems to work
+#define KEYBOARD_RELEASE_DELAY 12  // release delay can be a bit smaller for xbox - 12 ms seems to work
 
 
 
@@ -34,7 +34,7 @@ void queueKeys(cmd* keys) {
   keyboardBufTail++;
 }
 
-#ifndef NO_KEYBOARD
+
 
 void sendKey() {
   static int state = 0;
@@ -60,11 +60,11 @@ void sendKey() {
 }
 
 void sendPress(unsigned long now) {
- unsigned int key =  keyboardBuffer[keyboardBufHead]->seq[keyboardPos];
+  unsigned int key = keyboardBuffer[keyboardBufHead]->seq[keyboardPos];
 
-  if (!DEBUG) {
-    Keyboard.press(key);
-  }
+#ifndef DEBUG
+  Keyboard.press(key);
+#endif
   Serial.print(" press ");
   Serial.print(key);
   keyboardTimer = now + KEYBOARD_PRESS_DELAY;
@@ -99,22 +99,22 @@ void sendRelease(unsigned long now) {
         break;
 
       default:
-        if (!DEBUG) {
-          Keyboard.release(key);  // release single key
-        }
+#ifndef DEBUG
+        Keyboard.release(key);  // release single key
+#endif
         Serial.print(" rel ");
         Serial.print(key);
         // keyboardTimer = now + KEYBOARD_RELEASE_DELAY;
-        keyboardTimer = now + KEYBOARD_PRESS_DELAY; // use longer delay; it does not work for multiple chars otherwise
+        keyboardTimer = now + KEYBOARD_PRESS_DELAY;  // use longer delay; it does not work for multiple chars otherwise
     }
     return;
   }
 
   // If we pass here, this is the last key in sequence
   // release all
-  if (!DEBUG) {
-    Keyboard.releaseAll();
-  }
+#ifndef DEBUG
+  Keyboard.releaseAll();
+#endif
   Serial.println(" release all");
   keyboardTimer = now + KEYBOARD_RELEASE_DELAY;
   keyboardBufHead++;
@@ -138,9 +138,9 @@ void pressKey(cmd* keys, int repeat) {
   int i;
 
   for (i = 0; i < keys->len; i++) {
-    if (!DEBUG) {
-      Keyboard.press(keys->seq[i]);
-    }
+#ifndef DEBUG
+    Keyboard.press(keys->seq[i]);
+#endif
     Serial.print("press ");
     Serial.print(keys->seq[i]);
     delay(32);
@@ -156,9 +156,9 @@ void pressKey(cmd* keys, int repeat) {
         break;
 
       default:
-        if (!DEBUG) {
-          Keyboard.release(keys->seq[i]);
-        }
+#ifndef DEBUG
+        Keyboard.release(keys->seq[i]);
+#endif
         delay(32);
         Serial.print(" rel ");
         Serial.print(keys->seq[i]);
@@ -166,38 +166,12 @@ void pressKey(cmd* keys, int repeat) {
   }
 
   if (keyboardModifier != 0) {
-    if (!DEBUG) {
-      Keyboard.release(keyboardModifier);
-    }
+#ifndef DEBUG
+    Keyboard.release(keyboardModifier);
+#endif
     Serial.print(" rel mod ");
     Serial.print(keyboardModifier);
     delay(32);  // xbox does not work without this delay; need time for os to accept key press
   }
   Serial.println(".");
 }
-
-static cmd* keyboardFocusKeys;
-void focusFrequency(rotary* r) {
-  if (keyboardFocusKeys == &com1StbFreqFocusKeys) {
-    return;
-  }
-  Serial.println("focus " + r->name);
-
-  queueKeys(&com1StbFreqFocusKeys);
-  keyboardFocusKeys = &com1StbFreqFocusKeys;
-}
-
-void focusFrequencyDec(rotary* r) {
-  if (keyboardFocusKeys == &com1StbFreqDecFocusKeys) {
-    return;
-  }
-  Serial.println("focus " + r->name);
-  queueKeys(&com1StbFreqDecFocusKeys);
-  keyboardFocusKeys = &com1StbFreqDecFocusKeys;
-}
-
-void focusReset(rotary * r) {
-  keyboardFocusKeys = NULL;
-}
-
-#endif

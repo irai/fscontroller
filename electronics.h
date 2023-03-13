@@ -5,22 +5,22 @@
 
 
 #include <Arduino.h>
-#include <WString.h> 
+#include <WString.h>
 
 typedef struct cmd {
   int len;
   unsigned int seq[];
-}cmd;
+} cmd;
 
 typedef struct button_t {
   String name;
   uint8_t pin;
-  cmd* cmd[4]; // On, Off, Next, Prev
-  int value; // pin current value
-  int savedValue; // pin saved value
+  cmd* cmd[4];     // On, Off, Next, Prev
+  int value;       // pin current value
+  int savedValue;  // pin saved value
   int count;
   int max;
-   long debounceTime;  // the last time the output pin was toggled
+  long debounceTime;  // the last time the output pin was toggled
 } button;
 
 typedef struct rotary {
@@ -28,7 +28,7 @@ typedef struct rotary {
   void (*focus)(rotary*);
   uint8_t aPin;  // A or Clock pin
   cmd* aKeys;
-  uint8_t bPin; // B or data pin 
+  uint8_t bPin;  // B or data pin
   cmd* bKeys;
   uint8_t buttonPin;
   cmd* buttonKeys;
@@ -39,5 +39,10 @@ typedef struct rotary {
   int bStatePrevious;
   int bState;
 } rotary;
+
+extern void processSwitch(Stream*, button*);
+extern void processPot(Stream* , button* );
+extern void processPressureButton(Stream* , button* );
+extern void processRotary(Stream* , rotary* );
 
 #endif
