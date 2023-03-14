@@ -1,3 +1,5 @@
+// Marker 
+const uint8_t MARKER = 0xAA;
 // message types
 const uint8_t CONFIG = 0;
 const uint8_t BUTTON = 1;
@@ -9,44 +11,45 @@ const uint8_t EXTENSION = 255;  // reserved for additional messages
 
 void txButton(Stream* s, uint8_t id, uint8_t value) {
 #ifndef DEBUG
+  s->write(MARKER);
+  s->write(3);
   s->write(BUTTON);
   s->write(id);
   s->write(value);
-  s->write(0xff);
-  s->write(0xdd);  // checksum
 #endif
   return NULL;
 }
 
 void txSwitch(Stream* s,uint8_t id, uint8_t value) {
 #ifndef DEBUG
+  s->write(MARKER);
+  s->write(3);
   s->write(SWITCH);
   s->write(id);
   s->write(value);
-  s->write(0xff);
-  s->write(0xdd);  // checksum
 #endif
   return NULL;
 }
 
 void txPot(Stream* s,uint8_t id, uint16_t value) {
 #ifndef DEBUG
+  s->write(MARKER);
+  s->write(4);
   s->write(POT);
   s->write(id);
   s->write(value >> 8);
   s->write(value);
-  s->write(0xdd);  // checksum
 #endif
   return NULL;
 }
 
 void txRotary(Stream* s,uint8_t id, int8_t value) {
 #ifndef DEBUG
+  s->write(MARKER);
+  s->write(3);
   s->write(ROTARY);
   s->write(id);
   s->write(value);
-  s->write(0xff);
-  s->write(0xdd);  // checksum
 #endif
   return NULL;
 }

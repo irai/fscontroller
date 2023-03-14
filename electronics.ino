@@ -46,10 +46,10 @@ void processRotary(Stream* s, rotary* r) {
 void processPot(Stream* s, button* b) {
   // reading may oscilate between +1 and -1 volts; ignore
   // https://forum.arduino.cc/t/debounce-a-potentiometer/7509
-  if ((b->value >= b->savedValue - 1 && b->value <= b->savedValue + 1) || b->debounceTime > millis()) {
+  if ((b->value >= b->savedValue - 3 && b->value <= b->savedValue + 3) || b->debounceTime > millis()) {
     return;
   }
-  b->debounceTime = millis() + 2;
+  b->debounceTime = millis() + 5;
   b->savedValue = b->value;
 
 #ifdef DEBUG
