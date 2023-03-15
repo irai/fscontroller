@@ -10,7 +10,7 @@ const uint8_t MARKER = 'A';
 
 void txPanel(Stream* s, String name) {
   int n = 0;
-  uint8_t buf[3];
+  uint8_t buf[1+name.length()];
   buf[n++] = PANEL;
   for (int i = 0; i < name.length(); i++) {
     buf[n++] = name[i];

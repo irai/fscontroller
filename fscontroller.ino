@@ -8,7 +8,7 @@
 
 #include "electronics.h"
 
-#define DEBUG 1
+// #define DEBUG 1
 // #define Serial \
   // if (DEBUG) Serial  // enable printing if debuging
 
