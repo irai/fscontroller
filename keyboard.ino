@@ -18,8 +18,8 @@ static int keyboardPos = 0;
 // static unsigned int keyboardModifier[6];
 // static int keyboardModifierCounter = 0;
 
-void queueKeys(cmd* keys) {
-  if (keys == NULL || keys->len < 1) {
+void queueKeys(uint8_t * keys, int n) {
+  if (keys == NULL || n < 1) {
     Serial.println("Keyboard buffer null");
     return;
   }
@@ -30,7 +30,9 @@ void queueKeys(cmd* keys) {
   }
 
   // add to the end of buffer
-  keyboardBuffer[keyboardBufTail] = keys;
+
+  keyboardBuffer[keyboardBufTail] = malloc(n);
+  memcpy(keyboardBuffer[keyboardBufTail], keys, n);
   keyboardBufTail++;
 }
 
@@ -117,6 +119,7 @@ void sendRelease(unsigned long now) {
 #endif
   Serial.println(" release all");
   keyboardTimer = now + KEYBOARD_RELEASE_DELAY;
+  free(keyboardBuffer[keyboardBufHead]);
   keyboardBufHead++;
   keyboardPos = 0;
 

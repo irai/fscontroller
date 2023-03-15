@@ -1,27 +1,21 @@
 // Marker
+#ifndef DEBUG
 const uint8_t MARKER = 0xAA;
-// message types
-const uint8_t CONFIG = 0;
-const uint8_t BUTTON = 1;
-const uint8_t SWITCH = 2;
-const uint8_t POT = 3;
-const uint8_t ROTARY = 4;
-const uint8_t PANEL = 5;
-const uint8_t SYNC = 254;       // reserved for additional messages
-const uint8_t EXTENSION = 255;  // reserved for additional messages
+#else
+const uint8_t MARKER = 'A';
+#endif
+
+
+
 
 void txPanel(Stream* s, String name) {
-
-#ifndef DEBUG
-  s->write(MARKER);
-  s->write(name.length() + 1);
-  s->write(PANEL);
-
+  int n = 0;
+  uint8_t buf[3];
+  buf[n++] = PANEL;
   for (int i = 0; i < name.length(); i++) {
-    s->write(name[i]);
+    buf[n++] = name[i];
   }
-#endif
-  return NULL;
+  WriteMsg(s, (uint8_t*)&buf, n);
 }
 
 void txButton(Stream* s, uint8_t id, uint8_t value) {
@@ -90,4 +84,100 @@ void testSerial(Stream* s) {
   //   txPot(5, 999);
   //   txRotary(5, 1);
   //   txRotary(5, -1);
+}
+
+
+
+
+
+int WriteMsg(Stream* h, uint8_t* b, int l) {
+  h->write(MARKER);
+  h->write(l);
+  for (int i = 0; i < l; i++) {
+    h->write(b[i]);
+  }
+  return l;
+}
+
+int findMarker(uint8_t* b, int start, int end, char mark) {
+  for (int i = start; i < end; i++) {
+    if (b[i] == mark) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
+  int marker = 0;
+  int n = 0;
+
+  while (true) {
+    marker = findMarker(h->buffer, h->head, h->count, MARKER);
+
+    if (marker != -1) {
+      if (marker != h->head) {  // error if frame does not start with marker
+        h->head = marker;
+#ifdef DEBUG
+        Serial.println("invalid header");
+#endif
+        return -1;
+      }
+      if (marker + 1 < h->count) {  // do we have a len field?
+        n = int(h->buffer[marker + 1]);
+        if (marker + 2 + n <= h->count) {
+          break;
+        }
+      }
+    }
+
+    // read additional characters
+    // return error if buffer is full
+    // and we don't have a marker
+    if (h->count >= sizeof(h->buffer) / sizeof(uint8_t)) {
+      h->head = 0;
+      h->count = 0;
+#ifdef DEBUG
+      Serial.println("reseting buffer");
+#endif
+      return -1;
+    }
+
+    if (!h->Port->available()) {
+      return -1;
+    }
+
+    h->buffer[h->count] = h->Port->read();
+    if (h->buffer[h->count] == -1) {
+#ifdef DEBUG
+      Serial.println("error reading serial");
+#endif
+      return -1;
+    }
+#ifdef DEBUG
+    // hack to be able to send messages over ide for testing
+    // Send a message like: A3100 - len 3, type 1, two bytes
+    if (h->buffer[h->count] >= '0' && h->buffer[h->count] <= '9') {
+      h->buffer[h->count] -= '0';
+    }
+#endif
+    h->count++;
+  }
+
+  if (n > 0) {
+    for (int i = 0; i < n; i++) {
+      b[i] = h->buffer[marker + 2 + i];
+    }
+    // n = copy(b, h->buffer[marker+2:marker+2+n])
+    // fmt.Printf("new msg count=%d head=%d %v\n", h->count, h->head, b[0:n])
+  }
+  h->head = marker + 2 + n;
+  if (h->head >= h->count) {  // reset buffer offset if empty
+#ifdef DEBUG
+    Serial.println("end of buffer");
+#endif
+    h->count = 0;
+    h->head = 0;
+  }
+  return n;
 }

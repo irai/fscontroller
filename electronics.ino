@@ -8,6 +8,9 @@ const uint8_t eventOff = 1;
 const uint8_t eventNext = 2;
 const uint8_t eventPrev = 3;
 
+void establishSession() {
+
+}
 
 // https://lastminuteengineers.com/rotary-encoder-arduino-tutorial/
 void processRotary(Stream* s, rotary* r) {

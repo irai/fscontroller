@@ -8,7 +8,7 @@
 
 #include "electronics.h"
 
-// #define DEBUG 1
+#define DEBUG 1
 // #define Serial \
   // if (DEBUG) Serial  // enable printing if debuging
 
@@ -140,9 +140,10 @@ button switchButtons[nSwitchButtons] = {
   { "test switch", 2 }
 };
 
-const int nPressureButtons = 1;
+const int nPressureButtons = 2;
 button pressureButtons[nPressureButtons] = {
-  { "pressure button", 13 }
+  { "pressure button 2", 12 },
+  { "pressure button 1", 13 }
 
 };
 
@@ -161,20 +162,32 @@ rotary rotaryControls[nRotaryControls] = {};
 HardwareSerial *piHandler;
 HardwareSerial *xboxHandler;
 
+typedef struct SerialMsg {
+  Stream *Port;
+  uint8_t buffer[128];
+  int count;
+  int head;
+} SerialMsg;
+
+SerialMsg serialMsg;
+
 
 void setup() {
   // Serial.begin(115200); // safe with 9600
-  Serial.begin(9600);    // safe with 9600
+  Serial.begin(9600);   // safe with 9600
   Serial1.begin(9600);  // safe with 9600
-  while (!Serial) ;
+  while (!Serial)
+    ;
 
   Serial.println("serial ");
   Serial1.println("serial 1");
 
- piHandler = &Serial;
- xboxHandler = &Serial1;
+  piHandler = &Serial;
+  xboxHandler = &Serial1;
 
-piHandler->println("pi serial");
+  serialMsg.Port = piHandler;
+
+  piHandler->println("pi serial");
   xboxHandler->println("xbox serial");
 
 
@@ -263,12 +276,31 @@ void loop() {
   // testSerial(&Serial1);
 }
 
-void readPi(Stream* s) {
+void readPi(Stream *s) {
   int inByte;
-  if (s->available() > 0) {
-    // get incoming byte:
-    inByte = s->read();
-    Serial.print("got char=");
-    Serial.println(inByte);
+  uint8_t b[16];
+
+  int n = ReadMsgNonBlocking(&serialMsg, (uint8_t *)&b, sizeof(b) / sizeof(uint8_t));
+  if (n == -1) {
+    return;
+  }
+
+#ifdef DEBUG
+  Serial.print("got msg=");
+  Serial.println(b[0]);
+#endif
+
+  // empty message - send TestPanel
+  if (n == 0) {
+    txPanel(s, "TestPanel");
+    return;
+  }
+  switch (b[0]) {
+    case KEYS:
+      queueKeys(b, n);
+      return;
+    case PANEL:
+      txPanel(s, "TestPanel");
+      return;
   }
 }

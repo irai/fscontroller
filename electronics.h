@@ -2,7 +2,16 @@
 #ifndef ELECTRONICS_H
 #define ELECTRONICS_H
 
-
+// message types
+const uint8_t CONFIG = 0;
+const uint8_t BUTTON = 1;
+const uint8_t SWITCH = 2;
+const uint8_t POT = 3;
+const uint8_t ROTARY = 4;
+const uint8_t PANEL = 5;
+const uint8_t KEYS = 6;
+const uint8_t SYNC = 254;       // reserved for additional messages
+const uint8_t EXTENSION = 255;  // reserved for additional messages
 
 #include <Arduino.h>
 #include <WString.h>
