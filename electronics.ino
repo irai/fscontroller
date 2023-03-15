@@ -56,11 +56,11 @@ void processPot(Stream* s, button* b) {
   b->savedValue = b->value;
 
 #ifdef DEBUG
-  s->print(b->name);
-  s->print(" pin=");
-  s->print(b->pin);
-  s->print(" value=");
-  s->println(b->value);
+  debugHandler->print(b->name);
+  debugHandler->print(" pin=");
+  debugHandler->print(b->pin);
+  debugHandler->print(" value=");
+  debugHandler->println(b->value);
 #endif
   txPot(s, b->pin, b->value);
 }
@@ -73,11 +73,11 @@ void processSwitch(Stream* s, button* b) {
   b->savedValue = b->value;
 
 #ifdef DEBUG
-  s->print(b->name);
-  s->print(" pin=");
-  s->print(b->pin);
-  s->print(" value=");
-  s->println(b->value);
+  debugHandler->print(b->name);
+  debugHandler->print(" pin=");
+  debugHandler->print(b->pin);
+  debugHandler->print(" value=");
+  debugHandler->println(b->value);
 #endif
 
   txSwitch(s, b->pin, b->value);
@@ -91,11 +91,11 @@ void processPressureButton(Stream* s, button* b) {
   b->savedValue = b->value;
 
 #ifdef DEBUG
-  s->print(b->name);
-  s->print(" pin=");
-  s->print(b->pin);
-  s->print(" value=");
-  s->println(b->value);
+  debugHandler->print(b->name);
+  debugHandler->print(" pin=");
+  debugHandler->print(b->pin);
+  debugHandler->print(" value=");
+  debugHandler->println(b->value);
 #endif
 
   txButton(s, b->pin, b->value);

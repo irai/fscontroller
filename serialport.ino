@@ -1,8 +1,7 @@
-// Marker
-#ifndef DEBUG
-const uint8_t MARKER = 0xAA;
-#else
+#ifdef ENABLE_CHARACTER_MSG
 const uint8_t MARKER = 'A';
+#else
+const uint8_t MARKER = 0xAA;
 #endif
 
 
@@ -30,13 +29,13 @@ void txButton(Stream* s, uint8_t id, uint8_t value) {
 }
 
 void txSwitch(Stream* s, uint8_t id, uint8_t value) {
-#ifndef DEBUG
+
   s->write(MARKER);
   s->write(3);
   s->write(SWITCH);
   s->write(id);
   s->write(value);
-#endif
+
   return NULL;
 }
 
@@ -119,7 +118,7 @@ int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
       if (marker != h->head) {  // error if frame does not start with marker
         h->head = marker;
 #ifdef DEBUG
-        Serial.println("invalid header");
+        debugHandler->println("invalid header");
 #endif
         return -1;
       }
@@ -138,7 +137,7 @@ int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
       h->head = 0;
       h->count = 0;
 #ifdef DEBUG
-      Serial.println("reseting buffer");
+      debugHandler->println("reseting buffer");
 #endif
       return -1;
     }
@@ -150,11 +149,11 @@ int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
     h->buffer[h->count] = h->Port->read();
     if (h->buffer[h->count] == -1) {
 #ifdef DEBUG
-      Serial.println("error reading serial");
+      debugHandler->println("error reading serial");
 #endif
       return -1;
     }
-#ifdef DEBUG
+#ifdef ENABLE_CHARACTER_MSG
     // hack to be able to send messages over ide for testing
     // Send a message like: A3100 - len 3, type 1, two bytes
     if (h->buffer[h->count] >= '0' && h->buffer[h->count] <= '9') {
@@ -174,7 +173,7 @@ int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
   h->head = marker + 2 + n;
   if (h->head >= h->count) {  // reset buffer offset if empty
 #ifdef DEBUG
-    Serial.println("end of buffer");
+    debugHandler->println("end of buffer");
 #endif
     h->count = 0;
     h->head = 0;

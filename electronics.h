@@ -49,9 +49,25 @@ typedef struct rotary {
   int bState;
 } rotary;
 
+
 extern void processSwitch(Stream*, button*);
 extern void processPot(Stream* , button* );
 extern void processPressureButton(Stream* , button* );
 extern void processRotary(Stream* , rotary* );
+extern const int nSwitchButtons;
+extern button switchButtons[];
+extern const int nPressureButtons;
+extern button pressureButtons[];
+extern const int nPotButtons;
+extern button potButtons[];
+extern const int nRotaryControls;
+extern rotary rotaryControls[];
+
+typedef struct FlightSimulator_t {
+
+} FlightSimulator;
+
+
+
 
 #endif
