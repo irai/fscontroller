@@ -10,9 +10,10 @@
 
 #define DEBUG 1
 
-// Marker - default is 0xAA, change this to enable character messages to be sent via the IDE
-// for example: A234 - send a msg of 2 bytes, type 3, value 4 
-#define ENABLE_CHARACTER_MSG
+// Uncomment this line to enable character messages to be sent via the IDE to the arduino.
+// This is useful for debugging. The arduino will interpret messages starting with "A" as an ascii msg.
+// for example: A234 - send a msg of 2 bytes, type 3, value 4
+#define ENABLE_ASCII_MSG
 
 
 // Avoid using reserved pins
@@ -97,8 +98,7 @@ void setup() {
 #ifndef NO_KEYBOARD
   Keyboard.begin();
   Keyboard.releaseAll();  // release any key that is pressed
-  #endif
-
+#endif
 }
 
 void loop() {
@@ -145,6 +145,8 @@ void loop() {
 
   readPi(piHandler);
 
+  sendKeystrokeNonBlocking();
+
 
   // testSerial(&Serial);
   // testSerial(&Serial1);
@@ -160,21 +162,25 @@ void readPi(Stream *s) {
   }
 
 #ifdef DEBUG
-  debugHandler->print("got msg=");
-  debugHandler->println(b[0]);
+  debugHandler->print("debug received msg type=");
+  debugHandler->print(b[0]);
+  debugHandler->print(" len=");
+  debugHandler->println(n);
 #endif
 
   // empty message - send TestPanel
   if (n == 0) {
-    txPanel(s, "TestPanel");
+    txPanel(s, panelName);
     return;
   }
   switch (b[0]) {
-    case KEYS:
-      queueKeys(b, n);
+    case KEYSTROKES:
+      if (n > 1) {
+        queueKeys(&b[1], n - 1);
+      }
       return;
     case PANEL:
-      txPanel(s, "TestPanel");
+      txPanel(s, panelName);
       return;
   }
 }

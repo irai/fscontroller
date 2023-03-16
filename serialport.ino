@@ -1,15 +1,11 @@
-#ifdef ENABLE_CHARACTER_MSG
-const uint8_t MARKER = 'A';
-#else
+
 const uint8_t MARKER = 0xAA;
-#endif
-
-
+const uint8_t MARKER_ASCII = 'A';  // used for debugging purposes
 
 
 void txPanel(Stream* s, String name) {
   int n = 0;
-  uint8_t buf[1+name.length()];
+  uint8_t buf[1 + name.length()];
   buf[n++] = PANEL;
   for (int i = 0; i < name.length(); i++) {
     buf[n++] = name[i];
@@ -18,48 +14,36 @@ void txPanel(Stream* s, String name) {
 }
 
 void txButton(Stream* s, uint8_t id, uint8_t value) {
-#ifndef DEBUG
   s->write(MARKER);
   s->write(3);
   s->write(BUTTON);
   s->write(id);
   s->write(value);
-#endif
-  return NULL;
 }
 
 void txSwitch(Stream* s, uint8_t id, uint8_t value) {
-
   s->write(MARKER);
   s->write(3);
   s->write(SWITCH);
   s->write(id);
   s->write(value);
-
-  return NULL;
 }
 
 void txPot(Stream* s, uint8_t id, uint16_t value) {
-#ifndef DEBUG
   s->write(MARKER);
   s->write(4);
   s->write(POT);
   s->write(id);
   s->write(value >> 8);
   s->write(value);
-#endif
-  return NULL;
 }
 
 void txRotary(Stream* s, uint8_t id, int8_t value) {
-#ifndef DEBUG
   s->write(MARKER);
   s->write(3);
   s->write(ROTARY);
   s->write(id);
   s->write(value);
-#endif
-  return NULL;
 }
 
 static unsigned long nextTime = 0;
@@ -103,6 +87,11 @@ int findMarker(uint8_t* b, int start, int end, char mark) {
     if (b[i] == mark) {
       return i;
     }
+#ifdef ENABLE_ASCII_MSG
+    if (b[i] == MARKER_ASCII) {
+      return i;
+    }
+#endif
   }
   return -1;
 }
@@ -153,10 +142,10 @@ int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
 #endif
       return -1;
     }
-#ifdef ENABLE_CHARACTER_MSG
+#ifdef ENABLE_ASCII_MSG
     // hack to be able to send messages over ide for testing
     // Send a message like: A3100 - len 3, type 1, two bytes
-    if (h->buffer[h->count] >= '0' && h->buffer[h->count] <= '9') {
+    if (h->buffer[marker] == MARKER_ASCII && h->buffer[h->count] >= '0' && h->buffer[h->count] <= '9') {
       h->buffer[h->count] -= '0';
     }
 #endif
@@ -173,7 +162,7 @@ int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
   h->head = marker + 2 + n;
   if (h->head >= h->count) {  // reset buffer offset if empty
 #ifdef DEBUG
-    debugHandler->println("end of buffer");
+    debugHandler->println("debug serial rx buffer is empty");
 #endif
     h->count = 0;
     h->head = 0;

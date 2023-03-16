@@ -8,6 +8,8 @@
 #define KEYBOARD_PRESS_DELAY 32
 #define KEYBOARD_RELEASE_DELAY 12  // release delay can be a bit smaller for xbox - 12 ms seems to work
 
+#include "electronics.h"
+
 #ifdef NO_KEYBOARD
 // Modifiers
 #define KEY_LEFT_CTRL     0x80
@@ -105,14 +107,26 @@ void queueKeys(uint8_t * keys, int n) {
     return;
   }
 
-  // add to the end of buffer
+  // add keystrokes to the end of keyboard buffer
+  cmd * c = malloc(sizeof(cmd)+n);
+  c->len = n;
+  keyboardBuffer[keyboardBufTail] = c;
+  memcpy(&c->seq, keys, n);
+ 
+  #ifdef DEBUG
+  debugHandler->print("debug added keystrokes len=");
+  debugHandler->print(n);
+  debugHandler->print(" keys=[");
+  for (int i=0; i< n;i++) {
+    debugHandler->print(keyboardBuffer[keyboardBufTail]->seq[i]);
+  }
+  debugHandler->println("]");
+  #endif
 
-  keyboardBuffer[keyboardBufTail] = malloc(n);
-  memcpy(keyboardBuffer[keyboardBufTail], keys, n);
-  keyboardBufTail++;
+   keyboardBufTail++;
 }
 
-void sendKey() {
+void sendKeystrokeNonBlocking() {
   static int state = 0;
 
   // empty queue?
@@ -136,13 +150,17 @@ void sendKey() {
 }
 
 void sendPress(unsigned long now) {
-  unsigned int key = keyboardBuffer[keyboardBufHead]->seq[keyboardPos];
+  uint8_t key = keyboardBuffer[keyboardBufHead]->seq[keyboardPos];
 
 #ifndef NO_KEYBOARD
   Keyboard.press(key);
 #endif
-  debugHandler->print(" press ");
-  debugHandler->print(key);
+
+#ifdef DEBUG
+  debugHandler->print(" press key=");
+  debugHandler->print((uint8_t)key);
+#endif
+
   keyboardTimer = now + KEYBOARD_PRESS_DELAY;
 
   /*
@@ -178,8 +196,11 @@ void sendRelease(unsigned long now) {
 #ifndef NO_KEYBOARD
         Keyboard.release(key);  // release single key
 #endif
+
+#ifdef DEBUG
         debugHandler->print(" rel ");
         debugHandler->print(key);
+#endif
         // keyboardTimer = now + KEYBOARD_RELEASE_DELAY;
         keyboardTimer = now + KEYBOARD_PRESS_DELAY;  // use longer delay; it does not work for multiple chars otherwise
     }
@@ -191,7 +212,9 @@ void sendRelease(unsigned long now) {
 #ifndef NO_KEYBOARD
   Keyboard.releaseAll();
 #endif
+#ifdef DEBUG  
   debugHandler->println(" release all");
+#endif
   keyboardTimer = now + KEYBOARD_RELEASE_DELAY;
   free(keyboardBuffer[keyboardBufHead]);
   keyboardBufHead++;

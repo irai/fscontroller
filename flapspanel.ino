@@ -33,6 +33,7 @@ button potButtons[nPotButtons] = {
 const int nRotaryControls = 0;
 rotary rotaryControls[nRotaryControls] = {};
 
+const String panelName = "Flaps";
 // HardwareSerial piHandler = Serial;
 // Serial_ xboxHandler = Serial;
 #endif

@@ -34,6 +34,7 @@ rotary rotaryControls[nRotaryControls] = {
   { "trim", NULL, A5, &trimDown, A4, &trimUp, 0, NULL, 0, 0, 0 },
 };
 
+const String panelName = "Lights";
 // HardwareSerial piHandler = Serial;
 // Serial_ xboxHandler = Serial;
 

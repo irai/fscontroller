@@ -24,6 +24,8 @@ rotary rotaryControls[nRotaryControls] = {
   { "altitude dec", &focusReset, 14, &increaseAltKeys, 15, &decreaseAltKeys, 16, NULL, 0, 0, 0 }
 };
 
+const String panelName = "G1000";
+
 // HardwareSerial piHandler = Serial1;
 // Serial_ xboxHandler = Serial;
 

@@ -9,7 +9,7 @@ const uint8_t SWITCH = 2;
 const uint8_t POT = 3;
 const uint8_t ROTARY = 4;
 const uint8_t PANEL = 5;
-const uint8_t KEYS = 6;
+const uint8_t KEYSTROKES = 6;
 const uint8_t SYNC = 254;       // reserved for additional messages
 const uint8_t EXTENSION = 255;  // reserved for additional messages
 
@@ -18,7 +18,7 @@ const uint8_t EXTENSION = 255;  // reserved for additional messages
 
 typedef struct cmd {
   int len;
-  unsigned int seq[];
+  uint8_t seq[];
 } cmd;
 
 typedef struct button_t {
@@ -62,6 +62,7 @@ extern const int nPotButtons;
 extern button potButtons[];
 extern const int nRotaryControls;
 extern rotary rotaryControls[];
+extern const String panelName;
 
 typedef struct FlightSimulator_t {
 
