@@ -1,25 +1,27 @@
 #ifdef TEST_PANEL
 // Generic serial box - Testing
 
-const int nSwitchButtons = 1;
-button switchButtons[nSwitchButtons] = {
-  { "test switch", 2 }
+button switchButtons[] = {
+  { "switch", 2 }
 };
 
-const int nPressureButtons = 2;
-button pressureButtons[nPressureButtons] = {
+button pressureButtons[] = {
   { "pressure button 2", 12 },
   { "pressure button 1", 13 }
-
 };
 
-const int nPotButtons = 1;
-button potButtons[nPotButtons] = {
-  { "test pot", A2 }
+
+button potButtons[] = {
+//   { "test pot", A2 }
 };
 
-const int nRotaryControls = 0;
-rotary rotaryControls[nRotaryControls] = {};
+rotary rotaryControls[] = {};
+
+
+const int nSwitchButtons = sizeof(switchButtons)/sizeof(button);
+const int nPressureButtons = sizeof(pressureButtons)/sizeof(button);
+const int nPotButtons = sizeof(potButtons)/sizeof(button);
+const int nRotaryControls = sizeof(rotaryControls)/sizeof(rotary);
 
 const String panelName = "TestPanel";
 #endif

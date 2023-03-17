@@ -4,8 +4,7 @@
 
 // The power is inverted in the the switches, swap on/off for now
 
-const int nSwitchButtons = 15;
-button switchButtons[nSwitchButtons] = {
+button switchButtons[] = {
   { "ignition off", 2, { NULL, &magnetoOffKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "mag right", 3, { NULL, &magnetoRightKeys, NULL, NULL }, 0, 0, 0, 0 },
   { "mag left", 4, { NULL, &magnetoLeftKeys, NULL, NULL }, 0, 0, 0, 0 },
@@ -22,16 +21,19 @@ button switchButtons[nSwitchButtons] = {
   { "Fuel right", A3, { NULL, &fuelTankRight, NULL, NULL }, 0, 0, 0, 0 }
   // { "Fuel pump", 13, { &strobeLightKeys, &strobeLightKeys, NULL, NULL }, 0, 0, 0, 0 },
 };
-const int nPressureButtons = 0;
-button pressureButtons[nPressureButtons] = {};
 
-const int nPotButtons = 0;
-button potButtons[nPotButtons] = {
+button pressureButtons[] = {};
+
+button potButtons[] = {
   // { "switch", A1, { &throtleMaxKeys, &throtleCutKeys, &throtleIncreaseKeys, &throtleDecreaseKeys }, 0, 0, 256, 1024 }  // in steps of 4
 };
 
-const int nRotaryControls = 0;
-rotary rotaryControls[nRotaryControls] = {};
+rotary rotaryControls[] = {};
+
+const int nSwitchButtons = sizeof(switchButtons)/sizeof(button);
+const int nPressureButtons = sizeof(pressureButtons)/sizeof(button);
+const int nPotButtons = sizeof(potButtons)/sizeof(button);
+const int nRotaryControls = sizeof(rotaryControls)/sizeof(rotary);
 
 const String panelName = "Flaps";
 // HardwareSerial piHandler = Serial;

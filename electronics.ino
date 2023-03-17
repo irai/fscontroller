@@ -26,12 +26,10 @@ void processRotary(Stream* s, rotary* r) {
     // If the B value is different than A value,
     // the encoder is rotating anti-clockwise
     if (r->bState != r->aState) {
-      r->counter--;
       txRotary(s, r->aPin, -1);
 
     } else {
       // Encoder is rotating clockwise
-      r->counter++;
       txRotary(s, r->aPin, +1);
     }
   }

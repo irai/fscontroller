@@ -13,7 +13,7 @@
 // Uncomment this line to enable character messages to be sent via the IDE to the arduino.
 // This is useful for debugging. The arduino will interpret messages starting with "A" as an ascii msg.
 // for example: A234 - send a msg of 2 bytes, type 3, value 4
-#define ENABLE_ASCII_MSG
+// #define ENABLE_ASCII_MSG
 
 
 // Avoid using reserved pins
@@ -31,13 +31,14 @@
 #define TEST_PANEL 1
 
 
+
 Stream *piHandler;
 Stream *xboxHandler;
 Print *debugHandler;
 
 typedef struct SerialMsg {
   Stream *Port;
-  uint8_t buffer[128];
+  uint8_t buffer[16];
   int count;
   int head;
 } SerialMsg;

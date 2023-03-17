@@ -19,6 +19,7 @@ void txButton(Stream* s, uint8_t id, uint8_t value) {
   s->write(BUTTON);
   s->write(id);
   s->write(value);
+  s->flush();
 }
 
 void txSwitch(Stream* s, uint8_t id, uint8_t value) {
@@ -27,6 +28,7 @@ void txSwitch(Stream* s, uint8_t id, uint8_t value) {
   s->write(SWITCH);
   s->write(id);
   s->write(value);
+  s->flush();
 }
 
 void txPot(Stream* s, uint8_t id, uint16_t value) {
@@ -36,6 +38,7 @@ void txPot(Stream* s, uint8_t id, uint16_t value) {
   s->write(id);
   s->write(value >> 8);
   s->write(value);
+  s->flush();
 }
 
 void txRotary(Stream* s, uint8_t id, int8_t value) {
@@ -44,6 +47,7 @@ void txRotary(Stream* s, uint8_t id, int8_t value) {
   s->write(ROTARY);
   s->write(id);
   s->write(value);
+  s->flush();
 }
 
 static unsigned long nextTime = 0;
@@ -79,6 +83,7 @@ int WriteMsg(Stream* h, uint8_t* b, int l) {
   for (int i = 0; i < l; i++) {
     h->write(b[i]);
   }
+  h->flush();
   return l;
 }
 
@@ -123,11 +128,17 @@ int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
     // return error if buffer is full
     // and we don't have a marker
     if (h->count >= sizeof(h->buffer) / sizeof(uint8_t)) {
+#ifdef DEBUG
+      debugHandler->print("reseting buffer [");
+      for (int i = 0; i < h->count; i++) {
+        debugHandler->print(h->buffer[i], DEC);
+        debugHandler->print(",");
+      }
+      debugHandler->println("]");
+      debugHandler->flush();
+#endif
       h->head = 0;
       h->count = 0;
-#ifdef DEBUG
-      debugHandler->println("reseting buffer");
-#endif
       return -1;
     }
 
@@ -136,12 +147,15 @@ int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
     }
 
     h->buffer[h->count] = h->Port->read();
+    debugHandler->println(h->buffer[h->count,HEX]);
+          debugHandler->flush();
     if (h->buffer[h->count] == -1) {
 #ifdef DEBUG
       debugHandler->println("error reading serial");
 #endif
       return -1;
     }
+
 #ifdef ENABLE_ASCII_MSG
     // hack to be able to send messages over ide for testing
     // Send a message like: A3100 - len 3, type 1, two bytes
