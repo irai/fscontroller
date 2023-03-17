@@ -40,10 +40,12 @@ typedef struct SerialMsg {
   Stream *Port;
   uint8_t buffer[16];
   int count;
-  int head;
+  int dataLen;
+  int state;
+  unsigned long timeout;
 } SerialMsg;
 
-SerialMsg serialMsg;
+SerialMsg *serialMsg;
 
 
 void setup() {
@@ -60,7 +62,8 @@ void setup() {
   xboxHandler = &Serial1;
   debugHandler = piHandler;
 
-  serialMsg.Port = piHandler;
+
+  serialMsg = NewSerialMsg(piHandler);
 
   piHandler->println("pi serial");
   xboxHandler->println("xbox serial");
@@ -157,11 +160,14 @@ void readPi(Stream *s) {
   int inByte;
   uint8_t b[16];
 
-  int n = ReadMsgNonBlocking(&serialMsg, (uint8_t *)&b, sizeof(b) / sizeof(uint8_t));
+  int n = ReadMsgNonBlocking(serialMsg, (uint8_t *)&b, sizeof(b) / sizeof(uint8_t));
   if (n == -1) {
     return;
   }
 
+  if (n == 0) {
+    return;
+  }
 #ifdef DEBUG
   debugHandler->print("debug received msg type=");
   debugHandler->print(b[0]);
@@ -169,11 +175,6 @@ void readPi(Stream *s) {
   debugHandler->println(n);
 #endif
 
-  // empty message - send TestPanel
-  if (n == 0) {
-    txPanel(s, panelName);
-    return;
-  }
   switch (b[0]) {
     case KEYSTROKES:
       if (n > 1) {

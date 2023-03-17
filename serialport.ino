@@ -73,9 +73,22 @@ void testSerial(Stream* s) {
   //   txRotary(5, -1);
 }
 
+const int STATE_MARKER = 1;
+const int STATE_LEN = 2;
+const int STATE_DATA = 3;
 
+SerialMsg* NewSerialMsg(Stream* s) {
+  SerialMsg* h = malloc(sizeof(SerialMsg));
+  h->state = STATE_MARKER;
+  h->Port = s;
+  h->count = 0;
+  h->timeout = 0;
+  return h;
+}
 
-
+void SerialClose(SerialMsg* h) {
+  free(h);
+}
 
 int WriteMsg(Stream* h, uint8_t* b, int l) {
   h->write(MARKER);
@@ -87,99 +100,93 @@ int WriteMsg(Stream* h, uint8_t* b, int l) {
   return l;
 }
 
-int findMarker(uint8_t* b, int start, int end, char mark) {
-  for (int i = start; i < end; i++) {
-    if (b[i] == mark) {
-      return i;
-    }
-#ifdef ENABLE_ASCII_MSG
-    if (b[i] == MARKER_ASCII) {
-      return i;
-    }
-#endif
+
+
+void resetBuffer(SerialMsg* h, String msg) {
+#ifdef DEBUG
+  debugHandler->print(msg + ": resetting buffer [");
+  for (int i = 0; i < h->count; i++) {
+    debugHandler->print(h->buffer[i], DEC);
+    debugHandler->print(",");
   }
-  return -1;
+  debugHandler->println("]");
+  debugHandler->flush();
+#endif
+  h->dataLen = 0;
+  h->count = 0;
+  h->timeout = 0;
+  h->state = STATE_MARKER;
 }
 
 int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
-  int marker = 0;
-  int n = 0;
-
-  while (true) {
-    marker = findMarker(h->buffer, h->head, h->count, MARKER);
-
-    if (marker != -1) {
-      if (marker != h->head) {  // error if frame does not start with marker
-        h->head = marker;
-#ifdef DEBUG
-        debugHandler->println("invalid header");
-#endif
-        return -1;
-      }
-      if (marker + 1 < h->count) {  // do we have a len field?
-        n = int(h->buffer[marker + 1]);
-        if (marker + 2 + n <= h->count) {
-          break;
-        }
-      }
+  if (!h->Port->available()) {
+    if (h->timeout > 0 && h->timeout <= millis()) {
+      resetBuffer(h, "rx timeout");
     }
+    return -1;
+  }
 
-    // read additional characters
-    // return error if buffer is full
-    // and we don't have a marker
-    if (h->count >= sizeof(h->buffer) / sizeof(uint8_t)) {
-#ifdef DEBUG
-      debugHandler->print("reseting buffer [");
-      for (int i = 0; i < h->count; i++) {
-        debugHandler->print(h->buffer[i], DEC);
-        debugHandler->print(",");
-      }
-      debugHandler->println("]");
-      debugHandler->flush();
-#endif
-      h->head = 0;
-      h->count = 0;
-      return -1;
-    }
+  // read additional characters
+  // return error if buffer is full
+  // and we don't have a marker
+  if (h->count >= sizeof(h->buffer) / sizeof(uint8_t)) {
+    resetBuffer(h, "buffer full");
+    return -1;
+  }
 
-    if (!h->Port->available()) {
-      return -1;
-    }
+  uint8_t c = h->Port->read();
+  if (c == -1) {
+    return -1;
+  }
 
-    h->buffer[h->count] = h->Port->read();
-    debugHandler->println(h->buffer[h->count,HEX]);
-          debugHandler->flush();
-    if (h->buffer[h->count] == -1) {
-#ifdef DEBUG
-      debugHandler->println("error reading serial");
-#endif
-      return -1;
-    }
+  debugHandler->println(c);
+  debugHandler->flush();
 
 #ifdef ENABLE_ASCII_MSG
-    // hack to be able to send messages over ide for testing
-    // Send a message like: A3100 - len 3, type 1, two bytes
-    if (h->buffer[marker] == MARKER_ASCII && h->buffer[h->count] >= '0' && h->buffer[h->count] <= '9') {
-      h->buffer[h->count] -= '0';
-    }
-#endif
-    h->count++;
+  // hack to be able to send messages over ide for testing
+  // Send a message like: A3100 - len 3, type 1, two bytes
+  if (c == 'A') {
+    c = MARKER;
   }
+  if (c >= '0' && c <= '9') {
+    c -= '0';
+  }
+#endif
 
-  if (n > 0) {
-    for (int i = 0; i < n; i++) {
-      b[i] = h->buffer[marker + 2 + i];
-    }
-    // n = copy(b, h->buffer[marker+2:marker+2+n])
-    // fmt.Printf("new msg count=%d head=%d %v\n", h->count, h->head, b[0:n])
+  switch (h->state) {
+    case STATE_MARKER:
+      if (c != MARKER) {
+        resetBuffer(h, "invalid marker");
+        return -1;
+      }
+      h->state = STATE_LEN;
+      h->timeout = millis() + 1000 *3; // 3 seconds to rx msg
+      return 0;
+
+    case STATE_LEN:
+      if (c == 0 || c == 0xff) {
+        resetBuffer(h, "invalid len");
+        return -1;
+      }
+      if (c > l || c > sizeof(h->buffer)/sizeof(uint8_t))
+      h->dataLen = c;
+      h->count = 0;
+      h->state = STATE_DATA;
+      return 0;
+
+    default:  // STATE_DATA
+      h->buffer[h->count] = c;
+      h->dataLen--;
+      h->count++;
+      if (h->dataLen > 0) {
+        return 0;
+      }
+
+      // return the full msg to the caller
+      int n = h->count;
+      memcpy(b, h->buffer, h->count);
+      h->state = STATE_MARKER;
+      h->count = 0;
+      return n;
   }
-  h->head = marker + 2 + n;
-  if (h->head >= h->count) {  // reset buffer offset if empty
-#ifdef DEBUG
-    debugHandler->println("debug serial rx buffer is empty");
-#endif
-    h->count = 0;
-    h->head = 0;
-  }
-  return n;
 }
