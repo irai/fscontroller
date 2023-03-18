@@ -41,9 +41,9 @@ void processPot(Stream* s, button* b) {
     return;
   }
 
-  // exponential smoothing to avoid jumps
-  int value = b->savedValue +  ((b->value - b->savedValue) >> 2); 
-
+  // exponential smoothing to avoid fluctuations
+  int value = b->savedValue +  ((b->value - b->savedValue) >> 3); 
+  
   if (value == b->savedValue) {
     return;
   }
@@ -54,7 +54,7 @@ void processPot(Stream* s, button* b) {
     // return;
   // }
   b->debounceTime = millis() + 5;
-  b->savedValue = value << 2;
+  b->savedValue = value ;
 
 #ifdef DEBUG
   debugHandler->print(b->name);
