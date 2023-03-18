@@ -37,20 +37,31 @@ void processRotary(Stream* s, rotary* r) {
 }
 
 void processPot(Stream* s, button* b) {
-  // reading may oscilate between +1 and -1 volts; ignore
-  // https://forum.arduino.cc/t/debounce-a-potentiometer/7509
-  if ((b->value >= b->savedValue - 3 && b->value <= b->savedValue + 3) || b->debounceTime > millis()) {
+    if (b->debounceTime > millis()) {
     return;
   }
+
+  // exponential smoothing to avoid jumps
+  int value = b->savedValue +  ((b->value - b->savedValue) >> 2); 
+
+  if (value == b->savedValue) {
+    return;
+  }
+
+  // reading may oscilate between +1 and -1 volts; ignore
+  // https://forum.arduino.cc/t/debounce-a-potentiometer/7509
+  // if ((b->value >= b->savedValue - 3 && b->value <= b->savedValue + 3) || b->debounceTime > millis()) {
+    // return;
+  // }
   b->debounceTime = millis() + 5;
-  b->savedValue = b->value;
+  b->savedValue = value << 2;
 
 #ifdef DEBUG
   debugHandler->print(b->name);
   debugHandler->print(" pin=");
   debugHandler->print(b->pin);
   debugHandler->print(" value=");
-  debugHandler->println(b->value);
+  debugHandler->println(value);
 #endif
   txPot(s, b->pin, b->value);
 }
