@@ -169,7 +169,7 @@ void readPi(Stream *s) {
     return;
   }
 #ifdef DEBUG
-  debugHandler->print("debug received msg type=");
+  debugHandler->print("received msg type=");
   debugHandler->print(b[0]);
   debugHandler->print(" len=");
   debugHandler->println(n);

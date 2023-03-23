@@ -7,7 +7,7 @@ button switchButtons[] = {
 
 button pressureButtons[] = {
   { "pressure button 2", 12 },
-  { "pressure button 1", 13 }
+  { "pressure button 1", 10 }
 };
 
 

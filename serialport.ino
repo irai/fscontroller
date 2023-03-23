@@ -4,9 +4,11 @@ const uint8_t MARKER_ASCII = 'A';  // used for debugging purposes
 
 
 void txPanel(Stream* s, String name) {
-  int n = 0;
-  uint8_t buf[1 + name.length()];
-  buf[n++] = PANEL;
+  uint8_t buf[3 + name.length()];
+  buf[0] = PANEL;
+  buf[1] = 0;
+  buf[2] = uint8_t(name.length());
+  int n = 3;
   for (int i = 0; i < name.length(); i++) {
     buf[n++] = name[i];
   }
@@ -139,8 +141,8 @@ int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
     return -1;
   }
 
-  debugHandler->println(c);
-  debugHandler->flush();
+  // debugHandler->println(c);
+  // debugHandler->flush();
 
 #ifdef ENABLE_ASCII_MSG
   // hack to be able to send messages over ide for testing
