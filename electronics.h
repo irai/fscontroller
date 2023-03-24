@@ -18,7 +18,7 @@ const uint8_t EXTENSION = 255;  // reserved for additional messages
 
 typedef struct cmd {
   int len;
-  uint8_t seq[];
+  uint16_t seq[];
 } cmd;
 
 typedef struct button_t {
@@ -26,7 +26,7 @@ typedef struct button_t {
   uint8_t pin;
   int value;       // pin current value
   int savedValue;  // pin saved value
-  long debounceTime;  // the last time the output pin was toggled
+  uint32_t debounceTime;  // the last time the output pin was toggled
 } button;
 
 typedef struct rotary {

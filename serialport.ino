@@ -9,7 +9,7 @@ void txPanel(Stream* s, String name) {
   buf[1] = 0;
   buf[2] = uint8_t(name.length());
   int n = 3;
-  for (int i = 0; i < name.length(); i++) {
+  for (unsigned int i = 0; i < name.length(); i++) {
     buf[n++] = name[i];
   }
   WriteMsg(s, (uint8_t*)&buf, n);
@@ -80,7 +80,7 @@ const int STATE_LEN = 2;
 const int STATE_DATA = 3;
 
 SerialMsg* NewSerialMsg(Stream* s) {
-  SerialMsg* h = malloc(sizeof(SerialMsg));
+  SerialMsg* h = (SerialMsg*)malloc(sizeof(SerialMsg));
   h->state = STATE_MARKER;
   h->Port = s;
   h->count = 0;
@@ -107,7 +107,7 @@ int WriteMsg(Stream* h, uint8_t* b, int l) {
 void resetBuffer(SerialMsg* h, String msg) {
 #ifdef DEBUG
   debugHandler->print(msg + ": resetting buffer [");
-  for (int i = 0; i < h->count; i++) {
+  for (unsigned int i = 0; i < h->count; i++) {
     debugHandler->print(h->buffer[i], DEC);
     debugHandler->print(",");
   }

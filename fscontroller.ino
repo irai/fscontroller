@@ -6,7 +6,7 @@
 // Void keyboard dependency for boards that don't have usb keyboard.
 // This allow building but won't send any key strokes to the usb.
 // i.e. Mega
-#define NO_KEYBOARD 1
+// #define NO_KEYBOARD 1
 
 #define DEBUG 1
 
@@ -39,7 +39,7 @@ Print *debugHandler;
 typedef struct SerialMsg {
   Stream *Port;
   uint8_t buffer[16];
-  int count;
+  unsigned int count;
   int dataLen;
   int state;
   unsigned long timeout;
@@ -157,7 +157,7 @@ void loop() {
 }
 
 void readPi(Stream *s) {
-  int inByte;
+  // int inByte;
   uint8_t b[16];
 
   int n = ReadMsgNonBlocking(serialMsg, (uint8_t *)&b, sizeof(b) / sizeof(uint8_t));
