@@ -2,12 +2,12 @@
 // Generic serial box - Testing
 
 button switchButtons[] = {
-  { "switch", 2 }
+  { "switch", 39 }
 };
 
 button pressureButtons[] = {
-  { "pressure button 2", 12 },
-  { "pressure button 1", 10 }
+  { "pressure button 2", 33 },
+  { "pressure button 1", 34 }
 };
 
 

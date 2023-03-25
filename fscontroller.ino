@@ -10,19 +10,18 @@
 
 #define DEBUG 1
 
-// Uncomment this line to enable character messages to be sent via the IDE to the arduino.
+// Uncomment this line to enable ascii messages to be sent via the IDE to the arduino.
 // This is useful for debugging. The arduino will interpret messages starting with "A" as an ascii msg.
 // for example: A234 - send a msg of 2 bytes, type 3, value 4
 // #define ENABLE_ASCII_MSG
 
-
-// Avoid using reserved pins
-// PIN 2 - RX
-// PIN 3 - TX
-// PIN 6 - Led
-
+// Reserved pins
 #define PIN_ON_OFF A0  // first pin after GND on Teensy 2.0++
 
+// Uncomment this line to make the panel a keyboard interface to send
+// key strokes to the XBOX or PC
+const uint8_t PANEL_KEYBOARD = 0x80;
+// const uint8_t PANEL_KEYBOARD =  0x00;
 
 // uncomment one of these to build the right panel
 // #define LIGHTS_BOX 1
@@ -58,10 +57,9 @@ void setup() {
   Serial.println("serial ");
   Serial1.println("serial 1");
 
-  piHandler = &Serial;
-  xboxHandler = &Serial1;
+  piHandler = &Serial1;
+  xboxHandler = &Serial;
   debugHandler = piHandler;
-
 
   serialMsg = NewSerialMsg(piHandler);
 
@@ -112,6 +110,7 @@ void loop() {
     return;
   }
 
+
   digitalWrite(LED_BUILTIN, HIGH);  // Turn indicator light on.
 
   // read all pins first
@@ -150,16 +149,12 @@ void loop() {
   readPi(piHandler);
 
   sendKeystrokeNonBlocking();
-
-
-  // testSerial(&Serial);
-  // testSerial(&Serial1);
 }
 
 void readPi(Stream *s) {
   // int inByte;
   uint8_t b[16];
-
+ 
   int n = ReadMsgNonBlocking(serialMsg, (uint8_t *)&b, sizeof(b) / sizeof(uint8_t));
   if (n == -1) {
     return;

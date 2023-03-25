@@ -60,7 +60,7 @@ struct keymap kmap[] = {
   { KEY_F17, (39 | 0x80) },
   { KEY_F18, (40 | 0x80) },
   { KEY_F19, (41 | 0x80) },
-  { KEY_F20, (42 | 0x80) },
+  { 0xAA, (42 | 0x80) },  // Marker: 0xAA do not translate
   { KEY_F21, (43 | 0x80) },
   { KEY_F22, (44 | 0x80) },
   { KEY_F23, (45 | 0x80) },
@@ -92,7 +92,7 @@ struct keymap kmap[] = {
 };
 
 uint16_t mapFS2KeyboardCode(uint8_t c) {
-  if ((c & 0x80) != 0x80) return uint16_t(c);
+  if ((c & 0x80) != 0x80  ) return uint16_t(c);
   uint16_t k = c & 0x7f;
   return kmap[k].keycode;
 }
