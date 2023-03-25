@@ -25,9 +25,6 @@ const int nPressureButtons = sizeof(pressureButtons)/sizeof(button);
 const int nPotButtons = sizeof(potButtons)/sizeof(button);
 const int nRotaryControls = sizeof(rotaryControls)/sizeof(rotary);
 
-const String panelName = "G1000";
-
-// HardwareSerial piHandler = Serial1;
-// Serial_ xboxHandler = Serial;
+const String panelName = "G1000Panel";
 
 #endif

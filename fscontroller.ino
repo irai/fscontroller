@@ -18,18 +18,13 @@
 // Reserved pins
 #define PIN_ON_OFF A0  // first pin after GND on Teensy 2.0++
 
-// Uncomment this line to make the panel a keyboard interface to send
-// key strokes to the XBOX or PC
-const uint8_t PANEL_KEYBOARD = 0x80;
-// const uint8_t PANEL_KEYBOARD =  0x00;
 
 // uncomment one of these to build the right panel
 // #define LIGHTS_BOX 1
 // #define FLAPS_PANEL 1
 // #define G1000_PANEL 1
-#define TEST_PANEL 1
-
-
+// #define TEST_PANEL 1
+#define KEYBOARD_PANEL 1  // panel with no electronics used for keyboard
 
 Stream *piHandler;
 Stream *xboxHandler;
@@ -46,9 +41,13 @@ typedef struct SerialMsg {
 
 SerialMsg *serialMsg;
 
+#ifdef KEYBOARD_PANEL
+const uint8_t KEYBOARD_FLAG =  0x80;
+#else
+const uint8_t KEYBOARD_FLAG =  0x00;
+#endif
 
 void setup() {
-  // Serial.begin(115200); // safe with 9600
   Serial.begin(9600);   // safe with 9600
   Serial1.begin(9600);  // safe with 9600
   while (!Serial)
@@ -57,16 +56,20 @@ void setup() {
   Serial.println("serial ");
   Serial1.println("serial 1");
 
+  #ifdef KEYBOARD_PANEL
   piHandler = &Serial1;
   xboxHandler = &Serial;
+  #else
+  piHandler = &Serial;
+  xboxHandler = &Serial1;
+  #endif
+
   debugHandler = piHandler;
 
   serialMsg = NewSerialMsg(piHandler);
 
-  piHandler->println("pi serial");
-  xboxHandler->println("xbox serial");
-
-
+  // piHandler->println("pi serial");
+  // xboxHandler->println("xbox serial");
 
   int i;
   pinMode(LED_BUILTIN, OUTPUT);       // initialise led builtin as output
@@ -90,7 +93,6 @@ void setup() {
   for (i = 0; i < nRotaryControls; i++) {
     pinMode(rotaryControls[i].aPin, INPUT_PULLUP);
     pinMode(rotaryControls[i].bPin, INPUT_PULLUP);
-    // pinMode(rotaryControls[i].buttonPin, INPUT_PULLUP);
     rotaryControls[i].aState = digitalRead(rotaryControls[i].aPin);
     rotaryControls[i].aStatePrevious = rotaryControls[i].aState;
     rotaryControls[i].bState = digitalRead(rotaryControls[i].bPin);
@@ -109,8 +111,6 @@ void loop() {
     digitalWrite(LED_BUILTIN, LOW);
     return;
   }
-
-
   digitalWrite(LED_BUILTIN, HIGH);  // Turn indicator light on.
 
   // read all pins first
@@ -146,15 +146,16 @@ void loop() {
     processRotary(piHandler, &rotaryControls[i]);
   }
 
+  // read pi serial port
   readPi(piHandler);
 
   sendKeystrokeNonBlocking();
 }
 
 void readPi(Stream *s) {
-  // int inByte;
   uint8_t b[16];
  
+
   int n = ReadMsgNonBlocking(serialMsg, (uint8_t *)&b, sizeof(b) / sizeof(uint8_t));
   if (n == -1) {
     return;
