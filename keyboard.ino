@@ -142,7 +142,7 @@ void queueKeys(uint8_t* keys, int n) {
   // memcpy(&c->seq, keys, n);
 
 #ifdef DEBUG
-  debugHandler->print("debug added keystrokes len=");
+  debugHandler->print("added keystrokes len=");
   debugHandler->print(n);
   debugHandler->print(" keys=[");
   for (int i = 0; i < n; i++) {

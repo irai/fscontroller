@@ -11,16 +11,17 @@ void processRotary(Stream* s, rotary* r) {
     r->bState = digitalRead(r->bPin);  // for accuracy, must read again after a change to pin A
 
 #ifdef DEBUG
-    s->print("Rotary PIN ");
-    s->print(r->aPin);
-    s->print("=");
-    s->print(r->aState);
-    s->print(" PIN ");
-    s->print(r->bPin);
-    s->print("=");
-    s->print(r->bState);
-    s->print(" ");
-    s->println(r->name);
+    debugHandler->print("Rotary PIN ");
+    debugHandler->print(r->aPin);
+    debugHandler->print("=");
+    debugHandler->print(r->aState);
+    debugHandler->print(" PIN ");
+    debugHandler->print(r->bPin);
+    debugHandler->print("=");
+    debugHandler->print(r->bState);
+    debugHandler->print(" ");
+    debugHandler->println(r->name);
+    debugHandler->flush();
 #endif
 
     // If the B value is different than A value,
@@ -37,13 +38,13 @@ void processRotary(Stream* s, rotary* r) {
 }
 
 void processPot(Stream* s, button* b) {
-    if (b->debounceTime > millis()) {
+  if (b->debounceTime > millis()) {
     return;
   }
 
   // exponential smoothing to avoid fluctuations
-  int value = b->savedValue +  ((b->value - b->savedValue) >> 3); 
-  
+  int value = b->savedValue + ((b->value - b->savedValue) >> 3);
+
   if (value == b->savedValue) {
     return;
   }
@@ -51,10 +52,10 @@ void processPot(Stream* s, button* b) {
   // reading may oscilate between +1 and -1 volts; ignore
   // https://forum.arduino.cc/t/debounce-a-potentiometer/7509
   // if ((b->value >= b->savedValue - 3 && b->value <= b->savedValue + 3) || b->debounceTime > millis()) {
-    // return;
+  // return;
   // }
   b->debounceTime = millis() + 5;
-  b->savedValue = value ;
+  b->savedValue = value;
 
 #ifdef DEBUG
   debugHandler->print(b->name);
@@ -62,6 +63,7 @@ void processPot(Stream* s, button* b) {
   debugHandler->print(b->pin);
   debugHandler->print(" value=");
   debugHandler->println(value);
+  debugHandler->flush();
 #endif
   txPot(s, b->pin, b->value);
 }
@@ -79,6 +81,7 @@ void processSwitch(Stream* s, button* b) {
   debugHandler->print(b->pin);
   debugHandler->print(" value=");
   debugHandler->println(b->value);
+  debugHandler->flush();
 #endif
 
   txSwitch(s, b->pin, b->value);
@@ -97,6 +100,7 @@ void processPushButton(Stream* s, button* b) {
   debugHandler->print(b->pin);
   debugHandler->print(" value=");
   debugHandler->println(b->value);
+  debugHandler->flush();
 #endif
 
   txButton(s, b->pin, b->value);

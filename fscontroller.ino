@@ -6,7 +6,7 @@
 // Void keyboard dependency for boards that don't have usb keyboard.
 // This allow building but won't send any key strokes to the usb.
 // i.e. Mega
-// #define NO_KEYBOARD 1
+#define NO_KEYBOARD 1
 
 #define DEBUG 1
 
@@ -21,8 +21,8 @@
 
 // uncomment one of these to build the right panel
 // #define LIGHTS_BOX 1
-// #define FLAPS_PANEL 1
-#define G1000_PANEL 1
+#define FLAPS_PANEL 1
+// #define G1000_PANEL 1
 // #define TEST_PANEL 1
 // #define KEYBOARD_PANEL 1  // panel with no electronics used for keyboard
 
