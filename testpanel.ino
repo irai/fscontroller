@@ -4,7 +4,7 @@ button switchButtons[] = {
   { "switch", 39 }
 };
 
-button pressureButtons[] = {
+button pushButtons[] = {
   { "pressure button 2", 33 },
   { "pressure button 1", 34 }
 };
@@ -18,7 +18,7 @@ rotary rotaryControls[] = {};
 
 
 const int nSwitchButtons = sizeof(switchButtons)/sizeof(button);
-const int nPressureButtons = sizeof(pressureButtons)/sizeof(button);
+const int npushButtons = sizeof(pushButtons)/sizeof(button);
 const int nPotButtons = sizeof(potButtons)/sizeof(button);
 const int nRotaryControls = sizeof(rotaryControls)/sizeof(rotary);
 
@@ -31,7 +31,7 @@ const String panelName = "TestPanel";
 button switchButtons[] = {
 };
 
-button pressureButtons[] = {
+button pushButtons[] = {
 };
 
 button potButtons[] = {
@@ -41,7 +41,7 @@ rotary rotaryControls[] = {
 };
 
 const int nSwitchButtons = sizeof(switchButtons)/sizeof(button);
-const int nPressureButtons = sizeof(pressureButtons)/sizeof(button);
+const int npushButtons = sizeof(pushButtons)/sizeof(button);
 const int nPotButtons = sizeof(potButtons)/sizeof(button);
 const int nRotaryControls = sizeof(rotaryControls)/sizeof(rotary);
 const String panelName = "KeyboardPanel";

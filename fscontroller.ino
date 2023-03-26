@@ -22,9 +22,9 @@
 // uncomment one of these to build the right panel
 // #define LIGHTS_BOX 1
 // #define FLAPS_PANEL 1
-// #define G1000_PANEL 1
+#define G1000_PANEL 1
 // #define TEST_PANEL 1
-#define KEYBOARD_PANEL 1  // panel with no electronics used for keyboard
+// #define KEYBOARD_PANEL 1  // panel with no electronics used for keyboard
 
 Stream *piHandler;
 Stream *xboxHandler;
@@ -42,27 +42,30 @@ typedef struct SerialMsg {
 SerialMsg *serialMsg;
 
 #ifdef KEYBOARD_PANEL
-const uint8_t KEYBOARD_FLAG =  0x80;
+const uint8_t KEYBOARD_FLAG = 0x80;
 #else
-const uint8_t KEYBOARD_FLAG =  0x00;
+const uint8_t KEYBOARD_FLAG = 0x00;
 #endif
 
 void setup() {
   Serial.begin(9600);   // safe with 9600
   Serial1.begin(9600);  // safe with 9600
-  while (!Serial)
-    ;
+
+#ifndef KEYBOARD_PANEL
+  // while (!Serial)   // this only work for serial interface - not keyboard
+  // ;
+#endif
 
   Serial.println("serial ");
   Serial1.println("serial 1");
 
-  #ifdef KEYBOARD_PANEL
+#ifdef KEYBOARD_PANEL
   piHandler = &Serial1;
   xboxHandler = &Serial;
-  #else
+#else
   piHandler = &Serial;
   xboxHandler = &Serial1;
-  #endif
+#endif
 
   debugHandler = piHandler;
 
@@ -80,9 +83,9 @@ void setup() {
     switchButtons[i].savedValue = digitalRead(switchButtons[i].pin);
   }
 
-  for (i = 0; i < nPressureButtons; i++) {
-    pinMode(pressureButtons[i].pin, INPUT_PULLUP);
-    pressureButtons[i].savedValue = digitalRead(pressureButtons[i].pin);
+  for (i = 0; i < npushButtons; i++) {
+    pinMode(pushButtons[i].pin, INPUT_PULLUP);
+    pushButtons[i].savedValue = digitalRead(pushButtons[i].pin);
   }
 
   for (i = 0; i < nPotButtons; i++) {
@@ -106,6 +109,7 @@ void setup() {
 }
 
 void loop() {
+
   // System Disabled?
   if (digitalRead(PIN_ON_OFF) != 0) {
     digitalWrite(LED_BUILTIN, LOW);
@@ -121,8 +125,8 @@ void loop() {
   for (i = 0; i < nPotButtons; i++) {
     potButtons[i].value = analogRead(potButtons[i].pin);
   }
-  for (i = 0; i < nPressureButtons; i++) {
-    pressureButtons[i].value = digitalRead(pressureButtons[i].pin);
+  for (i = 0; i < npushButtons; i++) {
+    pushButtons[i].value = digitalRead(pushButtons[i].pin);
   }
   for (i = 0; i < nRotaryControls; i++) {
     rotaryControls[i].aState = digitalRead(rotaryControls[i].aPin);
@@ -138,8 +142,8 @@ void loop() {
     processPot(piHandler, &(potButtons[i]));
   }
 
-  for (i = 0; i < nPressureButtons; i++) {
-    processPressureButton(piHandler, &pressureButtons[i]);
+  for (i = 0; i < npushButtons; i++) {
+    processPushButton(piHandler, &pushButtons[i]);
   }
 
   for (i = 0; i < nRotaryControls; i++) {
@@ -154,7 +158,7 @@ void loop() {
 
 void readPi(Stream *s) {
   uint8_t b[16];
- 
+
 
   int n = ReadMsgNonBlocking(serialMsg, (uint8_t *)&b, sizeof(b) / sizeof(uint8_t));
   if (n == -1) {
@@ -175,6 +179,9 @@ void readPi(Stream *s) {
     case KEYSTROKES:
       if (n > 1) {
         queueKeys(&b[1], n - 1);
+#ifdef DEBUG
+        debugHandler->flush();
+#endif
       }
       return;
     case PANEL:

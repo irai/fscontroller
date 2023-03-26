@@ -14,7 +14,7 @@ button switchButtons[] = {
   { "carby heat", 11, { &carbHeatOnKeys, &carbHeatOffKeys, NULL, NULL }, 0, 0, 0, 0 }
 };
 
-button pressureButtons[] = {
+button pushButtons[] = {
   { "atc", 12, { &atcKeys, NULL, NULL, NULL }, 0, 0, 0, 0 },
   { "view", 13, { &viewDashboardFirstKeys, &viewDashboardNextKeys, &viewDashboardNextKeys, NULL }, 0, 0, 0, 3 }
 };
@@ -31,7 +31,7 @@ rotary rotaryControls[] = {
 };
 
 const int nSwitchButtons = sizeof(switchButtons)/sizeof(button);
-const int nPressureButtons = sizeof(pressureButtons)/sizeof(button);
+const int npushButtons = sizeof(pushButtons)/sizeof(button);
 const int nPotButtons = sizeof(potButtons)/sizeof(button);
 const int nRotaryControls = sizeof(rotaryControls)/sizeof(rotary);
 

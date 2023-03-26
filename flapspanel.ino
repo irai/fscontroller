@@ -22,7 +22,7 @@ button switchButtons[] = {
   // { "Fuel pump", 13, { &strobeLightKeys, &strobeLightKeys, NULL, NULL }, 0, 0, 0, 0 },
 };
 
-button pressureButtons[] = {};
+button pushButtons[] = {};
 
 button potButtons[] = {
   // { "switch", A1, { &throtleMaxKeys, &throtleCutKeys, &throtleIncreaseKeys, &throtleDecreaseKeys }, 0, 0, 256, 1024 }  // in steps of 4
@@ -31,7 +31,7 @@ button potButtons[] = {
 rotary rotaryControls[] = {};
 
 const int nSwitchButtons = sizeof(switchButtons)/sizeof(button);
-const int nPressureButtons = sizeof(pressureButtons)/sizeof(button);
+const int npushButtons = sizeof(pushButtons)/sizeof(button);
 const int nPotButtons = sizeof(potButtons)/sizeof(button);
 const int nRotaryControls = sizeof(rotaryControls)/sizeof(rotary);
 

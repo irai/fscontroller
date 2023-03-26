@@ -84,11 +84,11 @@ void processSwitch(Stream* s, button* b) {
   txSwitch(s, b->pin, b->value);
 }
 
-void processPressureButton(Stream* s, button* b) {
+void processPushButton(Stream* s, button* b) {
   if (b->value == b->savedValue || b->debounceTime > millis()) {
     return;
   }
-  b->debounceTime = millis() + 2;
+  b->debounceTime = millis() + 5;
   b->savedValue = b->value;
 
 #ifdef DEBUG

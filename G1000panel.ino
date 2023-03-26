@@ -3,7 +3,7 @@
 
 button switchButtons[] = {};
 
-button pressureButtons[] = {
+button pushButtons[] = {
   { "com 1/2 switch", 1},
   { "set heading bug", 11},
   { "set altitude", 16},
@@ -21,7 +21,7 @@ rotary rotaryControls[] = {
 };
 
 const int nSwitchButtons = sizeof(switchButtons)/sizeof(button);
-const int nPressureButtons = sizeof(pressureButtons)/sizeof(button);
+const int npushButtons = sizeof(pushButtons)/sizeof(button);
 const int nPotButtons = sizeof(potButtons)/sizeof(button);
 const int nRotaryControls = sizeof(rotaryControls)/sizeof(rotary);
 

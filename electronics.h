@@ -44,12 +44,12 @@ typedef struct rotary {
 
 extern void processSwitch(Stream*, button*);
 extern void processPot(Stream* , button* );
-extern void processPressureButton(Stream* , button* );
+extern void processPushButton(Stream* , button* );
 extern void processRotary(Stream* , rotary* );
 extern const int nSwitchButtons;
 extern button switchButtons[];
-extern const int nPressureButtons;
-extern button pressureButtons[];
+extern const int npushButtons;
+extern button pushButtons[];
 extern const int nPotButtons;
 extern button potButtons[];
 extern const int nRotaryControls;
