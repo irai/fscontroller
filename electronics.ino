@@ -53,27 +53,25 @@ void processPot(Stream* s, button* b) {
   if (b->debounceTime > millis()) {
     return;
   }
-  
+
   // exponential smoothing to avoid fluctuations
-// ignore outliers
-  // reading may oscilate between +8 and -8 volts; ignore
-  int value = b->savedValue + ((b->value - b->savedValue) >> 3);
-
-
+  // ignore outliers
+  // When using power from Raspberry PI, seen very large oscilations between +50 and -50 volts; ignore
+  int value = b->savedValue + ((b->value - b->savedValue) >> 5);
 
   if (value == b->savedValue) {
     return;
   }
 
   b->debounceTime = millis() + DEBOUNCE_TIME;
-  b->savedValue = value;
+  b->savedValue = b->value;
 
 #ifdef DEBUG
   debugHandler->print(b->name);
   debugHandler->print(" pin=");
   debugHandler->print(b->pin);
   debugHandler->print(" value=");
-  debugHandler->println(value);
+  debugHandler->println(b->value);
   debugHandler->flush();
 #endif
   txPot(s, b->pin, b->value);
