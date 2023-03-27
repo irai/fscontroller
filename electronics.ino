@@ -3,9 +3,13 @@
 #include "electronics.h"
 #include <Stream.h>
 
+#define DEBOUNCE_TIME 16
 
 // https://lastminuteengineers.com/rotary-encoder-arduino-tutorial/
 void processRotary(Stream* s, rotary* r) {
+  if (r->debounceTime > millis()) {
+    return;
+  }
   // If A state changed, then wheel has moved
   if (r->aStatePrevious != r->aState) {
     r->bState = digitalRead(r->bPin);  // for accuracy, must read again after a change to pin A
@@ -19,42 +23,49 @@ void processRotary(Stream* s, rotary* r) {
     debugHandler->print(r->bPin);
     debugHandler->print("=");
     debugHandler->print(r->bState);
-    debugHandler->print(" ");
-    debugHandler->println(r->name);
-    debugHandler->flush();
 #endif
 
     // If the B value is different than A value,
     // the encoder is rotating anti-clockwise
     if (r->bState != r->aState) {
+#if DEBUG
+      debugHandler->println(" decrease");
+#endif
       txRotary(s, r->aPin, -1);
 
     } else {
       // Encoder is rotating clockwise
+#if DEBUG
+      debugHandler->println(" increase");
+#endif
+
       txRotary(s, r->aPin, +1);
     }
+#if DEBUG
+    debugHandler->flush();
+#endif
   }
   r->aStatePrevious = r->aState;  // Remember last A
+  r->debounceTime = millis() + DEBOUNCE_TIME;
 }
 
 void processPot(Stream* s, button* b) {
   if (b->debounceTime > millis()) {
     return;
   }
-
+  
   // exponential smoothing to avoid fluctuations
+// ignore outliers
+  // reading may oscilate between +8 and -8 volts; ignore
   int value = b->savedValue + ((b->value - b->savedValue) >> 3);
+
+
 
   if (value == b->savedValue) {
     return;
   }
 
-  // reading may oscilate between +1 and -1 volts; ignore
-  // https://forum.arduino.cc/t/debounce-a-potentiometer/7509
-  // if ((b->value >= b->savedValue - 3 && b->value <= b->savedValue + 3) || b->debounceTime > millis()) {
-  // return;
-  // }
-  b->debounceTime = millis() + 5;
+  b->debounceTime = millis() + DEBOUNCE_TIME;
   b->savedValue = value;
 
 #ifdef DEBUG
@@ -72,7 +83,7 @@ void processSwitch(Stream* s, button* b) {
   if (b->value == b->savedValue || b->debounceTime > millis()) {
     return;
   }
-  b->debounceTime = millis() + 2;
+  b->debounceTime = millis() + DEBOUNCE_TIME;
   b->savedValue = b->value;
 
 #ifdef DEBUG
@@ -91,7 +102,7 @@ void processPushButton(Stream* s, button* b) {
   if (b->value == b->savedValue || b->debounceTime > millis()) {
     return;
   }
-  b->debounceTime = millis() + 5;
+  b->debounceTime = millis() + DEBOUNCE_TIME;
   b->savedValue = b->value;
 
 #ifdef DEBUG

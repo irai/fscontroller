@@ -164,7 +164,7 @@ int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
         return -1;
       }
       h->state = STATE_LEN;
-      h->timeout = millis() + 1000 *3; // 3 seconds to rx msg
+      h->timeout = millis() + 1000 * 3;  // 3 seconds to rx msg
       return 0;
 
     case STATE_LEN:
@@ -172,7 +172,7 @@ int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
         resetBuffer(h, "invalid len");
         return -1;
       }
-      if (c > sizeof(h->buffer)/sizeof(uint8_t)) {
+      if (c > sizeof(h->buffer) / sizeof(uint8_t)) {
         resetBuffer(h, "msg too big");
         return -1;
       }

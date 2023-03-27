@@ -20,8 +20,8 @@
 
 
 // uncomment one of these to build the right panel
-// #define LIGHTS_BOX 1
-#define FLAPS_PANEL 1
+#define LIGHTS_PANEL 1
+// #define FLAPS_PANEL 1
 // #define G1000_PANEL 1
 // #define TEST_PANEL 1
 // #define KEYBOARD_PANEL 1  // panel with no electronics used for keyboard
@@ -52,11 +52,11 @@ void setup() {
   Serial1.begin(9600);  // safe with 9600
 
 #ifndef KEYBOARD_PANEL
-  // while (!Serial)   // this only work for serial interface - not keyboard
+  // while (!Serial)   // this only work for serial interface - not keyboard but remove for nowaaaaaaaaa
   // ;
 #endif
 
-  Serial.println("serial ");
+  // Serial.println("serial ");
   Serial1.println("serial 1");
 
 #ifdef KEYBOARD_PANEL
