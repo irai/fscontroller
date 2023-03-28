@@ -141,7 +141,7 @@ void queueKeys(uint8_t* keys, int n) {
   }
   // memcpy(&c->seq, keys, n);
 
-#ifdef DEBUG
+#ifdef DEBUG_KEYBOARD
   debugHandler->print("added keystrokes len=");
   debugHandler->print(n);
   debugHandler->print(" keys=[");
@@ -185,7 +185,7 @@ void sendPress(unsigned long now) {
   Keyboard.press(key);
 #endif
 
-#ifdef DEBUG
+#ifdef DEBUG_KEYBOARD
   debugHandler->print(" press key=");
   debugHandler->print((uint8_t)key);
 #endif
@@ -226,7 +226,7 @@ void sendRelease(unsigned long now) {
         Keyboard.release(key);  // release single key
 #endif
 
-#ifdef DEBUG
+#ifdef DEBUG_KEYBOARD
         debugHandler->print(" rel ");
         debugHandler->print(key);
 #endif
@@ -241,7 +241,7 @@ void sendRelease(unsigned long now) {
 #ifndef NO_KEYBOARD
   Keyboard.releaseAll();
 #endif
-#ifdef DEBUG
+#ifdef DEBUG_KEYBOARD
   debugHandler->println(" release all");
 #endif
   keyboardTimer = now + KEYBOARD_RELEASE_DELAY;
