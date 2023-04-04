@@ -8,7 +8,10 @@
 // i.e. Mega
 // #define NO_KEYBOARD 1
 
-#define DEBUG 1
+bool Debug = true;
+bool Debug_KEYBOARD = false;
+statistics stats;
+
 
 // Uncomment this line to enable ascii messages to be sent via the IDE to the arduino.
 // This is useful for debugging. The arduino will interpret messages starting with "A" as an ascii msg.
@@ -17,6 +20,15 @@
 
 // Reserved pins
 #define PIN_ON_OFF A0  // first pin after GND on Teensy 2.0++
+
+// analogue pins based on board type
+#if defined(ARDUINO_AVR_MEGA2560)
+#define DIGITAL_PINS 54
+#elif defined(ARDUINO_AVR_LEONARDO)
+#define DIGITAL_PINS 14
+#elif defined(ARDUINO_TEENSY41)
+#define DIGITAL_PINS 55
+#endif
 
 
 // uncomment one of these to build the right panel
@@ -168,24 +180,37 @@ void readPi(Stream *s) {
   if (n == 0) {
     return;
   }
-#ifdef DEBUG
-  debugHandler->print("received msg type=");
-  debugHandler->print(b[0]);
-  debugHandler->print(" len=");
-  debugHandler->println(n);
-#endif
+  if (Debug) {
+    debugHandler->print("received msg type=");
+    debugHandler->print(b[0]);
+    debugHandler->print(" len=");
+    debugHandler->println(n);
+  }
 
   switch (b[0]) {
     case KEYSTROKES:
       if (n > 1) {
         queueKeys(&b[1], n - 1);
-#ifdef DEBUG
-        debugHandler->flush();
-#endif
+        if (Debug) {
+          debugHandler->flush();
+        }
       }
       return;
     case PANEL:
       txPanel(s, panelName);
+      return;
+    case LOGLEVEL:
+      if (n != 2) {
+        return;
+      }
+      switch (b[1]) {
+        case 1: // 1 is debug level
+        Debug = (b[2]==0) ? true : false;
+        return;
+        case 2: // 2 is keyboard debug level
+        Debug_KEYBOARD = (b[2]==0) ? true : false;
+        return;
+      }
       return;
   }
 }

@@ -141,16 +141,16 @@ void queueKeys(uint8_t* keys, int n) {
   }
   // memcpy(&c->seq, keys, n);
 
-#ifdef DEBUG_KEYBOARD
-  debugHandler->print("added keystrokes len=");
-  debugHandler->print(n);
-  debugHandler->print(" keys=[");
-  for (int i = 0; i < n; i++) {
-    debugHandler->print(keyboardBuffer[keyboardBufTail]->seq[i]);
-    debugHandler->print(",");
+  if (Debug_KEYBOARD) {
+    debugHandler->print("added keystrokes len=");
+    debugHandler->print(n);
+    debugHandler->print(" keys=[");
+    for (int i = 0; i < n; i++) {
+      debugHandler->print(keyboardBuffer[keyboardBufTail]->seq[i]);
+      debugHandler->print(",");
+    }
+    debugHandler->println("]");
   }
-  debugHandler->println("]");
-#endif
 
   keyboardBufTail++;
 }
@@ -185,10 +185,10 @@ void sendPress(unsigned long now) {
   Keyboard.press(key);
 #endif
 
-#ifdef DEBUG_KEYBOARD
-  debugHandler->print(" press key=");
-  debugHandler->print((uint8_t)key);
-#endif
+  if (Debug_KEYBOARD) {
+    debugHandler->print(" press key=");
+    debugHandler->print((uint8_t)key);
+  }
 
   keyboardTimer = now + KEYBOARD_PRESS_DELAY;
 
@@ -226,10 +226,10 @@ void sendRelease(unsigned long now) {
         Keyboard.release(key);  // release single key
 #endif
 
-#ifdef DEBUG_KEYBOARD
-        debugHandler->print(" rel ");
-        debugHandler->print(key);
-#endif
+        if (Debug_KEYBOARD) {
+          debugHandler->print(" rel ");
+          debugHandler->print(key);
+        }
         // keyboardTimer = now + KEYBOARD_RELEASE_DELAY;
         keyboardTimer = now + KEYBOARD_PRESS_DELAY;  // use longer delay; it does not work for multiple chars otherwise
     }
@@ -241,9 +241,9 @@ void sendRelease(unsigned long now) {
 #ifndef NO_KEYBOARD
   Keyboard.releaseAll();
 #endif
-#ifdef DEBUG_KEYBOARD
-  debugHandler->println(" release all");
-#endif
+  if (Debug_KEYBOARD) {
+    debugHandler->println(" release all");
+  }
   keyboardTimer = now + KEYBOARD_RELEASE_DELAY;
   free(keyboardBuffer[keyboardBufHead]);
   keyboardBufHead++;

@@ -1,7 +1,16 @@
 
+#include "CRC8.h"
+
 const uint8_t MARKER = 0xAA;
 const uint8_t MARKER_ASCII = 'A';  // used for debugging purposes
+#define HEADER_LEN 3               // marker + len + type + crc8
+#define CRC_LEN 1
 
+uint8_t addCrc(uint8_t* buf, int n) {
+  CRC8 c;
+  c.add(buf, n);
+  return c.getCRC();
+}
 
 void txPanel(Stream* s, String name) {
   uint8_t buf[3 + name.length()];
@@ -13,6 +22,30 @@ void txPanel(Stream* s, String name) {
     buf[n++] = name[i];
   }
   WriteMsg(s, (uint8_t*)&buf, n);
+  stats.stats[StatsTxMsgs]++;
+}
+
+void txPanelWithCRC8(Stream* s, String name) {
+  uint8_t buf[HEADER_LEN + CRC_LEN + 3 + name.length() + 1 + sizeof(statistics)];
+  int n = 0;
+  buf[n++] = MARKER;  // pos 0: marker
+  buf[n++] = sizeof(buf);  // pos 1: lenght
+  buf[n++] = PANEL_CRC;  // pos 2: msg id 
+  buf[n++] = 1; // pos 3: protocol version 1
+  buf[n++] = KEYBOARD_FLAG;  // pos 4: flags
+  buf[n++] = uint8_t(name.length());  // pos 5: string len
+  for (unsigned int i = 0; i < name.length(); i++) {
+    buf[n++] = name[i];
+  }
+  buf[n++] = sizeof(statistics)/ sizeof(uint16_t); // number of stats included
+  for (unsigned int i = 0; i < sizeof(statistics)/sizeof(uint16_t); i++) {
+  buf[n++] = stats.stats[i] >> 8 ;
+  buf[n++] = stats.stats[i] ;
+  }
+  buf[n] = addCrc((uint8_t*)&buf, n);
+  s->write((uint8_t*)&buf, n);
+  s->flush();
+  stats.stats[StatsTxMsgs]++;
 }
 
 void txButton(Stream* s, uint8_t id, uint8_t value) {
@@ -22,6 +55,7 @@ void txButton(Stream* s, uint8_t id, uint8_t value) {
   s->write(id);
   s->write(value);
   s->flush();
+  stats.stats[StatsTxMsgs]++;
 }
 
 void txSwitch(Stream* s, uint8_t id, uint8_t value) {
@@ -31,6 +65,7 @@ void txSwitch(Stream* s, uint8_t id, uint8_t value) {
   s->write(id);
   s->write(value);
   s->flush();
+  stats.stats[StatsTxMsgs]++;
 }
 
 void txPot(Stream* s, uint8_t id, uint16_t value) {
@@ -41,6 +76,7 @@ void txPot(Stream* s, uint8_t id, uint16_t value) {
   s->write(value >> 8);
   s->write(value);
   s->flush();
+  stats.stats[StatsTxMsgs]++;
 }
 
 void txRotary(Stream* s, uint8_t id, int8_t value) {
@@ -50,6 +86,7 @@ void txRotary(Stream* s, uint8_t id, int8_t value) {
   s->write(id);
   s->write(value);
   s->flush();
+  stats.stats[StatsTxMsgs]++;
 }
 
 static unsigned long nextTime = 0;
@@ -105,15 +142,15 @@ int WriteMsg(Stream* h, uint8_t* b, int l) {
 
 
 void resetBuffer(SerialMsg* h, String msg) {
-#ifdef DEBUG
-  debugHandler->print(msg + ": resetting buffer [");
-  for (unsigned int i = 0; i < h->count; i++) {
-    debugHandler->print(h->buffer[i], DEC);
-    debugHandler->print(",");
+  if (Debug) {
+    debugHandler->print(msg + ": resetting buffer [");
+    for (unsigned int i = 0; i < h->count; i++) {
+      debugHandler->print(h->buffer[i], DEC);
+      debugHandler->print(",");
+    }
+    debugHandler->println("]");
+    debugHandler->flush();
   }
-  debugHandler->println("]");
-  debugHandler->flush();
-#endif
   h->dataLen = 0;
   h->count = 0;
   h->timeout = 0;
@@ -123,6 +160,7 @@ void resetBuffer(SerialMsg* h, String msg) {
 int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
   if (!h->Port->available()) {
     if (h->timeout > 0 && h->timeout <= millis()) {
+      stats.stats[StatsTimeoutErrors]++;
       resetBuffer(h, "rx timeout");
     }
     return -1;
@@ -131,6 +169,7 @@ int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
   // read additional characters
   // return error if buffer is full
   if (h->count >= sizeof(h->buffer) / sizeof(uint8_t)) {
+        stats.stats[StatsRxErrors]++;
     resetBuffer(h, "buffer full");
     return -1;
   }
@@ -160,6 +199,7 @@ int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
       if (c != MARKER) {
         debugHandler->print("marker=");
         debugHandler->println(c, HEX);
+        stats.stats[StatsRxErrors]++;
         resetBuffer(h, "invalid marker");
         return -1;
       }
@@ -194,6 +234,7 @@ int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
       memcpy(b, h->buffer, h->count);
       h->state = STATE_MARKER;
       h->count = 0;
+      stats.stats[StatsRxMsgs]++;
       return n;
   }
 }

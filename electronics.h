@@ -8,8 +8,10 @@ const uint8_t BUTTON = 1;
 const uint8_t SWITCH = 2;
 const uint8_t POT = 3;
 const uint8_t ROTARY = 4;
-const uint8_t PANEL = 5;
+const uint8_t PANEL = 5; // to be decommissioned
 const uint8_t KEYSTROKES = 6;
+const uint8_t LOGLEVEL = 7;
+const uint8_t PANEL_CRC = 8; 
 const uint8_t SYNC = 254;       // reserved for additional messages
 const uint8_t EXTENSION = 255;  // reserved for additional messages
 
@@ -21,7 +23,7 @@ typedef struct cmd {
   uint16_t seq[];
 } cmd;
 
-typedef struct button_t {
+typedef struct {
   String name;
   uint8_t pin;
   int value;       // pin current value
@@ -29,12 +31,12 @@ typedef struct button_t {
   uint32_t debounceTime;  // the last time the output pin was toggled
 } button;
 
-typedef struct rotary {
+typedef struct {
   String name;
   uint8_t aPin;  // A or Clock pin
   uint8_t bPin;  // B or data pin
   uint8_t buttonPin;
-  long debounceTime;  // the last time the output pin was toggled
+  uint32_t debounceTime;  // the last time the output pin was toggled
   int aState;
   int aStatePrevious;
   int bStatePrevious;
@@ -56,9 +58,15 @@ extern const int nRotaryControls;
 extern rotary rotaryControls[];
 extern const String panelName;
 
-typedef struct FlightSimulator_t {
+const int StatsRxMsgs = 0;
+const int StatsTxMsgs = 1;
+const int StatsRxErrors = 2;
+const int StatsTxErrors = 3;
+const int StatsTimeoutErrors = 4;
 
-} FlightSimulator;
+typedef struct {
+  uint16_t stats[5];
+} statistics;
 
 
 

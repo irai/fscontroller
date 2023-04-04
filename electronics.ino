@@ -14,36 +14,36 @@ void processRotary(Stream* s, rotary* r) {
   if (r->aStatePrevious != r->aState) {
     r->bState = digitalRead(r->bPin);  // for accuracy, must read again after a change to pin A
 
-#ifdef DEBUG
-    debugHandler->print("Rotary PIN ");
-    debugHandler->print(r->aPin);
-    debugHandler->print("=");
-    debugHandler->print(r->aState);
-    debugHandler->print(" PIN ");
-    debugHandler->print(r->bPin);
-    debugHandler->print("=");
-    debugHandler->print(r->bState);
-#endif
+    if (Debug) {
+      debugHandler->print("Rotary PIN ");
+      debugHandler->print(r->aPin);
+      debugHandler->print("=");
+      debugHandler->print(r->aState);
+      debugHandler->print(" PIN ");
+      debugHandler->print(r->bPin);
+      debugHandler->print("=");
+      debugHandler->print(r->bState);
+    }
 
     // If the B value is different than A value,
     // the encoder is rotating anti-clockwise
     if (r->bState != r->aState) {
-#if DEBUG
-      debugHandler->println(" decrease");
-#endif
+      if (Debug) {
+        debugHandler->println(" decrease");
+      }
       txRotary(s, r->aPin, -1);
 
     } else {
       // Encoder is rotating clockwise
-#if DEBUG
-      debugHandler->println(" increase");
-#endif
+      if (Debug) {
+        debugHandler->println(" increase");
+      }
 
       txRotary(s, r->aPin, +1);
     }
-#if DEBUG
-    debugHandler->flush();
-#endif
+    if (Debug) {
+      debugHandler->flush();
+    }
   }
   r->aStatePrevious = r->aState;  // Remember last A
   r->debounceTime = millis() + DEBOUNCE_TIME;
@@ -66,14 +66,14 @@ void processPot(Stream* s, button* b) {
   b->debounceTime = millis() + DEBOUNCE_TIME;
   b->savedValue = b->value;
 
-#ifdef DEBUG
-  debugHandler->print(b->name);
-  debugHandler->print(" pin=");
-  debugHandler->print(b->pin);
-  debugHandler->print(" value=");
-  debugHandler->println(b->value);
-  debugHandler->flush();
-#endif
+  if (Debug) {
+    debugHandler->print(b->name);
+    debugHandler->print(" pin=");
+    debugHandler->print(b->pin);
+    debugHandler->print(" value=");
+    debugHandler->println(b->value);
+    debugHandler->flush();
+  }
   txPot(s, b->pin, b->value);
 }
 
@@ -84,14 +84,14 @@ void processSwitch(Stream* s, button* b) {
   b->debounceTime = millis() + DEBOUNCE_TIME;
   b->savedValue = b->value;
 
-#ifdef DEBUG
-  debugHandler->print(b->name);
-  debugHandler->print(" pin=");
-  debugHandler->print(b->pin);
-  debugHandler->print(" value=");
-  debugHandler->println(b->value);
-  debugHandler->flush();
-#endif
+  if (Debug) {
+    debugHandler->print(b->name);
+    debugHandler->print(" pin=");
+    debugHandler->print(b->pin);
+    debugHandler->print(" value=");
+    debugHandler->println(b->value);
+    debugHandler->flush();
+  }
 
   txSwitch(s, b->pin, b->value);
 }
@@ -103,14 +103,14 @@ void processPushButton(Stream* s, button* b) {
   b->debounceTime = millis() + DEBOUNCE_TIME;
   b->savedValue = b->value;
 
-#ifdef DEBUG
-  debugHandler->print(b->name);
-  debugHandler->print(" pin=");
-  debugHandler->print(b->pin);
-  debugHandler->print(" value=");
-  debugHandler->println(b->value);
-  debugHandler->flush();
-#endif
+  if (Debug) {
+    debugHandler->print(b->name);
+    debugHandler->print(" pin=");
+    debugHandler->print(b->pin);
+    debugHandler->print(" value=");
+    debugHandler->println(b->value);
+    debugHandler->flush();
+  }
 
   txButton(s, b->pin, b->value);
 }
