@@ -3,8 +3,6 @@
 
 const uint8_t MARKER = 0xAA;
 const uint8_t MARKER_ASCII = 'A';  // used for debugging purposes
-#define HEADER_LEN 3               // marker + len + type + crc8
-#define CRC_LEN 1
 
 CRC8 crc8;
 
@@ -16,28 +14,14 @@ uint8_t checksum(uint8_t* buf, uint8_t n) {
   return crc8.getCRC();
 }
 
-void txPanel(Stream* s, String name) {
-  uint8_t buf[3 + name.length()];
-  buf[0] = PANEL;
-  buf[1] = KEYBOARD_FLAG;
-  buf[2] = uint8_t(name.length());
-  int n = 3;
-  for (unsigned int i = 0; i < name.length(); i++) {
-    buf[n++] = name[i];
-  }
-  WriteMsg(s, (uint8_t*)&buf, n);
-  stats.stats[StatsTxMsgs]++;
-}
 
-void txPanelWithCRC8(Stream* s, String name) {
-  uint8_t buf[HEADER_LEN + CRC_LEN + 3 + name.length() + 1 + sizeof(statistics)];
+void txPanel(Stream* s, String name) {
+  uint8_t buf[3 + 1 +  name.length() + 1 + sizeof(statistics)];
   int n = 0;
-  buf[n++] = MARKER;                  // pos 0: marker
-  buf[n++] = sizeof(buf);             // pos 1: length
-  buf[n++] = PANEL_CRC;               // pos 2: msg id
-  buf[n++] = 1;                       // pos 3: protocol version 1
-  buf[n++] = KEYBOARD_FLAG;           // pos 4: flags
-  buf[n++] = uint8_t(name.length());  // pos 5: string len
+  buf[n++] = PANEL;                   // pos 0: msg id
+  buf[n++] = 1;                       // pos 1: protocol version 1
+  buf[n++] = KEYBOARD_FLAG;           // pos 2: flags
+  buf[n++] = uint8_t(name.length());  // pos 3: string len
   for (unsigned int i = 0; i < name.length(); i++) {
     buf[n++] = name[i];
   }
@@ -46,51 +30,40 @@ void txPanelWithCRC8(Stream* s, String name) {
     buf[n++] = stats.stats[i] >> 8;
     buf[n++] = stats.stats[i];
   }
-  buf[n] = checksum((uint8_t*)&buf, n);
-  s->write((uint8_t*)&buf, n);
-  s->flush();
-  stats.stats[StatsTxMsgs]++;
+  WriteMsg(s,(uint8_t *)&buf, n);
 }
 
 void txButton(Stream* s, uint8_t id, uint8_t value) {
-  s->write(MARKER);
-  s->write(3);
-  s->write(BUTTON);
-  s->write(id);
-  s->write(value);
-  s->flush();
-  stats.stats[StatsTxMsgs]++;
+  uint8_t buf[3];
+  buf[0] = BUTTON;
+  buf[1] = id;
+  buf[2] = value;
+  WriteMsg(s,(uint8_t *)&buf, sizeof(buf));
 }
 
 void txSwitch(Stream* s, uint8_t id, uint8_t value) {
-  s->write(MARKER);
-  s->write(3);
-  s->write(SWITCH);
-  s->write(id);
-  s->write(value);
-  s->flush();
-  stats.stats[StatsTxMsgs]++;
+  uint8_t buf[3];
+  buf[0] = SWITCH;
+  buf[1] = id;
+  buf[2] = value;
+  WriteMsg(s,(uint8_t *)&buf, sizeof(buf));
 }
 
 void txPot(Stream* s, uint8_t id, uint16_t value) {
-  s->write(MARKER);
-  s->write(4);
-  s->write(POT);
-  s->write(id);
-  s->write(value >> 8);
-  s->write(value);
-  s->flush();
-  stats.stats[StatsTxMsgs]++;
+  uint8_t buf[4];
+  buf[0] = POT;
+  buf[1] = id;
+  buf[2] = value >> 8;
+  buf[3] = value;
+  WriteMsg(s,(uint8_t *)&buf, sizeof(buf));
 }
 
 void txRotary(Stream* s, uint8_t id, int8_t value) {
-  s->write(MARKER);
-  s->write(3);
-  s->write(ROTARY);
-  s->write(id);
-  s->write(value);
-  s->flush();
-  stats.stats[StatsTxMsgs]++;
+  uint8_t buf[3];
+  buf[0] = ROTARY;
+  buf[1] = id;
+  buf[2] = value;
+  WriteMsg(s,(uint8_t *)&buf, sizeof(buf));
 }
 
 const int STATE_MARKER = 1;
@@ -113,10 +86,10 @@ void SerialClose(SerialMsg* h) {
 int WriteMsg(Stream* h, uint8_t* b, int l) {
   h->write(MARKER);
   h->write(l);
-  for (int i = 0; i < l; i++) {
-    h->write(b[i]);
-  }
+  h->write(b, l);
+  h->write(checksum(b,l));
   h->flush();
+  stats.stats[StatsTxMsgs]++;
   return l;
 }
 

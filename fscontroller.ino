@@ -197,7 +197,7 @@ void readPi(Stream *s) {
       }
       return;
     case PANEL:
-      txPanelWithCRC8(s, panelName);
+      txPanel(s, panelName);
       return;
     case LOGLEVEL:
       // msg: 0 - type

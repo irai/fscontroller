@@ -8,10 +8,9 @@ const uint8_t BUTTON = 1;
 const uint8_t SWITCH = 2;
 const uint8_t POT = 3;
 const uint8_t ROTARY = 4;
-const uint8_t PANEL = 5; // to be decommissioned
+const uint8_t PANEL = 5; 
 const uint8_t KEYSTROKES = 6;
 const uint8_t LOGLEVEL = 7;
-const uint8_t PANEL_CRC = 8; 
 const uint8_t SYNC = 254;       // reserved for additional messages
 const uint8_t EXTENSION = 255;  // reserved for additional messages
 
