@@ -23,7 +23,6 @@ typedef struct cmd {
 } cmd;
 
 typedef struct {
-  String name;
   uint8_t pin;
   int value;       // pin current value
   int savedValue;  // pin saved value
@@ -31,7 +30,6 @@ typedef struct {
 } button;
 
 typedef struct {
-  String name;
   uint8_t aPin;  // A or Clock pin
   uint8_t bPin;  // B or data pin
   uint8_t buttonPin;

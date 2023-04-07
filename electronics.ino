@@ -15,13 +15,13 @@ void processRotary(Stream* s, rotary* r) {
     r->bState = digitalRead(r->bPin);  // for accuracy, must read again after a change to pin A
 
     if (Debug) {
-      debugHandler->print("Rotary PIN ");
+      debugHandler->print("Rotary pin=");
       debugHandler->print(r->aPin);
-      debugHandler->print("=");
+      debugHandler->print(" value=");
       debugHandler->print(r->aState);
-      debugHandler->print(" PIN ");
+      debugHandler->print(" pin=");
       debugHandler->print(r->bPin);
-      debugHandler->print("=");
+      debugHandler->print(" value=");
       debugHandler->print(r->bState);
     }
 
@@ -67,8 +67,7 @@ void processPot(Stream* s, button* b) {
   b->savedValue = b->value;
 
   if (Debug) {
-    debugHandler->print(b->name);
-    debugHandler->print(" pin=");
+    debugHandler->print("pot pin=");
     debugHandler->print(b->pin);
     debugHandler->print(" value=");
     debugHandler->println(b->value);
@@ -85,8 +84,7 @@ void processSwitch(Stream* s, button* b) {
   b->savedValue = b->value;
 
   if (Debug) {
-    debugHandler->print(b->name);
-    debugHandler->print(" pin=");
+    debugHandler->print("switch pin=");
     debugHandler->print(b->pin);
     debugHandler->print(" value=");
     debugHandler->println(b->value);
@@ -94,23 +92,4 @@ void processSwitch(Stream* s, button* b) {
   }
 
   txSwitch(s, b->pin, b->value);
-}
-
-void processPushButton(Stream* s, button* b) {
-  if (b->value == b->savedValue || b->debounceTime > millis()) {
-    return;
-  }
-  b->debounceTime = millis() + DEBOUNCE_TIME;
-  b->savedValue = b->value;
-
-  if (Debug) {
-    debugHandler->print(b->name);
-    debugHandler->print(" pin=");
-    debugHandler->print(b->pin);
-    debugHandler->print(" value=");
-    debugHandler->println(b->value);
-    debugHandler->flush();
-  }
-
-  txButton(s, b->pin, b->value);
 }

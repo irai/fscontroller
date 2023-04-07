@@ -6,7 +6,7 @@
 // Void keyboard dependency for boards that don't have usb keyboard.
 // This allow building but won't send any key strokes to the usb.
 // i.e. Mega
-// #define NO_KEYBOARD 1
+#define NO_KEYBOARD 1
 
 bool Debug = true;
 bool Debug_KEYBOARD = false;
@@ -16,7 +16,7 @@ statistics stats;
 // Uncomment this line to enable ascii messages to be sent via the IDE to the arduino.
 // This is useful for debugging. The arduino will interpret messages starting with "A" as an ascii msg.
 // for example: A234 - send a msg of 2 bytes, type 3, value 4
-#define ENABLE_ASCII_MSG
+// #define ENABLE_ASCII_MSG
 
 // Reserved pins
 #define PIN_ON_OFF A0  // first pin after GND on Teensy 2.0++
@@ -95,11 +95,6 @@ void setup() {
     switchButtons[i].savedValue = digitalRead(switchButtons[i].pin);
   }
 
-  for (i = 0; i < npushButtons; i++) {
-    pinMode(pushButtons[i].pin, INPUT_PULLUP);
-    pushButtons[i].savedValue = digitalRead(pushButtons[i].pin);
-  }
-
   for (i = 0; i < nPotButtons; i++) {
     pinMode(potButtons[i].pin, INPUT);
     potButtons[i].savedValue = analogRead(potButtons[i].pin);
@@ -123,10 +118,12 @@ void setup() {
 void loop() {
 
   // System Disabled?
+  /*
   if (digitalRead(PIN_ON_OFF) != 0) {
     digitalWrite(LED_BUILTIN, LOW);
     return;
   }
+  */
   digitalWrite(LED_BUILTIN, HIGH);  // Turn indicator light on.
 
   // read all pins first
@@ -136,9 +133,6 @@ void loop() {
   }
   for (i = 0; i < nPotButtons; i++) {
     potButtons[i].value = analogRead(potButtons[i].pin);
-  }
-  for (i = 0; i < npushButtons; i++) {
-    pushButtons[i].value = digitalRead(pushButtons[i].pin);
   }
   for (i = 0; i < nRotaryControls; i++) {
     rotaryControls[i].aState = digitalRead(rotaryControls[i].aPin);
@@ -152,10 +146,6 @@ void loop() {
 
   for (i = 0; i < nPotButtons; i++) {
     processPot(piHandler, &(potButtons[i]));
-  }
-
-  for (i = 0; i < npushButtons; i++) {
-    processPushButton(piHandler, &pushButtons[i]);
   }
 
   for (i = 0; i < nRotaryControls; i++) {
