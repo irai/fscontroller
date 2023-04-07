@@ -6,10 +6,14 @@ const uint8_t MARKER_ASCII = 'A';  // used for debugging purposes
 #define HEADER_LEN 3               // marker + len + type + crc8
 #define CRC_LEN 1
 
-uint8_t addCrc(uint8_t* buf, int n) {
-  CRC8 c;
-  c.add(buf, n);
-  return c.getCRC();
+CRC8 crc8;
+
+uint8_t checksum(uint8_t* buf, uint8_t n) {
+  crc8.restart();
+  crc8.add(MARKER);  // include header in calculation
+  crc8.add(n);
+  crc8.add(buf, n);
+  return crc8.getCRC();
 }
 
 void txPanel(Stream* s, String name) {
@@ -28,21 +32,21 @@ void txPanel(Stream* s, String name) {
 void txPanelWithCRC8(Stream* s, String name) {
   uint8_t buf[HEADER_LEN + CRC_LEN + 3 + name.length() + 1 + sizeof(statistics)];
   int n = 0;
-  buf[n++] = MARKER;  // pos 0: marker
-  buf[n++] = sizeof(buf);  // pos 1: lenght
-  buf[n++] = PANEL_CRC;  // pos 2: msg id 
-  buf[n++] = 1; // pos 3: protocol version 1
-  buf[n++] = KEYBOARD_FLAG;  // pos 4: flags
+  buf[n++] = MARKER;                  // pos 0: marker
+  buf[n++] = sizeof(buf);             // pos 1: length
+  buf[n++] = PANEL_CRC;               // pos 2: msg id
+  buf[n++] = 1;                       // pos 3: protocol version 1
+  buf[n++] = KEYBOARD_FLAG;           // pos 4: flags
   buf[n++] = uint8_t(name.length());  // pos 5: string len
   for (unsigned int i = 0; i < name.length(); i++) {
     buf[n++] = name[i];
   }
-  buf[n++] = sizeof(statistics)/ sizeof(uint16_t); // number of stats included
-  for (unsigned int i = 0; i < sizeof(statistics)/sizeof(uint16_t); i++) {
-  buf[n++] = stats.stats[i] >> 8 ;
-  buf[n++] = stats.stats[i] ;
+  buf[n++] = sizeof(statistics) / sizeof(uint16_t);  // number of stats included
+  for (unsigned int i = 0; i < sizeof(statistics) / sizeof(uint16_t); i++) {
+    buf[n++] = stats.stats[i] >> 8;
+    buf[n++] = stats.stats[i];
   }
-  buf[n] = addCrc((uint8_t*)&buf, n);
+  buf[n] = checksum((uint8_t*)&buf, n);
   s->write((uint8_t*)&buf, n);
   s->flush();
   stats.stats[StatsTxMsgs]++;
@@ -87,29 +91,6 @@ void txRotary(Stream* s, uint8_t id, int8_t value) {
   s->write(value);
   s->flush();
   stats.stats[StatsTxMsgs]++;
-}
-
-static unsigned long nextTime = 0;
-
-void testSerial(Stream* s) {
-
-  unsigned long now = millis();
-  if (nextTime > now) {
-    return;
-  }
-  nextTime = now + 1000 * 10;
-  s->write('A');
-  //   Serial.write('A');
-  //   Serial.write('A');
-  //   Serial.write('A');
-  //   Serial.write('\n');
-  //   txButton(1, 1);
-  //   txButton(2, 0);
-  //   txButton(3, 1);
-  //   txSwitch(4, 1);
-  //   txPot(5, 999);
-  //   txRotary(5, 1);
-  //   txRotary(5, -1);
 }
 
 const int STATE_MARKER = 1;
@@ -169,7 +150,7 @@ int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
   // read additional characters
   // return error if buffer is full
   if (h->count >= sizeof(h->buffer) / sizeof(uint8_t)) {
-        stats.stats[StatsRxErrors]++;
+    stats.stats[StatsRxErrors]++;
     resetBuffer(h, "buffer full");
     return -1;
   }
@@ -216,7 +197,7 @@ int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
         resetBuffer(h, "msg too big");
         return -1;
       }
-      h->dataLen = c;
+      h->dataLen = c + 1;  // add 1 for checksum
       h->count = 0;
       h->state = STATE_DATA;
       return 0;
@@ -229,9 +210,20 @@ int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
         return 0;
       }
 
-      // return the full msg to the caller
-      int n = h->count;
-      memcpy(b, h->buffer, h->count);
+      // checksum validation
+      uint8_t cs = checksum(h->buffer, h->count - 1);
+      if (h->buffer[h->count - 1] != cs) {
+        debugHandler->print("invalid checksum=");
+        debugHandler->print(h->buffer[h->count - 1]);
+        debugHandler->print(" wanted=");
+        debugHandler->println(cs);
+        resetBuffer(h, "invalid checksum");
+        return -1;
+      }
+
+      // return the full msg to the caller minus checksum
+      int n = h->count - 1;
+      memcpy(b, h->buffer, n);
       h->state = STATE_MARKER;
       h->count = 0;
       stats.stats[StatsRxMsgs]++;

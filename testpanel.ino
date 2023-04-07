@@ -11,7 +11,7 @@ button pushButtons[] = {
 
 
 button potButtons[] = {
-  { "test pot", A2 }
+  // { "test pot", A2 }
 };
 
 rotary rotaryControls[] = {};

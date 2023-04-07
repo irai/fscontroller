@@ -1,4 +1,5 @@
 {
-    "port": "COM6",
-    "board": "teensy:avr:teensypp2"
+    "port": "COM4",
+    "board": "teensy:avr:teensypp2",
+    "configuration": "usb=hid,speed=16,keys=en-us"
 }

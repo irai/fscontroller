@@ -16,7 +16,7 @@ statistics stats;
 // Uncomment this line to enable ascii messages to be sent via the IDE to the arduino.
 // This is useful for debugging. The arduino will interpret messages starting with "A" as an ascii msg.
 // for example: A234 - send a msg of 2 bytes, type 3, value 4
-// #define ENABLE_ASCII_MSG
+#define ENABLE_ASCII_MSG
 
 // Reserved pins
 #define PIN_ON_OFF A0  // first pin after GND on Teensy 2.0++
@@ -35,8 +35,8 @@ statistics stats;
 // #define LIGHTS_PANEL 1
 // #define FLAPS_PANEL 1
 // #define G1000_PANEL 1
-// #define TEST_PANEL 1
-#define KEYBOARD_PANEL 1  // panel with no electronics used for keyboard
+#define TEST_PANEL 1
+// #define KEYBOARD_PANEL 1  // panel with no electronics used for keyboard
 
 Stream *piHandler;
 Stream *xboxHandler;
@@ -197,19 +197,27 @@ void readPi(Stream *s) {
       }
       return;
     case PANEL:
-      txPanel(s, panelName);
+      txPanelWithCRC8(s, panelName);
       return;
     case LOGLEVEL:
-      if (n != 2) {
+      // msg: 0 - type
+      //      1 - variable
+      //      2 - debug value
+      //      3 - checksum
+      if (n != 4) {
         return;
       }
       switch (b[1]) {
-        case 1: // 1 is debug level
-        Debug = (b[2]==0) ? true : false;
-        return;
-        case 2: // 2 is keyboard debug level
-        Debug_KEYBOARD = (b[2]==0) ? true : false;
-        return;
+        case 1:  // 1 is debug level
+          Debug = ((b[2] == 0) ? false : true);
+          debugHandler->print("debug=");
+          debugHandler->println(Debug);
+          return;
+        case 2:  // 2 is keyboard debug level
+          Debug_KEYBOARD = (b[2] == 0) ? false : true;
+          debugHandler->print("debug keyboard=");
+          debugHandler->println(Debug_KEYBOARD);
+          return;
       }
       return;
   }
