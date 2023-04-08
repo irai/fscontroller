@@ -199,6 +199,7 @@ int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
       memcpy(b, h->buffer, n);
       h->state = STATE_MARKER;
       h->count = 0;
+      h->timeout = 0;
       stats.stats[StatsRxMsgs]++;
       return n;
   }
