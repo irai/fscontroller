@@ -55,6 +55,7 @@ extern const int nRotaryControls;
 extern rotary rotaryControls[];
 extern const String panelName;
 
+// These index positions for statistics count are part of the public msg interface.
 const int StatsRxMsgs = 0;
 const int StatsTxMsgs = 1;
 const int StatsRxErrors = 2;

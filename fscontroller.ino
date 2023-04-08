@@ -69,7 +69,7 @@ void setup() {
 #endif
 
   // Serial.println("serial ");
-  Serial1.println("serial 1");
+  // Serial1.println("serial 1");
 
 #ifdef KEYBOARD_PANEL
   piHandler = &Serial1;
