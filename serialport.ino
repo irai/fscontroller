@@ -16,7 +16,7 @@ uint8_t checksum(uint8_t* buf, uint8_t n) {
 
 
 void txPanel(Stream* s, String name) {
-  uint8_t buf[3 + 1 +  name.length() + 1 + sizeof(statistics)];
+  uint8_t buf[3 + 1 + name.length() + 1 + sizeof(statistics)];
   int n = 0;
   buf[n++] = PANEL;                   // pos 0: msg id
   buf[n++] = 1;                       // pos 1: protocol version 1
@@ -30,7 +30,7 @@ void txPanel(Stream* s, String name) {
     buf[n++] = stats.stats[i] >> 8;
     buf[n++] = stats.stats[i];
   }
-  WriteMsg(s,(uint8_t *)&buf, n);
+  WriteMsg(s, (uint8_t*)&buf, n);
 }
 
 void txButton(Stream* s, uint8_t id, uint8_t value) {
@@ -38,7 +38,7 @@ void txButton(Stream* s, uint8_t id, uint8_t value) {
   buf[0] = BUTTON;
   buf[1] = id;
   buf[2] = value;
-  WriteMsg(s,(uint8_t *)&buf, sizeof(buf));
+  WriteMsg(s, (uint8_t*)&buf, sizeof(buf));
 }
 
 void txSwitch(Stream* s, uint8_t id, uint8_t value) {
@@ -46,7 +46,7 @@ void txSwitch(Stream* s, uint8_t id, uint8_t value) {
   buf[0] = SWITCH;
   buf[1] = id;
   buf[2] = value;
-  WriteMsg(s,(uint8_t *)&buf, sizeof(buf));
+  WriteMsg(s, (uint8_t*)&buf, sizeof(buf));
 }
 
 void txPot(Stream* s, uint8_t id, uint16_t value) {
@@ -55,7 +55,7 @@ void txPot(Stream* s, uint8_t id, uint16_t value) {
   buf[1] = id;
   buf[2] = value >> 8;
   buf[3] = value;
-  WriteMsg(s,(uint8_t *)&buf, sizeof(buf));
+  WriteMsg(s, (uint8_t*)&buf, sizeof(buf));
 }
 
 void txRotary(Stream* s, uint8_t id, int8_t value) {
@@ -63,7 +63,7 @@ void txRotary(Stream* s, uint8_t id, int8_t value) {
   buf[0] = ROTARY;
   buf[1] = id;
   buf[2] = value;
-  WriteMsg(s,(uint8_t *)&buf, sizeof(buf));
+  WriteMsg(s, (uint8_t*)&buf, sizeof(buf));
 }
 
 const int STATE_MARKER = 1;
@@ -87,7 +87,7 @@ int WriteMsg(Stream* h, uint8_t* b, int l) {
   h->write(MARKER);
   h->write(l);
   h->write(b, l);
-  h->write(checksum(b,l));
+  h->write(checksum(b, l));
   h->flush();
   stats.stats[StatsTxMsgs]++;
   return l;
@@ -163,10 +163,12 @@ int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
 
     case STATE_LEN:
       if (c == 0 || c == 0xff) {
+        stats.stats[StatsRxErrors]++;
         resetBuffer(h, "invalid len");
         return -1;
       }
       if (c > sizeof(h->buffer) / sizeof(uint8_t)) {
+        stats.stats[StatsRxErrors]++;
         resetBuffer(h, "msg too big");
         return -1;
       }
@@ -190,6 +192,7 @@ int ReadMsgNonBlocking(SerialMsg* h, uint8_t* b, int l) {
         debugHandler->print(h->buffer[h->count - 1]);
         debugHandler->print(" wanted=");
         debugHandler->println(cs);
+        stats.stats[StatsRxErrors]++;
         resetBuffer(h, "invalid checksum");
         return -1;
       }
