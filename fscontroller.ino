@@ -86,6 +86,10 @@ void setup() {
   // piHandler->println("pi serial");
   // xboxHandler->println("xbox serial");
 
+  // Use default board voltage reference
+  // see: https://www.pjrc.com/teensy/adc.html
+  analogReference(DEFAULT);
+
   int i;
   pinMode(LED_BUILTIN, OUTPUT);       // initialise led builtin as output
   pinMode(PIN_ON_OFF, INPUT_PULLUP);  // initalise control 1 with digital resistor (built in the board)
@@ -132,6 +136,8 @@ void loop() {
     switchButtons[i].value = digitalRead(switchButtons[i].pin);
   }
   for (i = 0; i < nPotButtons; i++) {
+    potButtons[i].value = analogRead(potButtons[i].pin);
+    delay(1);  // wait for voltage to stabilise and read again
     potButtons[i].value = analogRead(potButtons[i].pin);
   }
   for (i = 0; i < nRotaryControls; i++) {
@@ -193,8 +199,7 @@ void readPi(Stream *s) {
       // msg: 0 - type
       //      1 - variable
       //      2 - debug value
-      //      3 - checksum
-      if (n != 4) {
+      if (n != 3) {
         return;
       }
       switch (b[1]) {
