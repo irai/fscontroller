@@ -58,7 +58,7 @@ button switchButtons[] = {
 };
 
 button potButtons[] = {
-  // { A2 }
+  { A7 }
 };
 
 rotary rotaryControls[] = {

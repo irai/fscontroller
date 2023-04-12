@@ -8,7 +8,7 @@
 // i.e. Mega
 #define NO_KEYBOARD 1
 
-bool Debug = true;
+bool Debug = false;
 bool Debug_KEYBOARD = false;
 statistics stats;
 
@@ -32,10 +32,10 @@ statistics stats;
 
 
 // uncomment one of these to build the right panel
-// #define LIGHTS_PANEL 1
+#define LIGHTS_PANEL 1
 // #define FLAPS_PANEL 1
 // #define G1000_PANEL 1
-#define TEST_PANEL 1
+// #define TEST_PANEL 1
 // #define KEYBOARD_PANEL 1  // panel with no electronics used for keyboard
 
 Stream *piHandler;
@@ -83,12 +83,16 @@ void setup() {
 
   serialMsg = NewSerialMsg(piHandler);
 
-  // piHandler->println("pi serial");
-  // xboxHandler->println("xbox serial");
+// piHandler->println("pi serial");
+// xboxHandler->println("xbox serial");
 
-  // Use default board voltage reference
-  // see: https://www.pjrc.com/teensy/adc.html
+// Use default board voltage reference
+// see: https://www.pjrc.com/teensy/adc.html
+#ifdef ARDUINO_TEENSY41
+#define DEFAULT 0
+#endif
   analogReference(DEFAULT);
+
 
   int i;
   pinMode(LED_BUILTIN, OUTPUT);       // initialise led builtin as output
@@ -122,12 +126,10 @@ void setup() {
 void loop() {
 
   // System Disabled?
-  /*
   if (digitalRead(PIN_ON_OFF) != 0) {
     digitalWrite(LED_BUILTIN, LOW);
     return;
   }
-  */
   digitalWrite(LED_BUILTIN, HIGH);  // Turn indicator light on.
 
   // read all pins first

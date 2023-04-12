@@ -99,7 +99,7 @@ uint16_t mapFS2KeyboardCode(uint8_t c) {
   return kmap[k].keycode;
 }
 
-#ifdef NO_KEYBOARD
+#ifndef KEY_LEFT_CTRL
 // Modifiers
 #define KEY_LEFT_CTRL 0x80
 #define KEY_LEFT_SHIFT 0x81
