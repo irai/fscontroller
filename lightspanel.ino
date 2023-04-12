@@ -1,7 +1,7 @@
 #ifdef LIGHTS_PANEL
 button switchButtons[] = {
-  { 0},
-  { 1},
+  // { 0}, // reserved
+  // { 1}, // reserved
   { 2},
   { 3},
   {  4},
@@ -58,13 +58,13 @@ button switchButtons[] = {
 
 // https://docs.arduino.cc/learn/electronics/potentiometer-basics
 button potButtons[] = {
-  { "throtle", A3}, // pin 57
-  //  { "mixture", A4}, // pin 58
-  //  { "propeller", A5} // pin 59
+  {  .pin = A3}, // pin 57
+   { .pin = A4}, // pin 58
+   { .pin = A5} // pin 59
 };
 
 rotary rotaryControls[] = {
-  { "trim", 6, 7, 5}
+  { .aPin = 6, .bPin = 7, .buttonPin = 5}
 };
 
 const int nSwitchButtons = sizeof(switchButtons)/sizeof(button);
