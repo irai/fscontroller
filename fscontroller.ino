@@ -8,7 +8,7 @@
 // i.e. Mega
 #define NO_KEYBOARD 1
 
-bool Debug = false;
+bool Debug = true;
 bool Debug_KEYBOARD = false;
 statistics stats;
 

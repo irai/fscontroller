@@ -11,7 +11,10 @@ void processRotary(Stream* s, rotary* r) {
     return;
   }
   // If A state changed, then wheel has moved
-  if (r->aStatePrevious != r->aState) {
+  // Some integrated board and rotary switch generate both a HIGH and LOW voltage for a single change of the wheel but others generate a single change.
+  // React in software to avoid double count. For example the trim control uses an integrated circuit that generates both HIGH and LOW.
+    r->aState = digitalRead(r->aPin);  // for accuracy, must read again after a change to pin A
+  if (r->aStatePrevious != r->aState ) {
     r->bState = digitalRead(r->bPin);  // for accuracy, must read again after a change to pin A
 
     if (Debug) {
@@ -46,7 +49,7 @@ void processRotary(Stream* s, rotary* r) {
     }
   }
   r->aStatePrevious = r->aState;  // Remember last A
-  r->debounceTime = millis() + DEBOUNCE_TIME;
+  r->debounceTime = 0;  // no debounce needed
 }
 
 void processPot(Stream* s, button* b) {
@@ -56,9 +59,8 @@ void processPot(Stream* s, button* b) {
 
   // linear smoothing to avoid fluctuations
   // ignore outliers
-  // When using power from Raspberry PI, seen very large oscilations between +50 and -50 in the ADC converter; ignore
   int value = b->savedValue + ((b->value - b->savedValue) / 4);
-  // int value = b->value;
+
   if (value == b->savedValue) {
     return;
   }
@@ -75,7 +77,7 @@ void processPot(Stream* s, button* b) {
     debugHandler->flush();
   }
 
-  b->debounceTime = millis() + DEBOUNCE_TIME;
+  b->debounceTime = 0;
   b->savedValue = b->value;
   txPot(s, b->pin, b->savedValue);
 }

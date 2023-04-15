@@ -11,11 +11,11 @@ button switchButtons[] = {
 button potButtons[] = {};
 
 rotary rotaryControls[] = {
-  { 27, 0, 1, 0, 0, 0, 0, 0 },
-  { 7, 8, 1, 0, 0, 0, 0, 0 },
-  { 9, 10, 11, 0, 0, 0, 0, 0 },
-  { 12, 13, 16, 0, 0, 0, 0, 0 },
-  { 14, 15, 16, 0, 0, 0, 0, 0 }
+  { .aPin = 27, .bPin = 0, .buttonPin = 1},
+  { .aPin = 7, .bPin = 8, .buttonPin = 1},
+  { .aPin = 9, .bPin = 10, .buttonPin = 11},
+  { .aPin = 12, .bPin = 13, .buttonPin = 16},
+  { .aPin = 14, .bPin = 15, .buttonPin = 16}
 };
 
 const int nSwitchButtons = sizeof(switchButtons) / sizeof(button);

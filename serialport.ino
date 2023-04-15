@@ -14,7 +14,6 @@ uint8_t checksum(uint8_t* buf, uint8_t n) {
   return crc8.getCRC();
 }
 
-
 void txPanel(Stream* s, String name) {
   uint8_t buf[3 + 1 + name.length() + 1 + sizeof(statistics)];
   int n = 0;
@@ -33,37 +32,23 @@ void txPanel(Stream* s, String name) {
   WriteMsg(s, (uint8_t*)&buf, n);
 }
 
-void txButton(Stream* s, uint8_t id, uint8_t value) {
-  uint8_t buf[3];
-  buf[0] = BUTTON;
-  buf[1] = id;
-  buf[2] = value;
-  WriteMsg(s, (uint8_t*)&buf, sizeof(buf));
-}
-
-void txSwitch(Stream* s, uint8_t id, uint8_t value) {
-  uint8_t buf[3];
-  buf[0] = SWITCH;
-  buf[1] = id;
-  buf[2] = value;
-  WriteMsg(s, (uint8_t*)&buf, sizeof(buf));
-}
-
-void txPot(Stream* s, uint8_t id, uint16_t value) {
+void txPin(Stream* s, uint8_t msgid, uint8_t pin, int16_t value) {
   uint8_t buf[4];
-  buf[0] = POT;
-  buf[1] = id;
-  buf[2] = value >> 8;
+  buf[0] = msgid;
+  buf[1] = pin;
+  buf[2] = value >> 8; // keep sign bit
   buf[3] = value;
   WriteMsg(s, (uint8_t*)&buf, sizeof(buf));
 }
 
-void txRotary(Stream* s, uint8_t id, int8_t value) {
-  uint8_t buf[3];
-  buf[0] = ROTARY;
-  buf[1] = id;
-  buf[2] = value;
-  WriteMsg(s, (uint8_t*)&buf, sizeof(buf));
+void txSwitch(Stream* s, uint8_t pin, uint16_t value) {
+  txPin(s, SWITCH, pin, value);
+}
+void txPot(Stream* s, uint8_t pin, uint16_t value) {
+  txPin(s, POT, pin, value);
+}
+void txRotary(Stream* s, uint8_t pin, int8_t value) {
+  txPin(s, ROTARY, pin, value);
 }
 
 const int STATE_MARKER = 1;
