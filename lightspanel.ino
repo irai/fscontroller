@@ -67,6 +67,7 @@ rotary rotaryControls[] = {
   { .aPin = 6, .bPin = 7, .buttonPin = 5}
 };
 
+
 const int nSwitchButtons = sizeof(switchButtons)/sizeof(button);
 const int nPotButtons = sizeof(potButtons)/sizeof(button);
 const int nRotaryControls = sizeof(rotaryControls)/sizeof(rotary);
