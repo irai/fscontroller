@@ -132,31 +132,29 @@ void loop() {
   }
   digitalWrite(LED_BUILTIN, HIGH);  // Turn indicator light on.
 
-  // read all pins first
   int i;
   for (i = 0; i < nSwitchButtons; i++) {
+    if (switchButtons[i].debounceTime > millis()) {
+      continue;
+    }
     switchButtons[i].value = digitalRead(switchButtons[i].pin);
-  }
-  for (i = 0; i < nPotButtons; i++) {
-    potButtons[i].value = analogRead(potButtons[i].pin);
-    delay(1);  // wait for voltage to stabilise and read again
-    potButtons[i].value = analogRead(potButtons[i].pin);
-  }
-  for (i = 0; i < nRotaryControls; i++) {
-    rotaryControls[i].aState = digitalRead(rotaryControls[i].aPin);
-    rotaryControls[i].bState = digitalRead(rotaryControls[i].bPin);
-  }
-
-  // process all pins
-  for (i = 0; i < nSwitchButtons; i++) {
     processSwitch(piHandler, &switchButtons[i]);
   }
 
   for (i = 0; i < nPotButtons; i++) {
+    if (potButtons[i].debounceTime > millis()) {
+      continue;
+    }
+    potButtons[i].value = analogRead(potButtons[i].pin);
     processPot(piHandler, &(potButtons[i]));
   }
 
   for (i = 0; i < nRotaryControls; i++) {
+    if (rotaryControls[i].debounceTime > millis()) {
+      continue;
+    }
+    rotaryControls[i].aState = digitalRead(rotaryControls[i].aPin);
+    rotaryControls[i].bState = digitalRead(rotaryControls[i].bPin);
     processRotary(piHandler, &rotaryControls[i]);
   }
 
