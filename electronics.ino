@@ -7,14 +7,12 @@
 
 // https://lastminuteengineers.com/rotary-encoder-arduino-tutorial/
 void processRotary(Stream* s, rotary* r) {
-  if (r->debounceTime > millis()) {
-    return;
-  }
+
   // If A state changed, then wheel has moved
   // Some integrated board and rotary switch generate both a HIGH and LOW voltage for a single change of the wheel but others generate a single change.
   // React in software to avoid double count. For example the trim control uses an integrated circuit that generates both HIGH and LOW.
-    r->aState = digitalRead(r->aPin);  // for accuracy, must read again after a change to pin A
-  if (r->aStatePrevious != r->aState ) {
+  r->aState = digitalRead(r->aPin);  // for accuracy, must read again after a change to pin A
+  if (r->aStatePrevious != r->aState) {
     r->bState = digitalRead(r->bPin);  // for accuracy, must read again after a change to pin A
 
     if (Debug) {
@@ -49,20 +47,25 @@ void processRotary(Stream* s, rotary* r) {
     }
   }
   r->aStatePrevious = r->aState;  // Remember last A
-  r->debounceTime = 0;  // no debounce needed
+  r->debounceTime = 0;
 }
 
 void processPot(Stream* s, button* b) {
-  if (b->debounceTime > millis()) {
-    return;
-  }
+  const int filter = 3;
 
   // linear smoothing to avoid fluctuations
-  // ignore outliers
-  int value = b->savedValue + ((b->value - b->savedValue) / 4);
+  int value = b->savedValue + ((b->value - b->savedValue) / filter);
 
   if (value == b->savedValue) {
     return;
+  }
+
+  // We lose the high and low values with the filter
+  // convert the lowest and highest to the minimum and maximum respectivelly.
+  if (b->value == 1023 && value > 1023 - filter) {
+    value = 1023;
+  } else if (b->value == 0 && value < filter) {
+    value = 0;
   }
 
   if (Debug) {
@@ -77,13 +80,13 @@ void processPot(Stream* s, button* b) {
     debugHandler->flush();
   }
 
-  b->debounceTime = 0;
-  b->savedValue = b->value;
+  b->debounceTime = millis() + 1;
+  b->savedValue = value;
   txPot(s, b->pin, b->savedValue);
 }
 
 void processSwitch(Stream* s, button* b) {
-  if (b->value == b->savedValue || b->debounceTime > millis()) {
+  if (b->value == b->savedValue) {
     return;
   }
   b->debounceTime = millis() + DEBOUNCE_TIME;
