@@ -8,6 +8,8 @@
 #define KEYBOARD_PRESS_DELAY 32
 #define KEYBOARD_RELEASE_DELAY 12  // release delay can be a bit smaller for xbox - 12 ms seems to work
 
+#define RESET_KEYBOARD_BUFFER 0xAB  // magic number to reset keyboard buffer
+
 #include "electronics.h"
 
 // Flight simulator hub send single byte keystrokes that include special keys above 0x80.
@@ -62,7 +64,7 @@ struct keymap kmap[] = {
   { KEY_F18, (40 | 0x80) },
   { KEY_F19, (41 | 0x80) },
   { 0xAA, (42 | 0x80) },  // Marker: 0xAA do not translate
-  { KEY_F21, (43 | 0x80) },
+  { 0xAB, (43 | 0x80) },  // magic key to reset keyboard buffer
   { KEY_F22, (44 | 0x80) },
   { KEY_F23, (45 | 0x80) },
   { KEY_F24, (46 | 0x80) },
@@ -113,6 +115,9 @@ uint16_t mapFS2KeyboardCode(uint8_t c) {
 
 #endif
 
+// very simple buffering model for key.
+// we assume the buffer will never be full or wrap around. all keys must be transmitted before it reaches
+// maximum capacity. we discard keys if the buffer is full.
 static cmd* keyboardBuffer[512];
 static unsigned int keyboardBufHead = 0;
 static unsigned int keyboardBufTail = 0;
@@ -121,12 +126,29 @@ static int keyboardPos = 0;
 // static unsigned int keyboardModifier[6];
 // static int keyboardModifierCounter = 0;
 
+void resetBuffer() {
+  for (uint i = keyboardBufHead+1; i < keyboardBufTail; i++) { // delete all queued after buffer head
+    free(keyboardBuffer[i]);
+  }
+  keyboardBufTail = keyboardBufHead;
+}
+
 void queueKeys(uint8_t* keys, int n) {
   if (keys == NULL || n < 1) {
     debugHandler->println("Keyboard buffer null");
     return;
   }
 
+  // reset buffer if first byte is a magical reset number
+  if (keys[0] == RESET_KEYBOARD_BUFFER) {
+    if (Debug_KEYBOARD) {
+      debugHandler->println("Keyboard resetting buffer");
+    }
+    resetBuffer();
+    return;
+  }
+
+  // assumption: buffer can never overlap - discard when full
   if (keyboardBufTail >= sizeof(keyboardBuffer) / sizeof(cmd*)) {
     debugHandler->println("Keyboard buffer full - ignoring");
     return;
@@ -139,7 +161,6 @@ void queueKeys(uint8_t* keys, int n) {
   for (int i = 0; i < n; i++) {
     c->seq[i] = mapFS2KeyboardCode(keys[i]);
   }
-  // memcpy(&c->seq, keys, n);
 
   if (Debug_KEYBOARD) {
     debugHandler->print("added keystrokes len=");
@@ -191,20 +212,6 @@ void sendPress(unsigned long now) {
   }
 
   keyboardTimer = now + KEYBOARD_PRESS_DELAY;
-
-  /*
-  switch (key) {
-    case KEY_LEFT_CTRL:
-    case KEY_RIGHT_CTRL:
-    case KEY_LEFT_ALT:
-    case KEY_RIGHT_ALT:
-    case KEY_LEFT_SHIFT:
-    case KEY_RIGHT_SHIFT: 
-      keyboardModifier[keyboardModifierCounter] = keyboardBuffer[keyboardBufHead]->seq[keyboardPos];
-      keyboardModifierCounter++;
-      break;
-  }
-  */
 }
 
 void sendRelease(unsigned long now) {

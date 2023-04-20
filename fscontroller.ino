@@ -6,9 +6,9 @@
 // Void keyboard dependency for boards that don't have usb keyboard.
 // This allow building but won't send any key strokes to the usb.
 // i.e. Mega
-#define NO_KEYBOARD 1
+// #define NO_KEYBOARD 1
 
-bool Debug = true;
+bool Debug = false;
 bool Debug_KEYBOARD = false;
 statistics stats;
 
@@ -32,11 +32,11 @@ statistics stats;
 
 
 // uncomment one of these to build the right panel
-#define LIGHTS_PANEL 1
+// #define LIGHTS_PANEL 1
 // #define FLAPS_PANEL 1
 // #define G1000_PANEL 1
 // #define TEST_PANEL 1
-// #define KEYBOARD_PANEL 1  // panel with no electronics used for keyboard
+#define KEYBOARD_PANEL 1  // panel with no electronics used for keyboard
 
 Stream *piHandler;
 Stream *xboxHandler;
@@ -64,7 +64,7 @@ void setup() {
   Serial1.begin(9600);  // safe with 9600
 
 #ifndef KEYBOARD_PANEL
-  // while (!Serial)   // this only work for serial interface - not keyboard but remove for nowaaaaaaaaa
+  // while (!Serial)   // this only work for serial interface - not keyboard but remove for now
   // ;
 #endif
 
@@ -181,15 +181,13 @@ void readPi(Stream *s) {
     debugHandler->print(b[0]);
     debugHandler->print(" len=");
     debugHandler->println(n);
+    debugHandler->flush();
   }
 
   switch (b[0]) {
     case KEYSTROKES:
       if (n > 1) {
         queueKeys(&b[1], n - 1);
-        if (Debug) {
-          debugHandler->flush();
-        }
       }
       return;
     case PANEL:
