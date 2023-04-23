@@ -127,7 +127,7 @@ static int keyboardPos = 0;
 // static int keyboardModifierCounter = 0;
 
 void resetBuffer() {
-  for (uint i = keyboardBufHead+1; i < keyboardBufTail; i++) { // delete all queued after buffer head
+  for (unsigned int i = keyboardBufHead+1; i < keyboardBufTail; i++) { // delete all queued after buffer head
     free(keyboardBuffer[i]);
   }
   keyboardBufTail = keyboardBufHead;

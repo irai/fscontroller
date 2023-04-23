@@ -6,7 +6,7 @@
 // Void keyboard dependency for boards that don't have usb keyboard.
 // This allow building but won't send any key strokes to the usb.
 // i.e. Mega
-// #define NO_KEYBOARD 1
+#define NO_KEYBOARD 1
 
 bool Debug = false;
 bool Debug_KEYBOARD = false;
@@ -34,9 +34,9 @@ statistics stats;
 // uncomment one of these to build the right panel
 // #define LIGHTS_PANEL 1
 // #define FLAPS_PANEL 1
-// #define G1000_PANEL 1
+#define G1000_PANEL 1
 // #define TEST_PANEL 1
-#define KEYBOARD_PANEL 1  // panel with no electronics used for keyboard
+// #define KEYBOARD_PANEL 1  // panel with no electronics used for keyboard
 
 Stream *piHandler;
 Stream *xboxHandler;
@@ -96,7 +96,9 @@ void setup() {
 
   int i;
   pinMode(LED_BUILTIN, OUTPUT);       // initialise led builtin as output
+#ifdef KEYBOARD_PANEL
   pinMode(PIN_ON_OFF, INPUT_PULLUP);  // initalise control 1 with digital resistor (built in the board)
+  #endif
 
   for (i = 0; i < nSwitchButtons; i++) {
     pinMode(switchButtons[i].pin, INPUT_PULLUP);
@@ -125,11 +127,13 @@ void setup() {
 
 void loop() {
 
+#ifdef KEYBOARD_PANEL
   // System Disabled?
   if (digitalRead(PIN_ON_OFF) != 0) {
     digitalWrite(LED_BUILTIN, LOW);
     return;
   }
+#endif
   digitalWrite(LED_BUILTIN, HIGH);  // Turn indicator light on.
 
   int i;
