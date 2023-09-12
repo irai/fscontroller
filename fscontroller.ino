@@ -17,20 +17,7 @@ statistics stats;
 // #define KEYBOARD_PANEL 1  // panel with no electronics used for keyboard
 #define SINGLE_THROTTLE_QUADRANT_PANEL 1
 
-Stream *piHandler;
 Print *debugHandler;
-
-typedef struct SerialMsg {
-  Stream *Port;
-  uint8_t buffer[64];
-  char txBuffer[64];
-  char txBufferLen;
-  unsigned int count;
-  int dataLen;
-  int state;
-  unsigned long timeout;
-} SerialMsg;
-
 SerialMsg *serialMsg;
 
 void setup() {
@@ -42,10 +29,10 @@ void setup() {
 
   // Serial.println("serial ");
 
-  piHandler = &Serial;
-  debugHandler = piHandler;
+  Stream * handler = &Serial;
+  debugHandler = handler;
 
-  serialMsg = NewSerialMsg(piHandler);
+  serialMsg = NewSerialMsg(handler);
 
 // piHandler->println("pi serial");
 
@@ -90,7 +77,7 @@ void loop() {
       continue;
     }
     switchButtons[i].value = digitalRead(switchButtons[i].pin);
-    processSwitch(piHandler, &switchButtons[i]);
+    processSwitch(serialMsg, &switchButtons[i]);
   }
 
   for (i = 0; i < nPotButtons; i++) {
@@ -98,7 +85,7 @@ void loop() {
       continue;
     }
     potButtons[i].value = analogRead(potButtons[i].pin);
-    processPot(piHandler, &(potButtons[i]));
+    processPot(serialMsg, &(potButtons[i]));
   }
 
   for (i = 0; i < nRotaryControls; i++) {
@@ -107,13 +94,13 @@ void loop() {
     }
     rotaryControls[i].aState = digitalRead(rotaryControls[i].aPin);
     rotaryControls[i].bState = digitalRead(rotaryControls[i].bPin);
-    processRotary(piHandler, &rotaryControls[i]);
+    processRotary(serialMsg, &rotaryControls[i]);
   }
 
-  readPi(piHandler);
+  readPi(serialMsg);
 }
 
-void readPi(Stream *s) {
+void readPi(SerialMsg *s) {
   char b[64];
 
   int n = ReadMsgNonBlocking(serialMsg, (char *)&b, sizeof(b) / sizeof(char));

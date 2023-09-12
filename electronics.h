@@ -2,25 +2,11 @@
 #ifndef ELECTRONICS_H
 #define ELECTRONICS_H
 
-// message types
-const uint8_t CONFIG = 0;
-const uint8_t BUTTON = 1;
-const uint8_t SWITCH = 2;
-const uint8_t POT = 3;
-const uint8_t ROTARY = 4;
-const uint8_t PANEL = 5; 
-const uint8_t KEYSTROKES = 6;
-const uint8_t LOGLEVEL = 7;
-const uint8_t SYNC = 254;       // reserved for additional messages
-const uint8_t EXTENSION = 255;  // reserved for additional messages
+#include <Stream.h>
+
 
 #include <Arduino.h>
 #include <WString.h>
-
-typedef struct cmd {
-  int len;
-  uint16_t seq[];
-} cmd;
 
 typedef struct {
   uint8_t pin;
@@ -41,10 +27,20 @@ typedef struct {
 } rotary;
 
 
-extern void processSwitch(Stream*, button*);
-extern void processPot(Stream* , button* );
-extern void processPushButton(Stream* , button* );
-extern void processRotary(Stream* , rotary* );
+typedef struct SerialMsg {
+  Stream *Port;
+  char rxbuf[64];
+  unsigned int rxcount;
+  char txbuf[64];
+  unsigned int txcount;
+  unsigned long timeout;
+} SerialMsg;
+
+extern void processSwitch(SerialMsg*, button*);
+extern void processPot(SerialMsg* , button* );
+extern void processPushButton(SerialMsg* , button* );
+extern void processRotary(SerialMsg* , rotary* );
+
 extern const int nSwitchButtons;
 extern button switchButtons[];
 extern const int npushButtons;
@@ -53,7 +49,7 @@ extern const int nPotButtons;
 extern button potButtons[];
 extern const int nRotaryControls;
 extern rotary rotaryControls[];
-extern const String panelName;
+extern const char * panelName;
 
 // These index positions for statistics count are part of the public msg interface.
 const int StatsRxMsgs = 0;

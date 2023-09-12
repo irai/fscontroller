@@ -22,7 +22,7 @@ const int nSwitchButtons = sizeof(switchButtons)/sizeof(button);
 const int nPotButtons = sizeof(potButtons)/sizeof(button);
 const int nRotaryControls = sizeof(rotaryControls)/sizeof(rotary);
 
-const String panelName = "single.throttle.quadrant";
+const char* panelName = "single.throttle.quadrant";
 
 
 #endif

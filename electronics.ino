@@ -1,12 +1,10 @@
 
-
 #include "electronics.h"
-#include <Stream.h>
 
 #define DEBOUNCE_TIME 16
 
 // https://lastminuteengineers.com/rotary-encoder-arduino-tutorial/
-void processRotary(Stream* s, rotary* r) {
+void processRotary(SerialMsg* s, rotary* r) {
 
   // If A state changed, then wheel has moved
   // Some integrated board and rotary switch generate both a HIGH and LOW voltage for a single change of the wheel but others generate a single change.
@@ -50,7 +48,7 @@ void processRotary(Stream* s, rotary* r) {
   r->debounceTime = 0;
 }
 
-void processPot(Stream* s, button* b) {
+void processPot(SerialMsg* s, button* b) {
   const int filter = 3;
 
   // linear smoothing to avoid fluctuations
@@ -85,7 +83,7 @@ void processPot(Stream* s, button* b) {
   txPot(s, b->pin, b->savedValue);
 }
 
-void processSwitch(Stream* s, button* b) {
+void processSwitch(SerialMsg* s, button* b) {
   if (b->value == b->savedValue) {
     return;
   }

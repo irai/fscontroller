@@ -80,6 +80,6 @@ const int nSwitchButtons = sizeof(switchButtons) / sizeof(button);
 const int nPotButtons = sizeof(potButtons) / sizeof(button);
 const int nRotaryControls = sizeof(rotaryControls) / sizeof(rotary);
 
-const String panelName = "G1000Panel";
+const char* panelName = "G1000Panel";
 
 #endif
