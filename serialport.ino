@@ -18,9 +18,6 @@ void txPanel(SerialMsg* s, const char * name) {
   }
   WriteMsg(s);
 
-  txSwitch(s, 1, 1);
-  txPot(s, 2, 500);
-  txRotary(s, 3, -1);
 }
 
 void txPin(SerialMsg* s, const char* msgid, uint8_t pin, int16_t value) {

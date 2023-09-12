@@ -126,6 +126,11 @@ void readPi(SerialMsg *s) {
   if (strcmp(tok, "panel") == 0) {
     txPanel(s, panelName);
     return;
+  } else if (strcmp(tok, "test") == 0) {
+    txPot(s, A0, 1023);
+    txRotary(s, 6, 1);
+    txSwitch(s, 1, 1);
+    return;
   } else if (strcmp(tok, "log") == 0) {
     tok = strtok(0, ",");
     if (tok == 0) {
@@ -139,9 +144,9 @@ void readPi(SerialMsg *s) {
     debugHandler->print("debug=");
     debugHandler->println(Debug);
     return;
-  } else {
-    debugHandler->print("unknown command: ");
-    debugHandler->println(tok);
-    debugHandler->flush();
-  }
+  } 
+
+  debugHandler->print("unknown command: ");
+  debugHandler->println(tok);
+  debugHandler->flush();
 }
