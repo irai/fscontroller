@@ -49,21 +49,21 @@ void processRotary(SerialMsg* s, rotary* r) {
 }
 
 void processPot(SerialMsg* s, button* b) {
-  const int filter = 3;
+  const int filter = 4;
 
   // linear smoothing to avoid fluctuations
   int value = b->savedValue + ((b->value - b->savedValue) / filter);
 
-  if (value == b->savedValue) {
-    return;
-  }
-
   // We lose the high and low values with the filter
   // convert the lowest and highest to the minimum and maximum respectivelly.
-  if (b->value == 1023 && value > 1023 - filter) {
+  if (b->value > (1023 - filter) || value > (1023 - filter)) {
     value = 1023;
-  } else if (b->value == 0 && value < filter) {
+  } else if (b->value < (filter * 2) || value < (filter * 2)) {
     value = 0;
+  }
+
+  if (value == b->savedValue) {
+    return;
   }
 
   if (Debug) {

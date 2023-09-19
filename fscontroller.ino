@@ -29,7 +29,7 @@ void setup() {
 
   // Serial.println("serial ");
 
-  Stream * handler = &Serial;
+  Stream *handler = &Serial;
   debugHandler = handler;
 
   serialMsg = NewSerialMsg(handler);
@@ -84,6 +84,9 @@ void loop() {
     if (potButtons[i].debounceTime > millis()) {
       continue;
     }
+
+    potButtons[i].value = analogRead(potButtons[i].pin);
+    delay(40);  // IMPORTANT: must delay 40 to minimise fluctuation on the analog port
     potButtons[i].value = analogRead(potButtons[i].pin);
     processPot(serialMsg, &(potButtons[i]));
   }
@@ -144,7 +147,7 @@ void readPi(SerialMsg *s) {
     debugHandler->print("debug=");
     debugHandler->println(Debug);
     return;
-  } 
+  }
 
   debugHandler->print("unknown command: ");
   debugHandler->println(tok);
