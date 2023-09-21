@@ -4,7 +4,6 @@
 
 #include <Stream.h>
 
-
 #include <Arduino.h>
 #include <WString.h>
 
@@ -63,6 +62,7 @@ typedef struct {
 } statistics;
 
 
+extern SerialMsg* NewSerialMsg(Stream* s);
 
 
 #endif

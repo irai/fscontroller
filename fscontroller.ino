@@ -1,3 +1,4 @@
+
 #include "electronics.h"
 
 bool Debug = false;
@@ -111,7 +112,7 @@ void readPi(SerialMsg *s) {
     return;
   } else if (strcmp(tok, "test") == 0) {
     txPot(s, A0, 1023);
-    txRotary(s, 6, 1);
+    txRotary(s, 6, -1);
     txSwitch(s, 1, 1);
     return;
   } else if (strcmp(tok, "log") == 0) {
