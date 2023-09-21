@@ -1,5 +1,3 @@
-#include <HID_Buttons.h>  // Must import AFTER Keyboard.h
-
 #include "electronics.h"
 
 bool Debug = false;
@@ -8,13 +6,11 @@ statistics stats;
 // Reserved pins
 #define PIN_ON_OFF A0  // first pin after GND on Teensy 2.0++
 
-
 // uncomment one of these to build the right panel
 // #define LIGHTS_PANEL 1
 // #define FLAPS_PANEL 1
 // #define G1000_PANEL 1
 // #define TEST_PANEL 1
-// #define KEYBOARD_PANEL 1  // panel with no electronics used for keyboard
 #define SINGLE_THROTTLE_QUADRANT_PANEL 1
 
 Print *debugHandler;
@@ -22,27 +18,11 @@ SerialMsg *serialMsg;
 
 void setup() {
   Serial.begin(9600);   // safe with 9600
-  Serial1.begin(9600);  // safe with 9600
-
-  while (!Serial)
-    ;  // this only work for serial interface
-
-  // Serial.println("serial ");
 
   Stream *handler = &Serial;
   debugHandler = handler;
 
   serialMsg = NewSerialMsg(handler);
-
-// piHandler->println("pi serial");
-
-// Use default board voltage reference
-// see: https://www.pjrc.com/teensy/adc.html
-#ifdef ARDUINO_TEENSY41
-#define DEFAULT 0
-#endif
-  // analogReference(DEFAULT);
-
 
   int i;
   pinMode(LED_BUILTIN, OUTPUT);  // initialise led builtin as output
