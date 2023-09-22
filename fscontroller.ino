@@ -17,6 +17,18 @@ statistics stats;
 Print *debugHandler;
 SerialMsg *serialMsg;
 
+int delayAnalogRead(uint8_t pin) {
+  const int n = 16; // number of samples to average
+  int value = 0;
+
+  for (int i = 0; i < n; i++) {
+    value += analogRead(pin);
+    delayMicroseconds(10);  // IMPORTANT: must delay to minimise fluctuation on the analog port
+  }
+  value = value / n;
+  return value;
+}
+
 void setup() {
   Serial.begin(9600);   // safe with 9600
 
@@ -66,9 +78,7 @@ void loop() {
       continue;
     }
 
-    potButtons[i].value = analogRead(potButtons[i].pin);
-    delay(40);  // IMPORTANT: must delay 40 to minimise fluctuation on the analog port
-    potButtons[i].value = analogRead(potButtons[i].pin);
+    potButtons[i].value = delayAnalogRead(potButtons[i].pin);
     processPot(serialMsg, &(potButtons[i]));
   }
 

@@ -49,16 +49,16 @@ void processRotary(SerialMsg* s, rotary* r) {
 }
 
 void processPot(SerialMsg* s, button* b) {
-  const int filter = 4;
+  const int filter = 3;
 
   // linear smoothing to avoid fluctuations
   int value = b->savedValue + ((b->value - b->savedValue) / filter);
 
   // We lose the high and low values with the filter
   // convert the lowest and highest to the minimum and maximum respectivelly.
-  if (b->value > (1023 - filter) || value > (1023 - filter)) {
+  if (b->value > (1023 - filter*2 ) || value > (1023 - filter*2 )) {
     value = 1023;
-  } else if (b->value < (filter * 2) || value < (filter * 2)) {
+  } else if (b->value < (filter *2 ) || value < (filter*2  )) {
     value = 0;
   }
 
@@ -78,7 +78,8 @@ void processPot(SerialMsg* s, button* b) {
     debugHandler->flush();
   }
 
-  b->debounceTime = millis() + 1;
+  // b->debounceTime = millis() + 1;
+  b->debounceTime = 0;
   b->savedValue = value;
   txPot(s, b->pin, b->savedValue);
 }

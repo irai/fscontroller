@@ -9,8 +9,8 @@ button switchButtons[] = {
 // https://docs.arduino.cc/learn/electronics/potentiometer-basics
 button potButtons[] = {
   {  .pin = A0}, 
-  //  { .pin = A1},
-  //  { .pin = A2} 
+   { .pin = A1},
+   { .pin = A2} 
 };
 
 rotary rotaryControls[] = {
