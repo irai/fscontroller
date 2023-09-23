@@ -14,7 +14,7 @@ button potButtons[] = {
 };
 
 rotary rotaryControls[] = {
-  // { .aPin = 6, .bPin = 7, .buttonPin = 5}
+   { .aPin = 2, .bPin = 3, .buttonPin = 5}
 };
 
 

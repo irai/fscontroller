@@ -49,10 +49,13 @@ void processRotary(SerialMsg* s, rotary* r) {
 }
 
 void processPot(SerialMsg* s, button* b) {
+
+
   const int filter = 3;
 
   // linear smoothing to avoid fluctuations
   int value = b->savedValue + ((b->value - b->savedValue) / filter);
+
 
   // We lose the high and low values with the filter
   // convert the lowest and highest to the minimum and maximum respectivelly.

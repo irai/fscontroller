@@ -18,14 +18,17 @@ Print *debugHandler;
 SerialMsg *serialMsg;
 
 int delayAnalogRead(uint8_t pin) {
-  const int n = 16; // number of samples to average
+  const int n = 64; // number of samples to average
   int value = 0;
 
+  analogRead(pin); // discard first reading
+  delayMicroseconds(10);  // IMPORTANT: must delay to minimise fluctuation on the analog port
+  analogRead(pin); // discard second reading
   for (int i = 0; i < n; i++) {
     value += analogRead(pin);
-    delayMicroseconds(10);  // IMPORTANT: must delay to minimise fluctuation on the analog port
   }
   value = value / n;
+
   return value;
 }
 
@@ -39,6 +42,8 @@ void setup() {
 
   int i;
   pinMode(LED_BUILTIN, OUTPUT);  // initialise led builtin as output
+
+    // analogReference(DEFAULT);
 
   for (i = 0; i < nSwitchButtons; i++) {
     pinMode(switchButtons[i].pin, INPUT_PULLUP);
