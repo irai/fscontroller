@@ -1,6 +1,7 @@
 
 #include "electronics.h"
 
+const char * version = "1.0.0";
 bool Debug = false;
 statistics stats;
 
@@ -10,9 +11,9 @@ statistics stats;
 // uncomment one of these to build the right panel
 // #define LIGHTS_PANEL 1
 // #define FLAPS_PANEL 1
-// #define G1000_PANEL 1
+#define G1000_PANEL 1
 // #define TEST_PANEL 1
-#define SINGLE_THROTTLE_QUADRANT_PANEL 1
+// #define SINGLE_THROTTLE_QUADRANT_PANEL 1
 
 Print *debugHandler;
 SerialMsg *serialMsg;
@@ -123,7 +124,7 @@ void readPi(SerialMsg *s) {
     return;
   }
   if (strcmp(tok, "panel") == 0) {
-    txPanel(s, panelName);
+    txPanel(s, panelName, version);
     return;
   } else if (strcmp(tok, "test") == 0) {
     txPot(s, A0, 1023);
