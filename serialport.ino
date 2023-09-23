@@ -8,10 +8,12 @@ uint8_t checksum(const char* buf, uint8_t n) {
   return crc8.calc();
 }
 
-void txPanel(SerialMsg* s, const char * name) {
+void txPanel(SerialMsg* s, const char * name, const char * version) {
   buildMsg(s,"panel");
   buildMsg(s,",");
   buildMsg(s,name);
+  buildMsg(s,",");
+  buildMsg(s,version);
   for (unsigned int i = 0; i < sizeof(statistics) / sizeof(uint16_t); i++) {
     buildMsg(s,",");
     buildMsg(s,stats.stats[i]);
