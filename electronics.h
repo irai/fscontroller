@@ -40,6 +40,8 @@ extern void processPot(SerialMsg* , button* );
 extern void processPushButton(SerialMsg* , button* );
 extern void processRotary(SerialMsg* , rotary* );
 
+extern const int nLedOutputs;
+extern button ledOutputs[];
 extern const int nSwitchButtons;
 extern button switchButtons[];
 extern const int npushButtons;
@@ -63,6 +65,10 @@ typedef struct {
 
 
 extern SerialMsg* NewSerialMsg(Stream* s);
+
+// mandatory function to be implemented by every panel
+extern int panelInit();
+extern void panelNotification(char *msg);
 
 
 #endif

@@ -11,12 +11,16 @@ statistics stats;
 // uncomment one of these to build the right panel
 // #define LIGHTS_PANEL 1
 // #define FLAPS_PANEL 1
-#define G1000_PANEL 1
+// #define G1000_PANEL 1
 // #define TEST_PANEL 1
 // #define SINGLE_THROTTLE_QUADRANT_PANEL 1
+#define LANDING_GEAR_PANEL
 
 Print *debugHandler;
 SerialMsg *serialMsg;
+
+//handle notification is a pointer to a function that takes a char* and returns error
+int (*handleNotification)(char *) = 0;
 
 int delayAnalogRead(uint8_t pin) {
   const int n = 64; // number of samples to average
@@ -45,6 +49,10 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);  // initialise led builtin as output
 
     // analogReference(DEFAULT);
+  for (i = 0; i < nLedOutputs; i++) {
+    pinMode(ledOutputs[i].pin, OUTPUT);
+    digitalWrite(ledOutputs[i].pin, LOW);
+  }
 
   for (i = 0; i < nSwitchButtons; i++) {
     pinMode(switchButtons[i].pin, INPUT_PULLUP);
@@ -64,6 +72,8 @@ void setup() {
     rotaryControls[i].bState = digitalRead(rotaryControls[i].bPin);
     rotaryControls[i].bStatePrevious = rotaryControls[i].bState;
   }
+
+  panelInit();
 }
 
 void loop() {
@@ -119,19 +129,27 @@ void readPi(SerialMsg *s) {
     debugHandler->flush();
   }
 
-  char *tok = strtok((char *)b, ",");
-  if (tok == 0) {
-    return;
-  }
-  if (strcmp(tok, "panel") == 0) {
+  const char panelToken[] = "panel";
+  const char notificationToken[] = "notification";
+  const char testToken[] = "test";
+  const char logToken[] = "log";
+
+  if (strncmp((char *)&b, panelToken, sizeof(panelToken)-1) == 0) {
     txPanel(s, panelName, version);
     return;
-  } else if (strcmp(tok, "test") == 0) {
+  } else if (strncmp((char *)&b, notificationToken, sizeof(notificationToken)-1) == 0) {
+    panelNotification((char *)&b);
+    return;
+  } else if (strncmp((char *)&b, testToken, sizeof(testToken)-1) == 0) {
     txPot(s, A0, 1023);
     txRotary(s, 6, -1);
     txSwitch(s, 1, 1);
     return;
-  } else if (strcmp(tok, "log") == 0) {
+  } else if (strncmp((char *)&b, logToken, sizeof(logToken)-1) == 0) {
+    char *tok = strtok((char *)&b, ",");
+    if (tok == 0) {
+      return;
+    }
     tok = strtok(0, ",");
     if (tok == 0) {
       return;
@@ -147,6 +165,6 @@ void readPi(SerialMsg *s) {
   }
 
   debugHandler->print("unknown command: ");
-  debugHandler->println(tok);
+  debugHandler->println((char *)b);
   debugHandler->flush();
 }
