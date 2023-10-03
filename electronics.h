@@ -68,7 +68,12 @@ extern SerialMsg* NewSerialMsg(Stream* s);
 
 // mandatory function to be implemented by every panel
 extern int panelInit();
+extern void panelConnect(SerialMsg *s);
 extern void panelNotification(char *msg);
 
+  const char panelToken[] = "panel";
+  const char notificationToken[] = "notification";
+  const char testToken[] = "test";
+  const char logToken[] = "log";
 
 #endif

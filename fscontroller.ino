@@ -1,7 +1,6 @@
 
 #include "electronics.h"
 
-const char * version = "1.0.0";
 bool Debug = false;
 statistics stats;
 
@@ -48,7 +47,6 @@ void setup() {
   int i;
   pinMode(LED_BUILTIN, OUTPUT);  // initialise led builtin as output
 
-    // analogReference(DEFAULT);
   for (i = 0; i < nLedOutputs; i++) {
     pinMode(ledOutputs[i].pin, OUTPUT);
     digitalWrite(ledOutputs[i].pin, LOW);
@@ -107,10 +105,10 @@ void loop() {
     processRotary(serialMsg, &rotaryControls[i]);
   }
 
-  readPi(serialMsg);
+  readHost(serialMsg);
 }
 
-void readPi(SerialMsg *s) {
+void readHost(SerialMsg *s) {
   char b[64];
 
   int n = ReadMsgNonBlocking(serialMsg, (char *)&b, sizeof(b) / sizeof(char));
@@ -129,13 +127,9 @@ void readPi(SerialMsg *s) {
     debugHandler->flush();
   }
 
-  const char panelToken[] = "panel";
-  const char notificationToken[] = "notification";
-  const char testToken[] = "test";
-  const char logToken[] = "log";
 
   if (strncmp((char *)&b, panelToken, sizeof(panelToken)-1) == 0) {
-    txPanel(s, panelName, version);
+    panelConnect(s);
     return;
   } else if (strncmp((char *)&b, notificationToken, sizeof(notificationToken)-1) == 0) {
     panelNotification((char *)&b);

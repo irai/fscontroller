@@ -8,18 +8,28 @@ uint8_t checksum(const char* buf, uint8_t n) {
   return crc8.calc();
 }
 
-void txPanel(SerialMsg* s, const char * name, const char * version) {
-  buildMsg(s,"panel");
+const char serialVersion[] = "serial-1.0.0";
+
+void txPanel(SerialMsg* s, const char * name, const char * panelVersion) {
+  buildMsg(s,panelToken);
   buildMsg(s,",");
   buildMsg(s,name);
   buildMsg(s,",");
-  buildMsg(s,version);
+  buildMsg(s,serialVersion);
+  buildMsg(s,",");
+  buildMsg(s,panelVersion);
   for (unsigned int i = 0; i < sizeof(statistics) / sizeof(uint16_t); i++) {
     buildMsg(s,",");
     buildMsg(s,stats.stats[i]);
   }
   WriteMsg(s);
+}
 
+void txNotification(SerialMsg* s, const char * notification) {
+  buildMsg(s,notificationToken);
+  buildMsg(s,",");
+  buildMsg(s,notification);
+  WriteMsg(s);
 }
 
 void txPin(SerialMsg* s, const char* msgid, uint8_t pin, int16_t value) {
@@ -28,10 +38,6 @@ void txPin(SerialMsg* s, const char* msgid, uint8_t pin, int16_t value) {
   buildMsg(s,pin);
   buildMsg(s,",");
   buildMsg(s,value);
-  // buf[0] = msgid;
-  // buf[1] = pin;
-  // buf[2] = value >> 8;  // keep sign bit
-  // buf[3] = value;
   WriteMsg(s);
 }
 
