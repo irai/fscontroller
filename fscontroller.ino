@@ -8,11 +8,11 @@ statistics stats;
 #define PIN_ON_OFF A0  // first pin after GND on Teensy 2.0++
 
 // uncomment one of these to build the right panel
-// #define LIGHTS_PANEL 1
-// #define FLAPS_PANEL 1
-// #define G1000_PANEL 1
-// #define TEST_PANEL 1
-#define SINGLE_THROTTLE_QUADRANT_PANEL 1
+// #define LIGHTS_PANEL 
+// #define FLAPS_PANEL
+#define G1000_PANEL
+// #define TEST_PANEL
+// #define SINGLE_THROTTLE_QUADRANT_PANEL
 // #define LANDING_GEAR_PANEL
 
 Print *debugHandler;

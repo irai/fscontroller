@@ -1,6 +1,12 @@
 #ifdef G1000_PANEL
 // G1000 Panel - Teensy 2.0++
 
+const char* panelName = "G1000Panel";
+const char *panelVersion = "1.0.0";
+
+button ledOutputs[] = {
+};
+
 button switchButtons[] = {
   // { 0 },  // rotary
   { 1 },
@@ -76,10 +82,20 @@ rotary rotaryControls[] = {
   { .aPin = 14, .bPin = 15, .buttonPin = 16 }
 };
 
+const int nLedOutputs = sizeof(ledOutputs) / sizeof(button);
 const int nSwitchButtons = sizeof(switchButtons) / sizeof(button);
 const int nPotButtons = sizeof(potButtons) / sizeof(button);
 const int nRotaryControls = sizeof(rotaryControls) / sizeof(rotary);
 
-const char* panelName = "G1000Panel";
+int panelInit() {
+  return 0;
+}
+
+void panelConnect(SerialMsg *s) {
+    txPanel(s, panelName, panelVersion);
+}
+
+void panelNotification(char *msg) {
+}
 
 #endif
