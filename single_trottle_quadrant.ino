@@ -1,12 +1,14 @@
 #ifdef SINGLE_THROTTLE_QUADRANT_PANEL
-button switchButtons[] = {
-  // { 0}, // reserved
-  // { 1}, // reserved
-  // { 6}, // rotary
-  // { 7}, // rotary
+
+const char* panelName = "single.throttle.quadrant";
+const char *panelVersion = "1.0.0";
+
+button ledOutputs[] = {
 };
 
-// https://docs.arduino.cc/learn/electronics/potentiometer-basics
+button switchButtons[] = {
+};
+
 button potButtons[] = {
   {  .pin = A0}, 
    { .pin = A1},
@@ -18,11 +20,22 @@ rotary rotaryControls[] = {
 };
 
 
+const int nLedOutputs = sizeof(ledOutputs) / sizeof(button);
 const int nSwitchButtons = sizeof(switchButtons)/sizeof(button);
 const int nPotButtons = sizeof(potButtons)/sizeof(button);
 const int nRotaryControls = sizeof(rotaryControls)/sizeof(rotary);
 
-const char* panelName = "single.throttle.quadrant";
+int panelInit() {
+  return 0;
+}
+
+void panelConnect(SerialMsg *s) {
+    txPanel(s, panelName, panelVersion);
+}
+
+// handleNotification is called every time the panel receives a notification
+void panelNotification(char *msg) {
+}
 
 
 #endif

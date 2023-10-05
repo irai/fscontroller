@@ -10,6 +10,15 @@ uint8_t checksum(const char* buf, uint8_t n) {
 
 const char serialVersion[] = "serial-1.0.1";
 
+typedef struct SerialMsg {
+  Stream *Port;
+  char rxbuf[256];
+  unsigned int rxcount;
+  char txbuf[256];
+  unsigned int txcount;
+  unsigned long timeout;
+} SerialMsg;
+
 void txPanel(SerialMsg* s, const char * name, const char * panelVersion) {
   buildMsg(s,panelToken);
   buildMsg(s,",");

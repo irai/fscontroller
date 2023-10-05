@@ -26,14 +26,15 @@ typedef struct {
 } rotary;
 
 
-typedef struct SerialMsg {
-  Stream *Port;
-  char rxbuf[256];
-  unsigned int rxcount;
-  char txbuf[256];
-  unsigned int txcount;
-  unsigned long timeout;
-} SerialMsg;
+// typedef struct SerialMsg {
+//   Stream *Port;
+//   char rxbuf[256];
+//   unsigned int rxcount;
+//   char txbuf[256];
+//   unsigned int txcount;
+//   unsigned long timeout;
+// } SerialMsg;
+struct SerialMsg;
 
 extern void processSwitch(SerialMsg*, button*);
 extern void processPot(SerialMsg* , button* );

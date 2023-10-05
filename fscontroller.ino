@@ -12,8 +12,8 @@ statistics stats;
 // #define FLAPS_PANEL 1
 // #define G1000_PANEL 1
 // #define TEST_PANEL 1
-// #define SINGLE_THROTTLE_QUADRANT_PANEL 1
-#define LANDING_GEAR_PANEL
+#define SINGLE_THROTTLE_QUADRANT_PANEL 1
+// #define LANDING_GEAR_PANEL
 
 Print *debugHandler;
 SerialMsg *serialMsg;
