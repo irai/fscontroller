@@ -25,7 +25,7 @@ const int nPotButtons = sizeof(potButtons) / sizeof(button);
 const int nRotaryControls = sizeof(rotaryControls) / sizeof(rotary);
 
 const char *panelName = "landing.gear.panel";
-const char *panelVersion = "panel-1.0.0";
+const char *panelVersion = "1.0.0";
 
 // initPanel is called at setup to initialise any panel specific variables
 int panelInit() {

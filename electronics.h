@@ -28,9 +28,9 @@ typedef struct {
 
 typedef struct SerialMsg {
   Stream *Port;
-  char rxbuf[64];
+  char rxbuf[256];
   unsigned int rxcount;
-  char txbuf[64];
+  char txbuf[256];
   unsigned int txcount;
   unsigned long timeout;
 } SerialMsg;

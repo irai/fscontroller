@@ -37,7 +37,7 @@ int delayAnalogRead(uint8_t pin) {
 }
 
 void setup() {
-  Serial.begin(9600);   // safe with 9600
+  Serial.begin(115200);   // baund rate is ignored when using usb
 
   Stream *handler = &Serial;
   debugHandler = handler;

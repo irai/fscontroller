@@ -8,7 +8,7 @@ uint8_t checksum(const char* buf, uint8_t n) {
   return crc8.calc();
 }
 
-const char serialVersion[] = "serial-1.0.0";
+const char serialVersion[] = "serial-1.0.1";
 
 void txPanel(SerialMsg* s, const char * name, const char * panelVersion) {
   buildMsg(s,panelToken);
