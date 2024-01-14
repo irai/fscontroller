@@ -27,9 +27,9 @@ void txPanel(SerialMsg* s, const char* name, const char* panelVersion) {
   buildMsgStr(s, ",");
   buildMsgStr(s, name);
   buildMsgStr(s, ",");
-  buildMsgInt(s, serialVersion);
+  buildMsgStr(s, serialVersion);
   buildMsgStr(s, ",");
-  buildMsgInt(s, panelVersion);
+  buildMsgStr(s, panelVersion);
   for (unsigned int i = 0; i < sizeof(statistics) / sizeof(uint16_t); i++) {
     buildMsgStr(s, ",");
     buildMsgInt(s, stats.stats[i]);

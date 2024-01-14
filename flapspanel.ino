@@ -10,11 +10,11 @@ button ledOutputs[] = {
 // NOTE: Flaps panel uses Leonardo board 
 //       Leonardo compiler MUST have all fields in the same order as the structure
 button switchButtons[] = {
-  { .pin = 2, .fireLow = false, .value = 0, .savedValue = 0, .debounceTime = 0 }, // both mag
-  { .pin = 3, .fireLow = false, .value = 0, .savedValue = 0, .debounceTime = 0}, // right mag
-  { .pin = 4, .fireLow = false, .value = 0, .savedValue = 0, .debounceTime = 0}, // left mag
-  { .pin = 5, .fireLow = false, .value = 0, .savedValue = 0, .debounceTime = 0},
-  { .pin = 6, .fireLow = false, .value = 0, .savedValue = 0, .debounceTime = 0},
+  // { .pin = 2, .fireLow = false, .value = 0, .savedValue = 0, .debounceTime = 0 }, // both mag
+  // { .pin = 3, .fireLow = false, .value = 0, .savedValue = 0, .debounceTime = 0}, // right mag
+  // { .pin = 4, .fireLow = false, .value = 0, .savedValue = 0, .debounceTime = 0}, // left mag
+  // { .pin = 5, .fireLow = false, .value = 0, .savedValue = 0, .debounceTime = 0},
+  // { .pin = 6, .fireLow = false, .value = 0, .savedValue = 0, .debounceTime = 0},
   { .pin = 7, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "flaps", .index = -1, .setValue = 0},
   { .pin = 8, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "flaps", .index = -1, .setValue = 1},
   { .pin = 9, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "flaps", .index = -1, .setValue = 2},
