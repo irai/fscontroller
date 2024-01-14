@@ -30,7 +30,7 @@ void processRotary(SerialMsg* s, rotary* r) {
       if (Debug) {
         debugHandler->println(" decrease");
       }
-      txRotary(s, r->aPin, -1);
+      txAction(s, r->action, r->variable, r->index, -1);
 
     } else {
       // Encoder is rotating clockwise
@@ -38,7 +38,7 @@ void processRotary(SerialMsg* s, rotary* r) {
         debugHandler->println(" increase");
       }
 
-      txRotary(s, r->aPin, +1);
+      txAction(s, r->action, r->variable, r->index, +1);
     }
     if (Debug) {
       debugHandler->flush();
@@ -84,7 +84,8 @@ void processPot(SerialMsg* s, button* b) {
   // b->debounceTime = millis() + 1;
   b->debounceTime = 0;
   b->savedValue = value;
-  txPot(s, b->pin, b->savedValue);
+  // txPot(s, b->pin, b->savedValue);
+  txAction(s, b->action, b->variable, b->index, ((float)b->savedValue)/1023*100); // percentage
 }
 
 void processSwitch(SerialMsg* s, button* b) {

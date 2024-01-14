@@ -8,11 +8,11 @@ statistics stats;
 #define PIN_ON_OFF A0  // first pin after GND on Teensy 2.0++
 
 // uncomment one of these to build the right panel
-// #define LIGHTS_PANEL 
+// #define LIGHTS_PANEL
 // #define FLAPS_PANEL
-#define G1000_PANEL
+// #define G1000_PANEL
 // #define TEST_PANEL
-// #define SINGLE_THROTTLE_QUADRANT_PANEL
+#define SINGLE_THROTTLE_QUADRANT_PANEL
 // #define LANDING_GEAR_PANEL
 
 Print *debugHandler;
@@ -22,12 +22,12 @@ SerialMsg *serialMsg;
 int (*handleNotification)(char *) = 0;
 
 int delayAnalogRead(uint8_t pin) {
-  const int n = 64; // number of samples to average
+  const int n = 64;  // number of samples to average
   int value = 0;
 
-  analogRead(pin); // discard first reading
+  analogRead(pin);        // discard first reading
   delayMicroseconds(10);  // IMPORTANT: must delay to minimise fluctuation on the analog port
-  analogRead(pin); // discard second reading
+  analogRead(pin);        // discard second reading
   for (int i = 0; i < n; i++) {
     value += analogRead(pin);
   }
@@ -37,7 +37,7 @@ int delayAnalogRead(uint8_t pin) {
 }
 
 void setup() {
-  Serial.begin(115200);   // baund rate is ignored when using usb
+  Serial.begin(115200);  // baund rate is ignored when using usb
 
   Stream *handler = &Serial;
   debugHandler = handler;
@@ -128,18 +128,18 @@ void readHost(SerialMsg *s) {
   }
 
 
-  if (strncmp((char *)&b, panelToken, sizeof(panelToken)-1) == 0) {
+  if (strncmp((char *)&b, panelToken, sizeof(panelToken) - 1) == 0) {
     panelConnect(s);
     return;
-  } else if (strncmp((char *)&b, notificationToken, sizeof(notificationToken)-1) == 0) {
+  } else if (strncmp((char *)&b, notificationToken, sizeof(notificationToken) - 1) == 0) {
     panelNotification((char *)&b);
     return;
-  } else if (strncmp((char *)&b, testToken, sizeof(testToken)-1) == 0) {
-    txPot(s, A0, 1023);
-    txRotary(s, 6, -1);
+  } else if (strncmp((char *)&b, testToken, sizeof(testToken) - 1) == 0) {
+    // txPot(s, A0, 1023);
+    // txRotary(s, 6, -1);
     txSwitch(s, 1, 1);
     return;
-  } else if (strncmp((char *)&b, logToken, sizeof(logToken)-1) == 0) {
+  } else if (strncmp((char *)&b, logToken, sizeof(logToken) - 1) == 0) {
     char *tok = strtok((char *)&b, ",");
     if (tok == 0) {
       return;

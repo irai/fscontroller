@@ -4,14 +4,17 @@ CRC8 crc8;
 
 uint8_t checksum(const char* buf, uint8_t n) {
   crc8.restart();
-  crc8.add((const uint8_t *) buf, n);
+  crc8.add((const uint8_t*)buf, n);
   return crc8.calc();
 }
 
-const char serialVersion[] = "serial-1.0.1";
+// protocol - 
+//     version 1.0.0 - string based csv
+//             1.1.0 - add support for set, inc, set_n, inc_n actions         
+const char serialVersion[] = "serial-1.1.0";
 
 typedef struct SerialMsg {
-  Stream *Port;
+  Stream* Port;
   char rxbuf[256];
   unsigned int rxcount;
   char txbuf[256];
@@ -19,46 +22,61 @@ typedef struct SerialMsg {
   unsigned long timeout;
 } SerialMsg;
 
-void txPanel(SerialMsg* s, const char * name, const char * panelVersion) {
-  buildMsg(s,panelToken);
-  buildMsg(s,",");
-  buildMsg(s,name);
-  buildMsg(s,",");
-  buildMsg(s,serialVersion);
-  buildMsg(s,",");
-  buildMsg(s,panelVersion);
+void txPanel(SerialMsg* s, const char* name, const char* panelVersion) {
+  buildMsg(s, panelToken);
+  buildMsg(s, ",");
+  buildMsg(s, name);
+  buildMsg(s, ",");
+  buildMsg(s, serialVersion);
+  buildMsg(s, ",");
+  buildMsg(s, panelVersion);
   for (unsigned int i = 0; i < sizeof(statistics) / sizeof(uint16_t); i++) {
-    buildMsg(s,",");
-    buildMsg(s,stats.stats[i]);
+    buildMsg(s, ",");
+    buildMsg(s, stats.stats[i]);
   }
   WriteMsg(s);
 }
 
-void txNotification(SerialMsg* s, const char * notification) {
-  buildMsg(s,notificationToken);
-  buildMsg(s,",");
-  buildMsg(s,notification);
+void txNotification(SerialMsg* s, const char* notification) {
+  buildMsg(s, notificationToken);
+  buildMsg(s, ",");
+  buildMsg(s, notification);
   WriteMsg(s);
 }
 
 void txPin(SerialMsg* s, const char* msgid, uint8_t pin, int16_t value) {
-  buildMsg(s,msgid);
-  buildMsg(s,",");
-  buildMsg(s,pin);
-  buildMsg(s,",");
-  buildMsg(s,value);
+  buildMsg(s, msgid);
+  buildMsg(s, ",");
+  buildMsg(s, pin);
+  buildMsg(s, ",");
+  buildMsg(s, value);
+  WriteMsg(s);
+}
+
+void txAction(SerialMsg* s, const char* msgid, const char* variable, int16_t index, float value) {
+  buildMsg(s, msgid);
+  buildMsg(s, ",");
+  buildMsg(s, variable);
+  buildMsg(s, ",");
+  if (index != -1) {
+    buildMsg(s, index);
+    buildMsg(s, ",");
+  }
+  buildMsg(s, value);
   WriteMsg(s);
 }
 
 void txSwitch(SerialMsg* s, uint8_t pin, uint16_t value) {
   txPin(s, "switch", pin, value);
 }
-void txPot(SerialMsg* s, uint8_t pin, uint16_t value) {
-  txPin(s, "pot", pin, value);
-}
-void txRotary(SerialMsg* s, uint8_t pin, int8_t value) {
-  txPin(s, "rotary", pin, value);
-}
+
+// void txPot(SerialMsg* s, uint8_t pin, const char* variable, uint16_t value) {
+//   txAction(s, "set_n", variable, 0, value);
+// }
+
+// void txRotary(SerialMsg* s, const char* variable, int8_t index, int8_t value) {
+//   txAction(s, "set", variable, index value);
+// }
 
 SerialMsg* NewSerialMsg(Stream* s) {
   SerialMsg* h = (SerialMsg*)malloc(sizeof(SerialMsg));
@@ -82,16 +100,27 @@ void buildMsg(SerialMsg* h, const char* b) {
 }
 
 void buildMsg(SerialMsg* h, int b) {
-char myBuffer[10];   // Create a character array to store the string
+  char myBuffer[10];  // Create a character array to store the string
 
-itoa(b, myBuffer, sizeof(myBuffer));
-buildMsg(h,myBuffer);
+  itoa(b, myBuffer, sizeof(myBuffer));
+  buildMsg(h, myBuffer);
+}
+
+void buildMsg(SerialMsg* h, float b) {
+  char myBuffer[32];  // Create a character array to store the string
+
+  dtostrf(b, sizeof(myBuffer) - 1, 6, myBuffer);  // 6 digits decimal precision
+  char* startPtr = myBuffer;
+  while (*startPtr == ' ') {
+    startPtr++;
+  }
+  buildMsg(h, startPtr);
 }
 
 void WriteMsg(SerialMsg* h) {
-  buildMsg(h,",");
-  buildMsg(h,checksum((char *)&h->txbuf, h->txcount));
-  buildMsg(h,"\n");
+  buildMsg(h, ",");
+  buildMsg(h, checksum((char*)&h->txbuf, h->txcount));
+  buildMsg(h, "\n");
   h->Port->write(h->txbuf, h->txcount);
   h->Port->flush();
   stats.stats[StatsTxMsgs]++;
@@ -134,7 +163,7 @@ int ReadMsgNonBlocking(SerialMsg* h, char* b, int l) {
     if (c == '\r') {  // skip CR
       continue;
     }
-    if (c == '\n') {                 // Stop reading on LF
+    if (c == '\n') {                  // Stop reading on LF
       h->rxbuf[h->rxcount++] = 0x00;  // null terminate
       break;
     }

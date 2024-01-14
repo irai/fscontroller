@@ -9,9 +9,12 @@
 
 typedef struct {
   uint8_t pin;
-  int value;       // pin current value
-  int savedValue;  // pin saved value
+  int value;              // pin current value
+  int savedValue;         // pin saved value
   uint32_t debounceTime;  // the last time the output pin was toggled
+  const char * action;
+  const char * variable;        // variable name
+  int8_t index;           // variable index or -1
 } button;
 
 typedef struct {
@@ -23,6 +26,9 @@ typedef struct {
   int aStatePrevious;
   int bStatePrevious;
   int bState;
+  const char * action;
+  const char * variable;  // variable name
+  int8_t index;     // variable index or -1
 } rotary;
 
 
@@ -37,9 +43,9 @@ typedef struct {
 struct SerialMsg;
 
 extern void processSwitch(SerialMsg*, button*);
-extern void processPot(SerialMsg* , button* );
-extern void processPushButton(SerialMsg* , button* );
-extern void processRotary(SerialMsg* , rotary* );
+extern void processPot(SerialMsg*, button*);
+extern void processPushButton(SerialMsg*, button*);
+extern void processRotary(SerialMsg*, rotary*);
 
 extern const int nLedOutputs;
 extern button ledOutputs[];
@@ -51,7 +57,7 @@ extern const int nPotButtons;
 extern button potButtons[];
 extern const int nRotaryControls;
 extern rotary rotaryControls[];
-extern const char * panelName;
+extern const char* panelName;
 
 // These index positions for statistics count are part of the public msg interface.
 const int StatsRxMsgs = 0;
@@ -69,12 +75,12 @@ extern SerialMsg* NewSerialMsg(Stream* s);
 
 // mandatory function to be implemented by every panel
 extern int panelInit();
-extern void panelConnect(SerialMsg *s);
-extern void panelNotification(char *msg);
+extern void panelConnect(SerialMsg* s);
+extern void panelNotification(char* msg);
 
-  const char panelToken[] = "panel";
-  const char notificationToken[] = "notification";
-  const char testToken[] = "test";
-  const char logToken[] = "log";
+const char panelToken[] = "panel";
+const char notificationToken[] = "notification";
+const char testToken[] = "test";
+const char logToken[] = "log";
 
 #endif
