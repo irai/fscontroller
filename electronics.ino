@@ -100,6 +100,14 @@ void processSwitch(SerialMsg* s, button* b) {
     debugHandler->flush();
   }
 
+  // For rotary switches, we only want to fire on the high value
+  if (b->fireLow && b->value == HIGH) {
+    return;
+  }
+
   // txSwitch(s, b->pin, b->value);
+  if (b->setValue != -1) {
+    return txAction(s, b->action, b->variable, b->index, b->setValue);
+  } 
   txAction(s, b->action, b->variable, b->index, b->value);
 }

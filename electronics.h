@@ -9,12 +9,14 @@
 
 typedef struct {
   uint8_t pin;
+  bool fireLow;  // true if the pin only generates a message when Low
   int value;              // pin current value
   int savedValue;         // pin saved value
   uint32_t debounceTime;  // the last time the output pin was toggled
   const char * action;
   const char * variable;        // variable name
   int8_t index;           // variable index or -1
+  int setValue;           // value to set or -1
 } button;
 
 typedef struct {

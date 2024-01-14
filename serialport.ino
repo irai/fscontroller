@@ -23,46 +23,46 @@ typedef struct SerialMsg {
 } SerialMsg;
 
 void txPanel(SerialMsg* s, const char* name, const char* panelVersion) {
-  buildMsg(s, panelToken);
-  buildMsg(s, ",");
-  buildMsg(s, name);
-  buildMsg(s, ",");
-  buildMsg(s, serialVersion);
-  buildMsg(s, ",");
-  buildMsg(s, panelVersion);
+  buildMsgStr(s, panelToken);
+  buildMsgStr(s, ",");
+  buildMsgStr(s, name);
+  buildMsgStr(s, ",");
+  buildMsgInt(s, serialVersion);
+  buildMsgStr(s, ",");
+  buildMsgInt(s, panelVersion);
   for (unsigned int i = 0; i < sizeof(statistics) / sizeof(uint16_t); i++) {
-    buildMsg(s, ",");
-    buildMsg(s, stats.stats[i]);
+    buildMsgStr(s, ",");
+    buildMsgInt(s, stats.stats[i]);
   }
   WriteMsg(s);
 }
 
 void txNotification(SerialMsg* s, const char* notification) {
-  buildMsg(s, notificationToken);
-  buildMsg(s, ",");
-  buildMsg(s, notification);
+  buildMsgStr(s, notificationToken);
+  buildMsgStr(s, ",");
+  buildMsgStr(s, notification);
   WriteMsg(s);
 }
 
 void txPin(SerialMsg* s, const char* msgid, uint8_t pin, int16_t value) {
-  buildMsg(s, msgid);
-  buildMsg(s, ",");
-  buildMsg(s, pin);
-  buildMsg(s, ",");
-  buildMsg(s, value);
+  buildMsgStr(s, msgid);
+  buildMsgStr(s, ",");
+  buildMsgInt(s, pin);
+  buildMsgStr(s, ",");
+  buildMsgInt(s, value);
   WriteMsg(s);
 }
 
 void txAction(SerialMsg* s, const char* msgid, const char* variable, int16_t index, float value) {
-  buildMsg(s, msgid);
-  buildMsg(s, ",");
-  buildMsg(s, variable);
-  buildMsg(s, ",");
+  buildMsgStr(s, msgid);
+  buildMsgStr(s, ",");
+  buildMsgStr(s, variable);
+  buildMsgStr(s, ",");
   if (index != -1) {
-    buildMsg(s, index);
-    buildMsg(s, ",");
+    buildMsgInt(s, index);
+    buildMsgStr(s, ",");
   }
-  buildMsg(s, value);
+  buildMsgFloat(s, value);
   WriteMsg(s);
 }
 
@@ -91,7 +91,7 @@ void SerialClose(SerialMsg* h) {
   free(h);
 }
 
-void buildMsg(SerialMsg* h, const char* b) {
+void buildMsgStr(SerialMsg* h, const char* b) {
   int len = strlen(b);
   if (h->txcount + len < sizeof(h->txbuf) / sizeof(char)) {
     strcpy(h->txbuf + h->txcount, b);
@@ -99,14 +99,14 @@ void buildMsg(SerialMsg* h, const char* b) {
   }
 }
 
-void buildMsg(SerialMsg* h, int b) {
+void buildMsgInt(SerialMsg* h, int b) {
   char myBuffer[10];  // Create a character array to store the string
 
   itoa(b, myBuffer, sizeof(myBuffer));
-  buildMsg(h, myBuffer);
+  buildMsgStr(h, myBuffer);
 }
 
-void buildMsg(SerialMsg* h, float b) {
+void buildMsgFloat(SerialMsg* h, float b) {
   char myBuffer[32];  // Create a character array to store the string
 
   dtostrf(b, sizeof(myBuffer) - 1, 6, myBuffer);  // 6 digits decimal precision
@@ -114,13 +114,13 @@ void buildMsg(SerialMsg* h, float b) {
   while (*startPtr == ' ') {
     startPtr++;
   }
-  buildMsg(h, startPtr);
+  buildMsgStr(h, startPtr);
 }
 
 void WriteMsg(SerialMsg* h) {
-  buildMsg(h, ",");
-  buildMsg(h, checksum((char*)&h->txbuf, h->txcount));
-  buildMsg(h, "\n");
+  buildMsgStr(h, ",");
+  buildMsgInt(h, checksum((char*)&h->txbuf, h->txcount));
+  buildMsgStr(h, "\n");
   h->Port->write(h->txbuf, h->txcount);
   h->Port->flush();
   stats.stats[StatsTxMsgs]++;

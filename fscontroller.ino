@@ -9,11 +9,11 @@ statistics stats;
 
 // uncomment one of these to build the right panel
 // #define LIGHTS_PANEL
-// #define FLAPS_PANEL
+#define FLAPS_PANEL
 // #define G1000_PANEL
 // #define TEST_PANEL
 // #define SINGLE_THROTTLE_QUADRANT_PANEL
-#define LANDING_GEAR_PANEL
+// #define LANDING_GEAR_PANEL
 
 Print *debugHandler;
 SerialMsg *serialMsg;
