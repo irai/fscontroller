@@ -5,14 +5,14 @@ const int rightGearPin = 4;
 const int motorPin = 5;
 
 button ledOutputs[] = {
-  { centerGearPin },
-  { leftGearPin },
-  { rightGearPin },
-  { motorPin },
+  { .pin = centerGearPin },
+  { .pin = leftGearPin },
+  { .pin = rightGearPin },
+  { .pin = motorPin },
 };
 
 button switchButtons[] = {
-  { 8 }
+  { .pin = 8 , .action = "set", .variable ="landing_gear_down", .index = -1}
 };
 
 button potButtons[] = {};
