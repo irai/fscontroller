@@ -3,24 +3,40 @@
 
 #define DEBOUNCE_TIME 16
 
+
+int delayAnalogRead(uint8_t pin) {
+  const int n = 64;  // number of samples to average
+  int value = 0;
+
+  analogRead(pin);        // discard first reading
+  delayMicroseconds(10);  // IMPORTANT: must delay to minimise fluctuation on the analog port
+  analogRead(pin);        // discard second reading
+  for (int i = 0; i < n; i++) {
+    value += analogRead(pin);
+  }
+  value = value / n;
+
+  return value;
+}
+
 // https://lastminuteengineers.com/rotary-encoder-arduino-tutorial/
 void processRotary(SerialMsg* s, rotary* r) {
 
   // If A state changed, then wheel has moved
   // Some integrated board and rotary switch generate both a HIGH and LOW voltage for a single change of the wheel but others generate a single change.
   // React in software to avoid double count. For example the trim control uses an integrated circuit that generates both HIGH and LOW.
-  r->aState = digitalRead(r->aPin);  // for accuracy, must read again after a change to pin A
+  // r->aState = digitalRead(r->aPin);  // for accuracy, must read again after a change to pin A
   if (r->aStatePrevious != r->aState) {
-    r->bState = digitalRead(r->bPin);  // for accuracy, must read again after a change to pin A
+    r->bState = digitalRead(r->bPin);  // for accuracy, must read again B after a change to A
 
     if (Debug) {
-      debugHandler->print("Rotary pin=");
+      debugHandler->print("Rotary aPin=");
       debugHandler->print(r->aPin);
-      debugHandler->print(" value=");
+      debugHandler->print(" aValue=");
       debugHandler->print(r->aState);
-      debugHandler->print(" pin=");
+      debugHandler->print(" bPin=");
       debugHandler->print(r->bPin);
-      debugHandler->print(" value=");
+      debugHandler->print(" bValue=");
       debugHandler->print(r->bState);
     }
 
@@ -30,8 +46,8 @@ void processRotary(SerialMsg* s, rotary* r) {
       if (Debug) {
         debugHandler->println(" decrease");
       }
+      
       txAction(s, r->action, r->variable, r->index, -1);
-
     } else {
       // Encoder is rotating clockwise
       if (Debug) {
@@ -106,7 +122,7 @@ void processSwitch(SerialMsg* s, button* b) {
   }
 
   // txSwitch(s, b->pin, b->value);
-  if (b->setValue != -1) {
+  if (b->setValue != -9999) {  // magic value to indicate to use the set value
     return txAction(s, b->action, b->variable, b->index, b->setValue);
   } 
   txAction(s, b->action, b->variable, b->index, b->value);

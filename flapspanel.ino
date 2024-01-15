@@ -19,9 +19,9 @@ button switchButtons[] = {
   { .pin = 8, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "flaps", .index = -1, .setValue = 1},
   { .pin = 9, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "flaps", .index = -1, .setValue = 2},
   { .pin = 10,.fireLow = true,  .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "flaps", .index = -1, .setValue = 3},
-  { .pin = 11,.fireLow = false,  .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "parking_brake", .index = -1, .setValue = -1},
-  { .pin = 12,.fireLow = false,  .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "carb_heat", .index = -1, .setValue = -1},
-  { .pin = 13,.fireLow = false,  .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set_n", .variable = "fuel_pump", .index = 1, .setValue = -1},
+  { .pin = 11,.fireLow = false,  .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "parking_brake", .index = -1, .setValue = -9999},
+  { .pin = 12,.fireLow = false,  .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "carb_heat", .index = -1, .setValue = -9999},
+  { .pin = 13,.fireLow = false,  .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set_n", .variable = "fuel_pump", .index = 1, .setValue = -9999},
   { .pin = A1,.fireLow = true,  .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "fuel_tank_selector", .index = -1, .setValue = 0}, // both
   { .pin = A2,.fireLow = true,  .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "fuel_tank_selector", .index = -1, .setValue = 1}, // left
   { .pin = A3,.fireLow = true,  .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "fuel_tank_selector", .index = -1, .setValue = 2} // right

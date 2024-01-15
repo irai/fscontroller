@@ -9,8 +9,8 @@ statistics stats;
 
 // uncomment one of these to build the right panel
 // #define LIGHTS_PANEL
-#define FLAPS_PANEL
-// #define G1000_PANEL
+// #define FLAPS_PANEL
+#define G1000_PANEL
 // #define TEST_PANEL
 // #define SINGLE_THROTTLE_QUADRANT_PANEL
 // #define LANDING_GEAR_PANEL
@@ -21,20 +21,7 @@ SerialMsg *serialMsg;
 //handle notification is a pointer to a function that takes a char* and returns error
 int (*handleNotification)(char *) = 0;
 
-int delayAnalogRead(uint8_t pin) {
-  const int n = 64;  // number of samples to average
-  int value = 0;
 
-  analogRead(pin);        // discard first reading
-  delayMicroseconds(10);  // IMPORTANT: must delay to minimise fluctuation on the analog port
-  analogRead(pin);        // discard second reading
-  for (int i = 0; i < n; i++) {
-    value += analogRead(pin);
-  }
-  value = value / n;
-
-  return value;
-}
 
 void setup() {
   Serial.begin(115200);  // baund rate is ignored when using usb
@@ -91,7 +78,6 @@ void loop() {
     if (potButtons[i].debounceTime > millis()) {
       continue;
     }
-
     potButtons[i].value = delayAnalogRead(potButtons[i].pin);
     processPot(serialMsg, &(potButtons[i]));
   }
