@@ -96,7 +96,7 @@ void loop() {
 }
 
 void readHost(SerialMsg *s) {
-  char b[64];
+  char b[maxMsgSize+1];  
 
   int n = ReadMsgNonBlocking(serialMsg, (char *)&b, sizeof(b) / sizeof(char));
   if (n == -1) {

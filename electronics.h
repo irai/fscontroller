@@ -85,4 +85,6 @@ const char notificationToken[] = "notification";
 const char testToken[] = "test";
 const char logToken[] = "log";
 
+const int maxMsgSize = 256;
+
 #endif

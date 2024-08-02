@@ -1,4 +1,5 @@
 #include <CRC8.h>
+#include "electronics.h"
 
 CRC8 crc8;
 
@@ -15,9 +16,9 @@ const char serialVersion[] = "serial-1.1.0";
 
 typedef struct SerialMsg {
   Stream* Port;
-  char rxbuf[256];
+  char rxbuf[maxMsgSize];
   unsigned int rxcount;
-  char txbuf[256];
+  char txbuf[maxMsgSize];
   unsigned int txcount;
   unsigned long timeout;
 } SerialMsg;
