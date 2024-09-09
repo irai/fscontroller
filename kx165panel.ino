@@ -1,18 +1,15 @@
 
 #ifdef KX165_COM_NAV_PANEL
 #include <TM1637.h>
-#include "LedControl.h"
+#include <LedControl.h>
 
 /*
- Now we need a LedControl to work with.
- ***** These pin numbers will probably not work with your hardware *****
- pin 12 is connected to the DataIn
- pin 11 is connected to the CLK
- pin 10 is connected to LOAD
+ DataIn, CLK, LOAD
  ***** Please set the number of devices you have *****
  But the maximum default of 8 MAX72XX wil also work.
  */
-LedControl lc = LedControl(15, 14, 13, 3);
+LedControl navDisplay = LedControl(15, 14, 13, 2);
+LedControl comDisplay = LedControl(3, 2, 5, 2);
 
 TM1637 lcd(16, 17);
 
@@ -39,13 +36,14 @@ const char* panelVersion = "1.0.0";
 
 const int com = 0;
 const int comStby = 1;
-const int nav = 2;
-const int navStby = 3;
+const int nav = 0;
+const int navStby = 1;
 
 
-void displayFrequency(int com, const char* frequency) {
+//FIXME: could not pass LedControl object here. Using a hack type instead.
+void displayFrequency(int display, int com, const char* frequency) {
   int len = strlen(frequency);
-  int displayIndex = 0;
+  int displayIndex = 4;
   bool dp = false;
 
   // Display each character of the frequency string in reverse order
@@ -53,9 +51,13 @@ void displayFrequency(int com, const char* frequency) {
     if (frequency[i] == '.') {
       dp = true; // Skip the decimal point, but set the decimal point on the next digit
     } else {
-      lc.setChar(com, displayIndex, frequency[i], dp);
+      if (display == 1) {
+        navDisplay.setChar(com, displayIndex, frequency[i], dp);
+      } else {
+        comDisplay.setChar(com, displayIndex, frequency[i], dp);
+      }
       dp = false;
-      displayIndex++;
+      displayIndex--;
     }
   }
 }
@@ -66,18 +68,23 @@ void displayFrequency(int com, const char* frequency) {
 int panelInit() {
   lcd.begin();
 
-  lc.shutdown(com, false);
-  lc.setIntensity(com, 4);
-  lc.shutdown(comStby, false);
-  lc.setIntensity(comStby, 4);
-  lc.shutdown(nav, false);
-  lc.setIntensity(nav, 4);
+  comDisplay.shutdown(com, false );
+  comDisplay.setIntensity(com, 1);
+  comDisplay.shutdown(comStby, false);
+  comDisplay.setIntensity(comStby, 1);
 
-  displayFrequency(com, "132.80");
+  navDisplay.shutdown(nav, false);
+  navDisplay.setIntensity(nav, 1);
+  navDisplay.shutdown(navStby, false);
+  navDisplay.setIntensity(navStby, 1);
 
-  displayFrequency(comStby, "119.90");
+  displayFrequency(0, com, "332.80");
 
-  displayFrequency(nav, "178.4");
+  displayFrequency(0, comStby, "129.33");
+
+  displayFrequency(1, nav, "111.22");
+
+  displayFrequency(1, navStby, "333.44");
 
   return 0;
 }
@@ -116,17 +123,25 @@ void panelNotification(char* msg) {
     return;
   }
 
-  float com1ActiveFreq = atof(strtok(0, ","));
-  float com1StandbyFreq = atof(strtok(0, ","));
-  float com2ActiveFreq = atof(strtok(0, ","));
-  float com2StandbyFreq = atof(strtok(0, ","));
+  char* com1ActiveFreqStr = strtok(0, ",");
+char* com1StandbyFreqStr = strtok(0, ",");
+char* com2ActiveFreqStr = strtok(0, ",");
+char* com2StandbyFreqStr = strtok(0, ",");
+  // float com1ActiveFreq = atof(strtok(0, ","));
+  // float com1StandbyFreq = atof(strtok(0, ","));
+  // float com2ActiveFreq = atof(strtok(0, ","));
+  // float com2StandbyFreq = atof(strtok(0, ","));
   char* comName = strtok(0, ",");
   char* transponder = strtok(0, ",");
   char* transponderState = strtok(0, ",");
-  float nav1ActiveFreq = atof(strtok(0, ","));
-  float nav1StandbyFreq = atof(strtok(0, ","));
-  float nav2ActiveFreq = atof(strtok(0, ","));
-  float nav2StandbyFreq = atof(strtok(0, ","));
+  char* nav1ActiveFreqStr = strtok(0, ",");
+  char* nav1StandbyFreqStr = strtok(0, ",");
+  char* nav2ActiveFreqStr = strtok(0, ",");
+  char* nav2StandbyFreqStr = strtok(0, ",");
+  // float nav1ActiveFreq = atof(nav1ActiveFreqStr);
+  // float nav1StandbyFreq = atof(nav1StandbyFreqStr);
+  // float nav2ActiveFreq = atof(nav2ActiveFreqStr);
+  // float nav2StandbyFreq = atof(nav2StandbyFreqStr);
   char* navName = strtok(0, ",");
 
   if (navName == 0) {
@@ -134,7 +149,12 @@ void panelNotification(char* msg) {
     return;
   }
 
-  lcd.display(com1StandbyFreq);
+  displayFrequency(0, com, com1ActiveFreqStr);
+  displayFrequency(0, comStby, com1StandbyFreqStr);
+  displayFrequency(1, nav, nav1ActiveFreqStr);
+  displayFrequency(1, navStby, nav1StandbyFreqStr);
+
+  // lcd.display(com1StandbyFreq);
 }
 
 
