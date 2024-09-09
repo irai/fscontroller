@@ -1,4 +1,4 @@
-
+#include <LedControl.h> // MUST add this to prevent pre-compilation error in kx165panel.ino
 #include "electronics.h"
 
 bool Debug = false;
