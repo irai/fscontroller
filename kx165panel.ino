@@ -10,11 +10,19 @@ LedControl comDisplay = LedControl(3, 2, 5, 2); // serial data, clock, load, num
 
 button ledOutputs[] = {};
 
-button switchButtons[] = {};
+button switchButtons[] = {
+  { .pin = 16, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "com_radio_standby_swap", .index = -1, .setValue = 0},
+  { .pin = 17, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "button1", .index = -1, .setValue = 0},
+  { .pin = 22, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "nav_radio_standby_swap", .index = -1, .setValue = 0},
+  { .pin = 26, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "button2", .index = -1, .setValue = 0},
+};
 
 button potButtons[] = {};
 
-rotary rotaryControls[] = {};
+rotary rotaryControls[] = {
+  { .aPin = 19, .bPin = 18, .buttonPin = 1, 0, 0, 0, 0, 0, .action = "inc_n", .variable = "com_radio_freq_whole", .index = 0 },
+  { .aPin = 28, .bPin = 27, .buttonPin = 1, 0, 0, 0, 0, 0, .action = "inc_n", .variable = "nav_radio_freq_whole", .index = 0 },
+};
 
 const int nLedOutputs = sizeof(ledOutputs) / sizeof(button);
 const int nSwitchButtons = sizeof(switchButtons) / sizeof(button);
