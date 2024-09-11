@@ -7,19 +7,32 @@
 #include <Arduino.h>
 #include <WString.h>
 
-typedef struct {
+const int maxMsgSize = 256;
+
+typedef struct SerialMsg {
+  Stream* Port;
+  char rxbuf[maxMsgSize];
+  unsigned int rxcount;
+  char txbuf[maxMsgSize];
+  unsigned int txcount;
+  unsigned long timeout;
+} SerialMsg;
+
+
+typedef struct button {
   uint8_t pin;
   bool fireLow;  // true if the pin only generates a message when Low
   int value;              // pin current value
   int savedValue;         // pin saved value
   uint32_t debounceTime;  // the last time the output pin was toggled
-  const char * action;
-  const char * variable;        // variable name
+  const char* action;
+  void (*function)(SerialMsg*, struct button*); // interceptor function
+  const char* variable;        // variable name
   int8_t index;           // variable index or -1
   int setValue;           // value to set or -1
 } button;
 
-typedef struct {
+typedef struct rotary {
   uint8_t aPin;  // A or Clock pin
   uint8_t bPin;  // B or data pin
   uint8_t buttonPin;
@@ -28,21 +41,13 @@ typedef struct {
   int aStatePrevious;
   int bStatePrevious;
   int bState;
-  const char * action;
-  const char * variable;  // variable name
+  const char* action;
+  void (*function)(SerialMsg*, struct rotary*, int increment); // interceptor function
+  const char* variable;  // variable name
   int8_t index;     // variable index or -1
 } rotary;
 
 
-// typedef struct SerialMsg {
-//   Stream *Port;
-//   char rxbuf[256];
-//   unsigned int rxcount;
-//   char txbuf[256];
-//   unsigned int txcount;
-//   unsigned long timeout;
-// } SerialMsg;
-struct SerialMsg;
 
 extern void processSwitch(SerialMsg*, button*);
 extern void processPot(SerialMsg*, button*);
@@ -58,6 +63,7 @@ extern button pushButtons[];
 extern const int nPotButtons;
 extern button potButtons[];
 extern const int nRotaryControls;
+extern void defaultFunction(SerialMsg*, button*);
 extern rotary rotaryControls[];
 extern const char* panelName;
 
@@ -85,6 +91,6 @@ const char notificationToken[] = "notification";
 const char testToken[] = "test";
 const char logToken[] = "log";
 
-const int maxMsgSize = 256;
+
 
 #endif

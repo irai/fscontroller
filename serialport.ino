@@ -14,14 +14,7 @@ uint8_t checksum(const char* buf, uint8_t n) {
 //             1.1.0 - add support for set, inc, set_n, inc_n actions         
 const char serialVersion[] = "serial-1.1.0";
 
-typedef struct SerialMsg {
-  Stream* Port;
-  char rxbuf[maxMsgSize];
-  unsigned int rxcount;
-  char txbuf[maxMsgSize];
-  unsigned int txcount;
-  unsigned long timeout;
-} SerialMsg;
+
 
 void txPanel(SerialMsg* s, const char* name, const char* panelVersion) {
   buildMsgStr(s, panelToken);

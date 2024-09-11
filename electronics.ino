@@ -19,6 +19,10 @@ int delayAnalogRead(uint8_t pin) {
   return value;
 }
 
+void defaultRotaryFunction(SerialMsg* s, rotary* r, int increment) {
+      txAction(s, r->action, r->variable, r->index, increment);
+}
+
 // https://lastminuteengineers.com/rotary-encoder-arduino-tutorial/
 void processRotary(SerialMsg* s, rotary* r) {
 
@@ -47,14 +51,24 @@ void processRotary(SerialMsg* s, rotary* r) {
         debugHandler->println(" decrease");
       }
       
-      txAction(s, r->action, r->variable, r->index, -1);
+      if (r->function!=NULL) {
+        r->function(s, r, -1);
+      } else {
+        defaultRotaryFunction(s, r, -1);
+      }
+      // txAction(s, r->action, r->variable, r->index, -1);
     } else {
       // Encoder is rotating clockwise
       if (Debug) {
         debugHandler->println(" increase");
       }
 
-      txAction(s, r->action, r->variable, r->index, +1);
+      if (r->function!=NULL) {
+        r->function(s, r, +1);
+      } else {
+        defaultRotaryFunction(s, r, +1);
+      }
+      // txAction(s, r->action, r->variable, r->index, +1);
     }
     if (Debug) {
       debugHandler->flush();
@@ -101,6 +115,11 @@ void processPot(SerialMsg* s, button* b) {
   txAction(s, b->action, b->variable, b->index, ((float)b->savedValue)/1023*100); // percentage
 }
 
+
+void defaultButtonFunction(SerialMsg* s, button* b) {
+  txAction(s, b->action, b->variable, b->index, b->value);
+}
+
 void processSwitch(SerialMsg* s, button* b) {
   if (b->value == b->savedValue) {
     return;
@@ -118,6 +137,12 @@ void processSwitch(SerialMsg* s, button* b) {
 
   // For rotary switches, we only want to fire on the high value
   if (b->fireLow && b->value == HIGH) {
+    return;
+  }
+
+  //Override function
+  if (b->function!=NULL) {
+    b->function(s, b);
     return;
   }
 
