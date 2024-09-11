@@ -22,33 +22,33 @@ void processNavFreqInterceptor(SerialMsg* s, button* b) {
 }
 
 void processComFreqRotaryInterceptor(SerialMsg* s, rotary* r, float increment) {
+  char* variable = "com_radio_freq_fract";
   if (comWholeNumber) {
-      txAction(s, r->action, "com_radio_freq_whole", r->index, +1);
-      return;
+    variable = "com_radio_freq_whole";
   }
-  txAction(s, r->action, r->variable, r->index, +1);
+  txAction(s, r->action, variable, r->index, increment);
 }
 
 void processNavFreqRotaryInterceptor(SerialMsg* s, rotary* r, float increment) {
+  char* variable = "nav_radio_freq_fract";
   if (navWholeNumber) {
-      txAction(s, r->action, "nav_radio_freq_whole", r->index, +1);
-      return;
+    variable = "nav_radio_freq_whole";
   }
-  txAction(s, r->action, r->variable, r->index, +1);
+  txAction(s, r->action, variable, r->index, increment);
 }
 
 button switchButtons[] = {
-  { .pin = 16, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .function = &defaultButtonFunction, .variable = "com_radio_standby_swap", .index = -1, .setValue = 0},
-  { .pin = 17, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .function = &processComFreqInterceptor, .variable = "com button", .index = -1, .setValue = 0},
-  { .pin = 22, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .function = &defaultButtonFunction, .variable = "com_radio_standby_swap", .index = -1, .setValue = 0},
-  { .pin = 26, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .function = &processNavFreqInterceptor, .variable = "nav button", .index = -1, .setValue = 0},
+  {.pin = 16, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .function = &defaultButtonFunction, .variable = "com_radio_standby_swap", .index = -1, .setValue = 0},
+  {.pin = 17, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .function = &processComFreqInterceptor, .variable = "com button", .index = -1, .setValue = 0},
+  {.pin = 22, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .function = &defaultButtonFunction, .variable = "com_radio_standby_swap", .index = -1, .setValue = 0},
+  {.pin = 26, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .function = &processNavFreqInterceptor, .variable = "nav button", .index = -1, .setValue = 0},
 };
 
 button potButtons[] = {};
 
 rotary rotaryControls[] = {
-  { .aPin = 18, .bPin = 19, .buttonPin = 1, 0, 0, 0, 0, 0, .action = "inc_n", .function = &processComFreqRotaryInterceptor, .variable = "com_radio_freq_fract", .index = 0 },
-  { .aPin = 28, .bPin = 27, .buttonPin = 1, 0, 0, 0, 0, 0, .action = "inc_n", .function = &processNavFreqRotaryInterceptor, .variable = "nav_radio_freq_fract", .index = 0 },
+  {.aPin = 19, .bPin = 18, .buttonPin = 1, 0, 0, 0, 0, 0, .action = "inc_n", .function = &processComFreqRotaryInterceptor, .variable = "com_radio_freq_fract", .index = 0 },
+  {.aPin = 28, .bPin = 27, .buttonPin = 1, 0, 0, 0, 0, 0, .action = "inc_n", .function = &processNavFreqRotaryInterceptor, .variable = "nav_radio_freq_fract", .index = 0 },
 };
 
 const int nLedOutputs = sizeof(ledOutputs) / sizeof(button);
