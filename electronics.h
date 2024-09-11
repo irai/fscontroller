@@ -42,7 +42,7 @@ typedef struct rotary {
   int bStatePrevious;
   int bState;
   const char* action;
-  void (*function)(SerialMsg*, struct rotary*, int increment); // interceptor function
+  void (*function)(SerialMsg*, struct rotary*, float increment); // interceptor function
   const char* variable;  // variable name
   int8_t index;     // variable index or -1
 } rotary;

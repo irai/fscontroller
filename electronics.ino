@@ -19,7 +19,7 @@ int delayAnalogRead(uint8_t pin) {
   return value;
 }
 
-void defaultRotaryFunction(SerialMsg* s, rotary* r, int increment) {
+void defaultRotaryFunction(SerialMsg* s, rotary* r, float increment) {
       txAction(s, r->action, r->variable, r->index, increment);
 }
 

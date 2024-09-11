@@ -21,7 +21,7 @@ void processNavFreqInterceptor(SerialMsg* s, button* b) {
   navWholeNumber = !navWholeNumber;
 }
 
-void processComFreqRotaryInterceptor(SerialMsg* s, rotary* r, int increment) {
+void processComFreqRotaryInterceptor(SerialMsg* s, rotary* r, float increment) {
   if (comWholeNumber) {
       txAction(s, r->action, "com_radio_freq_whole", r->index, +1);
       return;
@@ -29,7 +29,7 @@ void processComFreqRotaryInterceptor(SerialMsg* s, rotary* r, int increment) {
   txAction(s, r->action, r->variable, r->index, +1);
 }
 
-void processNavFreqRotaryInterceptor(SerialMsg* s, rotary* r, int increment) {
+void processNavFreqRotaryInterceptor(SerialMsg* s, rotary* r, float increment) {
   if (navWholeNumber) {
       txAction(s, r->action, "nav_radio_freq_whole", r->index, +1);
       return;
@@ -47,8 +47,8 @@ button switchButtons[] = {
 button potButtons[] = {};
 
 rotary rotaryControls[] = {
-  { .aPin = 18, .bPin = 19, .buttonPin = 1, 0, 0, 0, 0, 0, .action = "inc", .function = &processComFreqRotaryInterceptor, .variable = "com_radio_freq_fract", .index = 0 },
-  { .aPin = 28, .bPin = 27, .buttonPin = 1, 0, 0, 0, 0, 0, .action = "inc", .function = &processNavFreqRotaryInterceptor, .variable = "nav_radio_freq_fract", .index = 0 },
+  { .aPin = 18, .bPin = 19, .buttonPin = 1, 0, 0, 0, 0, 0, .action = "inc_n", .function = &processComFreqRotaryInterceptor, .variable = "com_radio_freq_fract", .index = 0 },
+  { .aPin = 28, .bPin = 27, .buttonPin = 1, 0, 0, 0, 0, 0, .action = "inc_n", .function = &processNavFreqRotaryInterceptor, .variable = "nav_radio_freq_fract", .index = 0 },
 };
 
 const int nLedOutputs = sizeof(ledOutputs) / sizeof(button);
