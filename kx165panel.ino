@@ -8,7 +8,7 @@
 LedControl navDisplay = LedControl(15, 14, 13, 2); // serial data, clock, load, number of devices
 LedControl comDisplay = LedControl(3, 2, 5, 2); // serial data, clock, load, number of devices
 
-button ledOutputs[] = {};
+led ledOutputs[] = {};
 
 bool comWholeNumber = true;
 bool navWholeNumber = true;
@@ -38,22 +38,22 @@ void processNavFreqRotaryInterceptor(SerialMsg* s, rotary* r, float increment) {
 }
 
 button switchButtons[] = {
-  {.pin = 16, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .function = &defaultButtonFunction, .variable = "com_radio_standby_swap", .index = -1, .setValue = 0},
-  {.pin = 17, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .function = &processComFreqInterceptor, .variable = "com button", .index = -1, .setValue = 0},
-  {.pin = 22, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .function = &defaultButtonFunction, .variable = "com_radio_standby_swap", .index = -1, .setValue = 0},
-  {.pin = 26, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .function = &processNavFreqInterceptor, .variable = "nav button", .index = -1, .setValue = 0},
+  {.pin = DigitalPin(16,4), .fireLow = true, .action = "set", .function = &defaultButtonFunction, .variable = "com_radio_standby_swap", .index = -1, .setValue = 0},
+  {.pin = DigitalPin(17,4), .fireLow = true, .action = "set", .function = &processComFreqInterceptor, .variable = "com button", .index = -1, .setValue = 0},
+  {.pin = DigitalPin(22,4), .fireLow = true, .action = "set", .function = &defaultButtonFunction, .variable = "nav_radio_standby_swap", .index = -1, .setValue = 0},
+  {.pin = DigitalPin(26,4), .fireLow = true, .action = "set", .function = &processNavFreqInterceptor, .variable = "nav button", .index = -1, .setValue = 0},
 };
 
-button potButtons[] = {};
+pot potControls[] = {};
 
 rotary rotaryControls[] = {
-  {.aPin = 19, .bPin = 18, .buttonPin = 1, 0, 0, 0, 0, 0, .action = "inc_n", .function = &processComFreqRotaryInterceptor, .variable = "com_radio_freq_fract", .index = 0 },
-  {.aPin = 28, .bPin = 27, .buttonPin = 1, 0, 0, 0, 0, 0, .action = "inc_n", .function = &processNavFreqRotaryInterceptor, .variable = "nav_radio_freq_fract", .index = 0 },
+  {.aPinDebounced = DigitalPin(19, 0), .bPinDebounced = DigitalPin(18,0), .action = "inc_n", .function = &processComFreqRotaryInterceptor, .variable = "com_radio_freq_fract", .index = 0 },
+  {.aPinDebounced = DigitalPin(28, 0), .bPinDebounced = DigitalPin(27,0), .action = "inc_n", .function = &processNavFreqRotaryInterceptor, .variable = "nav_radio_freq_fract", .index = 0 },
 };
 
-const int nLedOutputs = sizeof(ledOutputs) / sizeof(button);
+const int nLedOutputs = sizeof(ledOutputs) / sizeof(led);
 const int nSwitchButtons = sizeof(switchButtons) / sizeof(button);
-const int nPotButtons = sizeof(potButtons) / sizeof(button);
+const int nPotButtons = sizeof(potControls) / sizeof(pot);
 const int nRotaryControls = sizeof(rotaryControls) / sizeof(rotary);
 
 const char* panelName = "kx165.com.nav.panel";

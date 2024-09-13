@@ -12,7 +12,8 @@ uint8_t checksum(const char* buf, uint8_t n) {
 // protocol - 
 //     version 1.0.0 - string based csv
 //             1.1.0 - add support for set, inc, set_n, inc_n actions         
-const char serialVersion[] = "serial-1.1.0";
+//             1.1.1 - changes to pin debounce logic to prevent fluctuations
+const char serialVersion[] = "serial-1.1.1";
 
 
 

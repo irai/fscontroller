@@ -3,11 +3,11 @@
 const char *panelName = "single.throttle.quadrant";
 const char *panelVersion = "1.0.0";
 
-button ledOutputs[] = {};
+led ledOutputs[] = {};
 
 button switchButtons[] = {};
 
-button potButtons[] = {
+pot potControls[] = {
   { .pin = A0, .action = "set_n", .variable = "throttle", .index = 0 },
   { .pin = A1, .action = "set_n", .variable = "propeller_pitch", .index = 0 },
   { .pin = A2, .action = "set_n", .variable = "mixture", .index = 0 }
@@ -18,9 +18,9 @@ rotary rotaryControls[] = {
 };
 
 
-const int nLedOutputs = sizeof(ledOutputs) / sizeof(button);
+const int nLedOutputs = sizeof(ledOutputs) / sizeof(led);
 const int nSwitchButtons = sizeof(switchButtons) / sizeof(button);
-const int nPotButtons = sizeof(potButtons) / sizeof(button);
+const int nPotButtons = sizeof(potControls) / sizeof(pot);
 const int nRotaryControls = sizeof(rotaryControls) / sizeof(rotary);
 
 int panelInit() {

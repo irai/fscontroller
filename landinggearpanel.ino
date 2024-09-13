@@ -4,7 +4,7 @@ const int leftGearPin = 3;
 const int rightGearPin = 4;
 const int motorPin = 5;
 
-button ledOutputs[] = {
+led ledOutputs[] = {
   { .pin = centerGearPin },
   { .pin = leftGearPin },
   { .pin = rightGearPin },
@@ -15,13 +15,13 @@ button switchButtons[] = {
   { .pin = 8 , .action = "set", .variable ="landing_gear_down", .index = -1}
 };
 
-button potButtons[] = {};
+pot potControls[] = {};
 
 rotary rotaryControls[] = {};
 
-const int nLedOutputs = sizeof(ledOutputs) / sizeof(button);
+const int nLedOutputs = sizeof(ledOutputs) / sizeof(led);
 const int nSwitchButtons = sizeof(switchButtons) / sizeof(button);
-const int nPotButtons = sizeof(potButtons) / sizeof(button);
+const int nPotButtons = sizeof(potControls) / sizeof(pot);
 const int nRotaryControls = sizeof(rotaryControls) / sizeof(rotary);
 
 const char *panelName = "landing.gear.panel";

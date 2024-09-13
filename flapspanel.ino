@@ -2,7 +2,7 @@
 
 // Second controller box
 
-button ledOutputs[] = {
+led ledOutputs[] = {
 };
 
 // The power is inverted in the the switches, swap on/off for now
@@ -27,12 +27,12 @@ button switchButtons[] = {
   { .pin = A3,.fireLow = true,  .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "fuel_tank_selector", .index = -1, .setValue = 2} // right
 };
 
-button potButtons[] = {
+pot potControls[] = {
 };
 
 rotary rotaryControls[] = {};
 
-const int nLedOutputs = sizeof(ledOutputs) / sizeof(button);
+const int nLedOutputs = sizeof(ledOutputs) / sizeof(led);
 const int nSwitchButtons = sizeof(switchButtons)/sizeof(button);
 const int nPotButtons = sizeof(potButtons)/sizeof(button);
 const int nRotaryControls = sizeof(rotaryControls)/sizeof(rotary);

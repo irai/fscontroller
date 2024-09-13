@@ -57,7 +57,7 @@ button switchButtons[] = {
   { 53}
 };
 
-button potButtons[] = {
+pot potControls[] = {
   { A7 }
 };
 
@@ -78,7 +78,7 @@ const String panelName = "TestPanel";
 button switchButtons[] = {
 };
 
-button potButtons[] = {
+pot potControls[] = {
 };
 
 rotary rotaryControls[] = {

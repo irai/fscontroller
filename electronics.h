@@ -18,13 +18,120 @@ typedef struct SerialMsg {
   unsigned long timeout;
 } SerialMsg;
 
+class DigitalPin {
+public:
+  DigitalPin(int pin, unsigned long debounceTimeout)
+    : pin(pin), debounceTime(debounceTimeout), timeout(0), previousState(LOW), state(LOW) {
+    pinMode(pin, INPUT_PULLUP);
+    previousState = digitalRead(pin);
+  }
+
+  void setDebounceTimeout(unsigned long timeout) {
+    debounceTime = timeout;
+  }
+
+  bool update() {
+    int reading = digitalRead(pin);
+    if (reading != previousState) {
+      timeout = millis() + debounceTime;
+    }
+
+    if (millis() >= timeout) {
+      if (reading != state) {
+        state = reading;
+        return true;
+      }
+    }
+
+    previousState = reading;
+    return false;
+  }
+
+  int getState() const {
+    return state;
+  }
+
+  int getPreviousState() const {
+    return previousState;
+  }
+
+  String toString() const {
+    return "Pin: " + String(pin) + ", State: " + String(state) + ", Last state: " + String(previousState) + ", Timeout: " + String(timeout);
+  }
+
+private:
+  int pin;
+  unsigned long debounceTime;
+  unsigned long timeout;
+  int previousState;
+  int state;
+};
+class AnalogPin {
+public:
+  AnalogPin(int pin, unsigned long debounceTimeout)
+    : pin(pin), debounceTime(debounceTimeout), timeout(0), previousState(LOW), state(LOW) {
+    pinMode(pin, INPUT);
+    previousState = analogRead(pin);
+  }
+
+  void setDebounceTimeout(unsigned long timeout) {
+    debounceTime = timeout;
+  }
+
+  bool update() {
+    const int filter = 3;
+    int reading = analogRead(pin);
+
+    // linear smoothing to avoid fluctuations
+    reading = previousState + ((reading - previousState) / filter);
+
+    // We lose the high and low values with the filter
+    // convert the lowest and highest to the minimum and maximum respectivelly.
+    if (reading > (1023 - filter * 2)) {
+      reading = 1023;
+    }
+    else if (reading < (filter * 2)) {
+      reading = 0;
+    }
+
+    if (reading != previousState) {
+      timeout = millis() + debounceTime;
+    }
+
+    if (millis() >= timeout) {
+      if (reading != state) {
+        state = reading;
+        return true;
+      }
+    }
+
+    previousState = reading;
+    return false;
+  }
+
+  int getState() const {
+    return state;
+  }
+
+  int getPreviousState() const {
+    return previousState;
+  }
+
+  String toString() const {
+    return "Pin: " + String(pin) + ", State: " + String(state) + ", Last state: " + String(previousState) + ", Timeout: " + String(timeout);
+  }
+
+private:
+  int pin;
+  unsigned long debounceTime;
+  unsigned long timeout;
+  int previousState;
+  int state;
+};
 
 typedef struct button {
-  uint8_t pin;
+  DigitalPin pin;
   bool fireLow;  // true if the pin only generates a message when Low
-  int value;              // pin current value
-  int savedValue;         // pin saved value
-  uint32_t debounceTime;  // the last time the output pin was toggled
   const char* action;
   void (*function)(SerialMsg*, struct button*); // interceptor function
   const char* variable;        // variable name
@@ -32,21 +139,28 @@ typedef struct button {
   int setValue;           // value to set or -1
 } button;
 
+typedef struct pot {
+  AnalogPin pin;
+  bool fireLow;  // true if the pin only generates a message when Low
+  const char* action;
+  // void (*function)(SerialMsg*, struct pot*); // interceptor function
+  const char* variable;        // variable name
+  int8_t index;           // variable index or -1
+  int setValue;           // value to set or -1
+} pot;
+
 typedef struct rotary {
-  uint8_t aPin;  // A or Clock pin
-  uint8_t bPin;  // B or data pin
-  uint8_t buttonPin;
-  uint32_t debounceTime;  // the last time the output pin was toggled
-  int aState;
-  int aStatePrevious;
-  int bStatePrevious;
-  int bState;
+  DigitalPin aPinDebounced; // A clock pin
+  DigitalPin bPinDebounced; // B data pin
   const char* action;
   void (*function)(SerialMsg*, struct rotary*, float increment); // interceptor function
   const char* variable;  // variable name
   int8_t index;     // variable index or -1
 } rotary;
 
+typedef struct {
+  int pin;
+} led;
 
 
 extern void processSwitch(SerialMsg*, button*);
@@ -55,13 +169,13 @@ extern void processPushButton(SerialMsg*, button*);
 extern void processRotary(SerialMsg*, rotary*);
 
 extern const int nLedOutputs;
-extern button ledOutputs[];
+extern led ledOutputs[];
 extern const int nSwitchButtons;
 extern button switchButtons[];
 extern const int npushButtons;
 extern button pushButtons[];
 extern const int nPotButtons;
-extern button potButtons[];
+extern pot potControls[];
 extern const int nRotaryControls;
 extern void defaultFunction(SerialMsg*, button*);
 extern rotary rotaryControls[];
@@ -90,7 +204,6 @@ const char panelToken[] = "panel";
 const char notificationToken[] = "notification";
 const char testToken[] = "test";
 const char logToken[] = "log";
-
 
 
 #endif

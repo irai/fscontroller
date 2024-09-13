@@ -57,7 +57,7 @@ button switchButtons[] = {
 };
 
 // https://docs.arduino.cc/learn/electronics/potentiometer-basics
-button potButtons[] = {
+pot potControls[] = {
   {  .pin = A3}, // pin 57
   //  { .pin = A4}, // pin 58
   //  { .pin = A5} // pin 59

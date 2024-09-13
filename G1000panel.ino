@@ -4,7 +4,7 @@
 const char *panelName = "G1000Panel";
 const char *panelVersion = "1.0.0";
 
-button ledOutputs[] = {};
+led ledOutputs[] = {};
 
 button switchButtons[] = {
   // { 0 },  // rotary
@@ -25,7 +25,7 @@ button switchButtons[] = {
   { .pin = 25, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "inc", .variable = "ap_vertical_speed", .index = -1, .setValue = -1 }
 };
 
-button potButtons[] = {};
+pot potControls[] = {};
 
 rotary rotaryControls[] = {
   { .aPin = 7, .bPin = 8, .buttonPin = 1, 0, 0, 0, 0, 0, .action = "inc_n", .variable = "com_radio_freq_fract", .index = 0 },
@@ -35,9 +35,9 @@ rotary rotaryControls[] = {
   { .aPin = 14, .bPin = 15, .buttonPin = 16, 0, 0, 0, 0, 0, .action = "inc", .variable = "pin_14", .index = -1 } // small increment
 };
 
-const int nLedOutputs = sizeof(ledOutputs) / sizeof(button);
+const int nLedOutputs = sizeof(ledOutputs) / sizeof(led);
 const int nSwitchButtons = sizeof(switchButtons) / sizeof(button);
-const int nPotButtons = sizeof(potButtons) / sizeof(button);
+const int nPotButtons = sizeof(potControls) / sizeof(pot);
 const int nRotaryControls = sizeof(rotaryControls) / sizeof(rotary);
 
 int panelInit() {

@@ -16,18 +16,18 @@ statistics stats;
 #define KX165_COM_NAV_PANEL
 // #define LANDING_GEAR_PANEL
 
-Print *debugHandler;
-SerialMsg *serialMsg;
+Print* debugHandler;
+SerialMsg* serialMsg;
 
 //handle notification is a pointer to a function that takes a char* and returns error
-int (*handleNotification)(char *) = 0;
+int (*handleNotification)(char*) = 0;
 
 
 
 void setup() {
   Serial.begin(115200);  // baund rate is ignored when using usb
 
-  Stream *handler = &Serial;
+  Stream* handler = &Serial;
   debugHandler = handler;
 
   serialMsg = NewSerialMsg(handler);
@@ -41,22 +41,16 @@ void setup() {
   }
 
   for (i = 0; i < nSwitchButtons; i++) {
-    pinMode(switchButtons[i].pin, INPUT_PULLUP);
-    switchButtons[i].savedValue = digitalRead(switchButtons[i].pin);
+    switchButtons[i].pin.update();
   }
 
   for (i = 0; i < nPotButtons; i++) {
-    pinMode(potButtons[i].pin, INPUT);
-    potButtons[i].savedValue = analogRead(potButtons[i].pin);
+    potControls[i].pin.update();
   }
 
   for (i = 0; i < nRotaryControls; i++) {
-    pinMode(rotaryControls[i].aPin, INPUT_PULLUP);
-    pinMode(rotaryControls[i].bPin, INPUT_PULLUP);
-    rotaryControls[i].aState = digitalRead(rotaryControls[i].aPin);
-    rotaryControls[i].aStatePrevious = rotaryControls[i].aState;
-    rotaryControls[i].bState = digitalRead(rotaryControls[i].bPin);
-    rotaryControls[i].bStatePrevious = rotaryControls[i].bState;
+    rotaryControls[i].aPinDebounced.update();
+    rotaryControls[i].bPinDebounced.update();
   }
 
   panelInit();
@@ -68,37 +62,33 @@ void loop() {
 
   int i;
   for (i = 0; i < nSwitchButtons; i++) {
-    if (switchButtons[i].debounceTime > millis()) {
-      continue;
+    if (switchButtons[i].pin.update()) {
+      processSwitch(serialMsg, &switchButtons[i]);
     }
-    switchButtons[i].value = digitalRead(switchButtons[i].pin);
-    processSwitch(serialMsg, &switchButtons[i]);
   }
 
   for (i = 0; i < nPotButtons; i++) {
-    if (potButtons[i].debounceTime > millis()) {
-      continue;
+    // TODO: updated on 14/09/2024 - not tested yet - must upgrade throttle quadrant to test
+    if (potControls[i].pin.update()) {
+      processPot(serialMsg, &(potControls[i]));
     }
-    potButtons[i].value = delayAnalogRead(potButtons[i].pin);
-    processPot(serialMsg, &(potButtons[i]));
   }
 
   for (i = 0; i < nRotaryControls; i++) {
-    if (rotaryControls[i].debounceTime > millis()) {
-      continue;
+    if (rotaryControls[i].aPinDebounced.update()) {
+      rotaryControls[i].bPinDebounced.update();
+      processRotary(serialMsg, &rotaryControls[i]);
     }
-    rotaryControls[i].aState = digitalRead(rotaryControls[i].aPin);
-    rotaryControls[i].bState = digitalRead(rotaryControls[i].bPin);
-    processRotary(serialMsg, &rotaryControls[i]);
+
   }
 
   readHost(serialMsg);
 }
 
-void readHost(SerialMsg *s) {
-  char b[maxMsgSize+1];  
+void readHost(SerialMsg* s) {
+  char b[maxMsgSize + 1];
 
-  int n = ReadMsgNonBlocking(serialMsg, (char *)&b, sizeof(b) / sizeof(char));
+  int n = ReadMsgNonBlocking(serialMsg, (char*)&b, sizeof(b) / sizeof(char));
   if (n == -1) {
     return;
   }
@@ -115,19 +105,22 @@ void readHost(SerialMsg *s) {
   }
 
 
-  if (strncmp((char *)&b, panelToken, sizeof(panelToken) - 1) == 0) {
+  if (strncmp((char*)&b, panelToken, sizeof(panelToken) - 1) == 0) {
     panelConnect(s);
     return;
-  } else if (strncmp((char *)&b, notificationToken, sizeof(notificationToken) - 1) == 0) {
-    panelNotification((char *)&b);
+  }
+  else if (strncmp((char*)&b, notificationToken, sizeof(notificationToken) - 1) == 0) {
+    panelNotification((char*)&b);
     return;
-  } else if (strncmp((char *)&b, testToken, sizeof(testToken) - 1) == 0) {
+  }
+  else if (strncmp((char*)&b, testToken, sizeof(testToken) - 1) == 0) {
     // txPot(s, A0, 1023);
     // txRotary(s, 6, -1);
     txSwitch(s, 1, 1);
     return;
-  } else if (strncmp((char *)&b, logToken, sizeof(logToken) - 1) == 0) {
-    char *tok = strtok((char *)&b, ",");
+  }
+  else if (strncmp((char*)&b, logToken, sizeof(logToken) - 1) == 0) {
+    char* tok = strtok((char*)&b, ",");
     if (tok == 0) {
       return;
     }
@@ -137,7 +130,8 @@ void readHost(SerialMsg *s) {
     }
     if (strcmp(tok, "debug") == 0) {
       Debug = true;
-    } else {
+    }
+    else {
       Debug = false;
     }
     debugHandler->print("debug=");
@@ -146,6 +140,6 @@ void readHost(SerialMsg *s) {
   }
 
   debugHandler->print("unknown command: ");
-  debugHandler->println((char *)b);
+  debugHandler->println((char*)b);
   debugHandler->flush();
 }
