@@ -66,6 +66,7 @@ private:
   int previousState;
   int state;
 };
+extern int delayAnalogRead(uint8_t);
 class AnalogPin {
 public:
   AnalogPin(int pin, unsigned long debounceTimeout)
@@ -79,10 +80,12 @@ public:
   }
 
   bool update() {
-    const int filter = 3;
-    int reading = analogRead(pin);
+    const int filter = 2;
+    int reading = delayAnalogRead(pin);
 
     // linear smoothing to avoid fluctuations
+    #define SMOOTHING
+    #ifdef SMOOTHING
     reading = previousState + ((reading - previousState) / filter);
 
     // We lose the high and low values with the filter
@@ -93,6 +96,7 @@ public:
     else if (reading < (filter * 2)) {
       reading = 0;
     }
+    #endif
 
     if (reading != previousState) {
       timeout = millis() + debounceTime;
@@ -104,8 +108,8 @@ public:
         return true;
       }
     }
-
     previousState = reading;
+
     return false;
   }
 
@@ -150,8 +154,8 @@ typedef struct pot {
 } pot;
 
 typedef struct rotary {
-  DigitalPin aPinDebounced; // A clock pin
-  DigitalPin bPinDebounced; // B data pin
+  DigitalPin aPin; // A clock pin
+  DigitalPin bPin; // B data pin
   const char* action;
   void (*function)(SerialMsg*, struct rotary*, float increment); // interceptor function
   const char* variable;  // variable name

@@ -1,4 +1,3 @@
-#include <LedControl.h> // MUST add this to prevent pre-compilation error in kx165panel.ino
 #include "electronics.h"
 
 bool Debug = false;
@@ -12,9 +11,14 @@ statistics stats;
 // #define FLAPS_PANEL
 // #define G1000_PANEL
 // #define TEST_PANEL
-// #define SINGLE_THROTTLE_QUADRANT_PANEL
-#define KX165_COM_NAV_PANEL
+#define SINGLE_THROTTLE_QUADRANT_PANEL
+// #define KX165_COM_NAV_PANEL
 // #define LANDING_GEAR_PANEL
+
+// MUST include LedControl to prevent pre-compilation error in kx165panel.ino
+#ifdef KX165_COM_NAV_PANEL
+#include <LedControl.h> 
+#endif
 
 Print* debugHandler;
 SerialMsg* serialMsg;
@@ -49,8 +53,8 @@ void setup() {
   }
 
   for (i = 0; i < nRotaryControls; i++) {
-    rotaryControls[i].aPinDebounced.update();
-    rotaryControls[i].bPinDebounced.update();
+    rotaryControls[i].aPin.update();
+    rotaryControls[i].bPin.update();
   }
 
   panelInit();
@@ -75,8 +79,8 @@ void loop() {
   }
 
   for (i = 0; i < nRotaryControls; i++) {
-    if (rotaryControls[i].aPinDebounced.update()) {
-      rotaryControls[i].bPinDebounced.update();
+    if (rotaryControls[i].aPin.update()) {
+      rotaryControls[i].bPin.update();
       processRotary(serialMsg, &rotaryControls[i]);
     }
 

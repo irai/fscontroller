@@ -8,13 +8,13 @@ led ledOutputs[] = {};
 button switchButtons[] = {};
 
 pot potControls[] = {
-  { .pin = A0, .action = "set_n", .variable = "throttle", .index = 0 },
-  { .pin = A1, .action = "set_n", .variable = "propeller_pitch", .index = 0 },
-  { .pin = A2, .action = "set_n", .variable = "mixture", .index = 0 }
+  { .pin = AnalogPin(A0,4), .action = "set_n", .variable = "throttle", .index = 0 },
+  { .pin = AnalogPin(A1,4), .action = "set_n", .variable = "propeller_pitch", .index = 0 },
+  { .pin = AnalogPin(A2,4), .action = "set_n", .variable = "mixture", .index = 0 }
 };
 
 rotary rotaryControls[] = {
-  { .aPin = 2, .bPin = 3, .buttonPin = 5, .action = "inc", .variable = "elevator_trim", .index = -1 }
+  { .aPin = DigitalPin(2,0), .bPin = DigitalPin(3,0), .action = "inc", .variable = "elevator_trim", .index = -1 }
 };
 
 

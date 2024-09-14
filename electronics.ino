@@ -29,10 +29,10 @@ void processRotary(SerialMsg* s, rotary* r) {
   // If A state changed, then wheel has moved. Some integrated board and rotary switch generate both a HIGH and LOW voltage 
   // for a single change of the wheel but others generate a single change. React in software to avoid double count. 
   // For example the trim control uses an integrated circuit that generates both HIGH and LOW.
-  if (r->aPinDebounced.getState() == HIGH) {
+  if (r->aPin.getState() == HIGH) {
     if (Debug) {
-      debugHandler->print("rotary a" + r->aPinDebounced.toString());
-      debugHandler->print(" b" + r->bPinDebounced.toString());
+      debugHandler->print("rotary a" + r->aPin.toString());
+      debugHandler->print(" b" + r->bPin.toString());
     }
 
     // Checks if the state of the B pin has changed since the last check. This helps to determine if there 
@@ -40,12 +40,12 @@ void processRotary(SerialMsg* s, rotary* r) {
     // have changed state. Failing to check B pin will result in reverse counting.
     // 
     // This check eliminates the need for a debounce time.
-    if (r->bPinDebounced.getState() != r->bPinDebounced.getPreviousState()) {
+    if (r->bPin.getState() != r->bPin.getPreviousState()) {
 
       float increment = 1;
       // If the B value is different than A value (HIGH),
       // the encoder is rotating anti-clockwise
-      if (r->bPinDebounced.getState() != HIGH) {
+      if (r->bPin.getState() != HIGH) {
         increment = -1;
       }
 
@@ -69,7 +69,7 @@ void processRotary(SerialMsg* s, rotary* r) {
 }
 
 void processPot(SerialMsg* s, pot* b) {
-  const int filter = 3;
+  // const int filter = 3;
 
   /**
   // linear smoothing to avoid fluctuations
