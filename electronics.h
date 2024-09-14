@@ -30,6 +30,10 @@ public:
     debounceTime = timeout;
   }
 
+  void setPinMode(uint8_t mode) {
+    pinMode(pin, mode);
+  }
+
   bool update() {
     int reading = digitalRead(pin);
     if (reading != previousState) {
@@ -84,8 +88,8 @@ public:
     int reading = delayAnalogRead(pin);
 
     // linear smoothing to avoid fluctuations
-    #define SMOOTHING
-    #ifdef SMOOTHING
+#define SMOOTHING
+#ifdef SMOOTHING
     reading = previousState + ((reading - previousState) / filter);
 
     // We lose the high and low values with the filter
@@ -93,10 +97,10 @@ public:
     if (reading > (1023 - filter * 2)) {
       reading = 1023;
     }
-    else if (reading < (filter * 2)) {
+    else if (reading < (filter * 3)) {
       reading = 0;
     }
-    #endif
+#endif
 
     if (reading != previousState) {
       timeout = millis() + debounceTime;

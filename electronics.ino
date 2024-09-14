@@ -35,31 +35,23 @@ void processRotary(SerialMsg* s, rotary* r) {
       debugHandler->print(" b" + r->bPin.toString());
     }
 
-    // Checks if the state of the B pin has changed since the last check. This helps to determine if there 
-    // has been a valid transition that should be counted. The transition should only take effect when both pins
-    // have changed state. Failing to check B pin will result in reverse counting.
-    // 
-    // This check eliminates the need for a debounce time.
-    if (r->bPin.getState() != r->bPin.getPreviousState()) {
+    float increment = 1;
+    // If the B value is different than A value (HIGH),
+    // the encoder is rotating anti-clockwise
+    if (r->bPin.getState() != HIGH) {
+      increment = -1;
+    }
 
-      float increment = 1;
-      // If the B value is different than A value (HIGH),
-      // the encoder is rotating anti-clockwise
-      if (r->bPin.getState() != HIGH) {
-        increment = -1;
-      }
+    if (Debug) {
+      debugHandler->print(" increment=");
+      debugHandler->println(increment);
+    }
 
-      if (Debug) {
-        debugHandler->print(" increment=");
-        debugHandler->println(increment);
-      }
-
-      if (r->function != NULL) {
-        r->function(s, r, increment);
-      }
-      else {
-        defaultRotaryFunction(s, r, increment);
-      }
+    if (r->function != NULL) {
+      r->function(s, r, increment);
+    }
+    else {
+      defaultRotaryFunction(s, r, increment);
     }
 
     if (Debug) {
@@ -90,7 +82,7 @@ void processPot(SerialMsg* s, pot* b) {
   */
 
   if (Debug) {
-    debugHandler->println("pot "+b->pin.toString());
+    debugHandler->println("pot " + b->pin.toString());
     debugHandler->flush();
   }
 
@@ -105,7 +97,7 @@ void defaultButtonFunction(SerialMsg* s, button* b) {
 void processSwitch(SerialMsg* s, button* b) {
 
   if (Debug) {
-    debugHandler->println("switch "+b->pin.toString());
+    debugHandler->println("switch " + b->pin.toString());
     debugHandler->flush();
   }
 

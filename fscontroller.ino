@@ -79,11 +79,11 @@ void loop() {
   }
 
   for (i = 0; i < nRotaryControls; i++) {
-    if (rotaryControls[i].aPin.update()) {
-      rotaryControls[i].bPin.update();
+    bool changed = rotaryControls[i].aPin.update();
+    rotaryControls[i].bPin.update();
+    if (changed) {
       processRotary(serialMsg, &rotaryControls[i]);
     }
-
   }
 
   readHost(serialMsg);

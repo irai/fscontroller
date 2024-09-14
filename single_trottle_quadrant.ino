@@ -14,7 +14,7 @@ pot potControls[] = {
 };
 
 rotary rotaryControls[] = {
-  { .aPin = DigitalPin(2,0), .bPin = DigitalPin(3,0), .action = "inc", .variable = "elevator_trim", .index = -1 }
+  { .aPin = DigitalPin(2,2), .bPin = DigitalPin(3,2), .action = "inc", .variable = "elevator_trim", .index = -1 }
 };
 
 
