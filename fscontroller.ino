@@ -11,8 +11,8 @@ statistics stats;
 // #define FLAPS_PANEL
 // #define G1000_PANEL
 // #define TEST_PANEL
-#define SINGLE_THROTTLE_QUADRANT_PANEL
-// #define KX165_COM_NAV_PANEL
+// #define SINGLE_THROTTLE_QUADRANT_PANEL
+#define KX165_COM_NAV_PANEL
 // #define LANDING_GEAR_PANEL
 
 // MUST include LedControl to prevent pre-compilation error in kx165panel.ino

@@ -47,8 +47,8 @@ button switchButtons[] = {
 pot potControls[] = {};
 
 rotary rotaryControls[] = {
-  {.aPinDebounced = DigitalPin(19, 0), .bPinDebounced = DigitalPin(18,0), .action = "inc_n", .function = &processComFreqRotaryInterceptor, .variable = "com_radio_freq_fract", .index = 0 },
-  {.aPinDebounced = DigitalPin(28, 0), .bPinDebounced = DigitalPin(27,0), .action = "inc_n", .function = &processNavFreqRotaryInterceptor, .variable = "nav_radio_freq_fract", .index = 0 },
+  {.aPin= DigitalPin(19, 2), .bPin= DigitalPin(18,2), .action = "inc_n", .function = &processComFreqRotaryInterceptor, .variable = "com_radio_freq_fract", .index = 0 },
+  {.aPin= DigitalPin(28, 2), .bPin= DigitalPin(27,2), .action = "inc_n", .function = &processNavFreqRotaryInterceptor, .variable = "nav_radio_freq_fract", .index = 0 },
 };
 
 const int nLedOutputs = sizeof(ledOutputs) / sizeof(led);
