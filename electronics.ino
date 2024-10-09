@@ -94,16 +94,24 @@ void defaultButtonFunction(SerialMsg* s, button* b) {
   txAction(s, b->action, b->variable, b->index, b->pin.getState());
 }
 
+void defaultSwitchFireOnHighFunction(SerialMsg* s, button* b) {
+  if (b->pin.getState() == HIGH) {
+    txAction(s, b->action, b->variable, b->index, b->pin.getState());
+  }
+}
+
+void defaultSwitchFireOnLowFunction(SerialMsg* s, button* b) {
+  if (b->pin.getState() == LOW) {
+    txAction(s, b->action, b->variable, b->index, b->pin.getState());
+  }
+}
+
+
 void processSwitch(SerialMsg* s, button* b) {
 
   if (Debug) {
     debugHandler->println("switch " + b->pin.toString());
     debugHandler->flush();
-  }
-
-  // For rotary switches, we only want to fire on the high value
-  if (b->fireLow && b->pin.getState() == HIGH) {
-    return;
   }
 
   //Override function
@@ -112,8 +120,5 @@ void processSwitch(SerialMsg* s, button* b) {
     return;
   }
 
-  if (b->setValue != -9999) {  // magic value to indicate to use the set value
-    return txAction(s, b->action, b->variable, b->index, b->setValue);
-  }
   txAction(s, b->action, b->variable, b->index, b->pin.getState());
 }

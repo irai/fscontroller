@@ -2,53 +2,33 @@
 #ifdef KX165_COM_NAV_PANEL
 #include <LedControl.h>
 
+// working firmware to match pcb fshub-nav-0.2 Oct 2024
+const char* panelName = "kx165.com.nav.panel";
+const char* panelVersion = "1.0.2";
+
+
 /*
  DataIn, CLK, LOAD, number of devices
  */
-LedControl navDisplay = LedControl(15, 14, 13, 2); // serial data, clock, load, number of devices
-LedControl comDisplay = LedControl(3, 2, 5, 2); // serial data, clock, load, number of devices
-
+LedControl comDisplay = LedControl(15, 14, 13, 4); // serial data, clock, load, number of devices
 led ledOutputs[] = {};
 
-bool comWholeNumber = true;
-bool navWholeNumber = true;
-
-void processComFreqInterceptor(SerialMsg* s, button* b) {
-  comWholeNumber = !comWholeNumber;
-}
-
-void processNavFreqInterceptor(SerialMsg* s, button* b) {
-  navWholeNumber = !navWholeNumber;
-}
-
-void processComFreqRotaryInterceptor(SerialMsg* s, rotary* r, float increment) {
-  char* variable = "com_radio_freq_fract";
-  if (comWholeNumber) {
-    variable = "com_radio_freq_whole";
-  }
-  txAction(s, r->action, variable, r->index, increment);
-}
-
-void processNavFreqRotaryInterceptor(SerialMsg* s, rotary* r, float increment) {
-  char* variable = "nav_radio_freq_fract";
-  if (navWholeNumber) {
-    variable = "nav_radio_freq_whole";
-  }
-  txAction(s, r->action, variable, r->index, increment);
-}
 
 button switchButtons[] = {
-  {.pin = DigitalPin(16,4), .fireLow = true, .action = "set", .function = &defaultButtonFunction, .variable = "com_radio_standby_swap", .index = -1, .setValue = 0},
-  {.pin = DigitalPin(17,4), .fireLow = true, .action = "set", .function = &processComFreqInterceptor, .variable = "com button", .index = -1, .setValue = 0},
-  {.pin = DigitalPin(22,4), .fireLow = true, .action = "set", .function = &defaultButtonFunction, .variable = "nav_radio_standby_swap", .index = -1, .setValue = 0},
-  {.pin = DigitalPin(26,4), .fireLow = true, .action = "set", .function = &processNavFreqInterceptor, .variable = "nav button", .index = -1, .setValue = 0},
+  {.pin = DigitalPin(2,4), .action = "set_n", .function = &turnOnCom1, .variable = "index 1", .index = -1, .setValue = 0},
+  {.pin = DigitalPin(3,4), .action = "set_n", .function = &turnOnCom2, .variable = "index 2", .index = -1, .setValue = 0},
+  {.pin = DigitalPin(4,4), .action = "set_n", .function = &turnOnCom3, .variable = "index 3", .index = -1, .setValue = 0},
+  {.pin = DigitalPin(10,4), .action = "set_n", .function = &defaultSwitchFireOnLowFunction, .variable = "nav_radio_standby_swap", .index = -1, .setValue = 0},
+  {.pin = DigitalPin(22,4), .action = "set_n", .function = &defaultSwitchFireOnLowFunction, .variable = "com_radio_standby_swap", .index = -1, .setValue = 0},
 };
 
 pot potControls[] = {};
 
 rotary rotaryControls[] = {
-  {.aPin= DigitalPin(19, 2), .bPin= DigitalPin(18,2), .action = "inc_n", .function = &processComFreqRotaryInterceptor, .variable = "com_radio_freq_fract", .index = 0 },
-  {.aPin= DigitalPin(28, 2), .bPin= DigitalPin(27,2), .action = "inc_n", .function = &processNavFreqRotaryInterceptor, .variable = "nav_radio_freq_fract", .index = 0 },
+  {.aPin= DigitalPin(19, 1), .bPin= DigitalPin(18,1), .action = "inc_n", .function = &defaultRotaryFunction, .variable = "com_radio_freq_whole", .index = 0 },
+  {.aPin= DigitalPin(21, 1), .bPin= DigitalPin(20,1), .action = "inc_n", .function = &defaultRotaryFunction, .variable = "com_radio_freq_fract", .index = 0 },
+  {.aPin= DigitalPin(12, 2), .bPin= DigitalPin(11,2), .action = "inc_n", .function = &defaultRotaryFunction, .variable = "nav_radio_freq_whole", .index = 0 },
+  {.aPin= DigitalPin(9, 2), .bPin= DigitalPin(8,2), .action = "inc_n", .function = &defaultRotaryFunction, .variable = "nav_radio_freq_fract", .index = 0 },
 };
 
 const int nLedOutputs = sizeof(ledOutputs) / sizeof(led);
@@ -56,19 +36,94 @@ const int nSwitchButtons = sizeof(switchButtons) / sizeof(button);
 const int nPotButtons = sizeof(potControls) / sizeof(pot);
 const int nRotaryControls = sizeof(rotaryControls) / sizeof(rotary);
 
-const char* panelName = "kx165.com.nav.panel";
-const char* panelVersion = "1.0.0";
-
 const int com = 0;
 const int comStby = 1;
-const int nav = 0;
-const int navStby = 1;
+const int nav = 2;
+const int navStby = 3;
+
+int kx165Index = 0;
+int kx165On = false;
+
+void turnOff() {
+  kx165On = false;
+  comDisplay.shutdown(com, true);
+  comDisplay.setIntensity(com, 0);
+  comDisplay.shutdown(comStby, true);
+  comDisplay.setIntensity(comStby, 0);
+  comDisplay.shutdown(nav, true);
+  comDisplay.setIntensity(nav, 0);
+  comDisplay.shutdown(navStby, true);
+  comDisplay.setIntensity(navStby, 0);
+}
+
+void turnOn() {
+ if (kx165On) { // can be called multiple times when you switch between com1, com2, com3
+    return;
+  }
+  kx165On = true; 
+
+  comDisplay.shutdown(com, false);
+  comDisplay.setIntensity(com, 1);
+  comDisplay.shutdown(comStby, false);
+  comDisplay.setIntensity(comStby, 1);
+  comDisplay.shutdown(nav, false);
+  comDisplay.setIntensity(nav, 1);
+  comDisplay.shutdown(navStby, false);
+  comDisplay.setIntensity(navStby, 1);
+  displayFrequency(comDisplay, com, "---.--");
+  displayFrequency(comDisplay, comStby, "---.--");
+  displayFrequency(comDisplay, nav, "---.--");
+  displayFrequency(comDisplay, navStby, "---.--");
+}
+
+
+void turnOnCom1(SerialMsg* s, button* b) {
+  if (b->pin.getState() == LOW) {
+    turnOn();
+    updateIndex(1);
+    return;
+  }
+  if (kx165Index == 1) {
+    updateIndex(0); 
+    turnOff();
+  }
+}
+
+void turnOnCom2(SerialMsg* s, button* b) {
+  if (b->pin.getState() == LOW) {
+    turnOn();
+    updateIndex(2);
+    return;
+  }
+}
+
+void turnOnCom3(SerialMsg* s, button* b) {
+  if (b->pin.getState() == LOW) {
+    turnOn();
+    updateIndex(3);
+    return;
+  }
+}
+
+void updateIndex(int index) {
+  for (int i = 0; i < nSwitchButtons; i++) {
+      switchButtons[i].index = index;
+  }
+  for (int i = 0; i < nRotaryControls; i++) {
+      rotaryControls[i].index = index;
+  }
+  for (int i = 0; i < nPotButtons; i++) {
+      potControls[i].index = index;
+  }
+  kx165Index = index;
+}
+
 
 //NOTE: There is a bug in the arduino IDE pre-compilation that requires include of LedCOntrol in the main 
 // fscontroller.ino file to prevent pre-compilation error when passing a reference to LedControl.
 void displayFrequency(LedControl& display, int com, const char* frequency) {
   int len = strlen(frequency);
-  int displayIndex = 4;
+  int displayIndex = 0;
   bool dp = false;
 
   // Display each character of the frequency string in reverse order
@@ -79,33 +134,15 @@ void displayFrequency(LedControl& display, int com, const char* frequency) {
     else {
       display.setChar(com, displayIndex, frequency[i], dp);
       dp = false;
-      displayIndex--;
+      displayIndex++;
     }
   }
 }
 
 
-
 // initPanel is called at setup to initialise any panel specific variables
 int panelInit() {
-  comDisplay.shutdown(com, false);
-  comDisplay.setIntensity(com, 1);
-  comDisplay.shutdown(comStby, false);
-  comDisplay.setIntensity(comStby, 1);
-
-  navDisplay.shutdown(nav, false);
-  navDisplay.setIntensity(nav, 1);
-  navDisplay.shutdown(navStby, false);
-  navDisplay.setIntensity(navStby, 1);
-
-  displayFrequency(comDisplay, com, "332.80");
-
-  displayFrequency(comDisplay, comStby, "129.33");
-
-  displayFrequency(navDisplay, nav, "111.33");
-
-  displayFrequency(navDisplay, navStby, "333.44");
-
+  turnOff();
   return 0;
 }
 
@@ -163,8 +200,8 @@ void panelNotification(char* msg) {
 
   displayFrequency(comDisplay, com, com1ActiveFreqStr);
   displayFrequency(comDisplay, comStby, com1StandbyFreqStr);
-  displayFrequency(navDisplay, nav, nav1ActiveFreqStr);
-  displayFrequency(navDisplay, navStby, nav1StandbyFreqStr);
+  displayFrequency(comDisplay, nav, nav1ActiveFreqStr);
+  displayFrequency(comDisplay, navStby, nav1StandbyFreqStr);
 
 }
 

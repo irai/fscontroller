@@ -19,6 +19,8 @@ button switchButtons[] = {
   { .pin = 8, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "flaps", .index = -1, .setValue = 1},
   { .pin = 9, .fireLow = true, .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "flaps", .index = -1, .setValue = 2},
   { .pin = 10,.fireLow = true,  .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "flaps", .index = -1, .setValue = 3},
+
+  // TODO: FIX set value -9999 - as this functionality is not implemented anymore. Use a custom handler instead. FB )ctober 2024
   { .pin = 11,.fireLow = false,  .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "parking_brake", .index = -1, .setValue = -9999},
   { .pin = 12,.fireLow = false,  .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set", .variable = "carb_heat", .index = -1, .setValue = -9999},
   { .pin = 13,.fireLow = false,  .value = 0, .savedValue = 0, .debounceTime = 0, .action = "set_n", .variable = "fuel_pump", .index = 1, .setValue = -9999},

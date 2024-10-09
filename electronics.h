@@ -139,7 +139,6 @@ private:
 
 typedef struct button {
   DigitalPin pin;
-  bool fireLow;  // true if the pin only generates a message when Low
   const char* action;
   void (*function)(SerialMsg*, struct button*); // interceptor function
   const char* variable;        // variable name
