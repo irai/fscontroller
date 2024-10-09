@@ -13,9 +13,8 @@ uint8_t checksum(const char* buf, uint8_t n) {
 //     version 1.0.0 - string based csv
 //             1.1.0 - add support for set, inc, set_n, inc_n actions         
 //             1.1.1 - changes to pin debounce logic to prevent fluctuations
-const char serialVersion[] = "serial-1.1.1";
-
-
+//             1.1.2 - removed logic to firelow on switch; use defaultSwitchFireOnLowFunction and defaultSwitchFireOnHighFunction
+const char serialVersion[] = "fw-1.1.2";
 
 void txPanel(SerialMsg* s, const char* name, const char* panelVersion) {
   buildMsgStr(s, panelToken);
