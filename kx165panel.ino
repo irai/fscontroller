@@ -208,11 +208,20 @@ void panelNotification(char* msg) {
     return;
   }
 
-  displayFrequency(comDisplay, com, com1ActiveFreqStr);
-  displayFrequency(comDisplay, comStby, com1StandbyFreqStr);
-  displayFrequency(comDisplay, nav, nav1ActiveFreqStr);
-  displayFrequency(comDisplay, navStby, nav1StandbyFreqStr);
-
+  switch (kx165Index) {
+  case 2:
+    displayFrequency(comDisplay, com, com2ActiveFreqStr);
+    displayFrequency(comDisplay, comStby, com2StandbyFreqStr);
+    displayFrequency(comDisplay, nav, nav2ActiveFreqStr);
+    displayFrequency(comDisplay, navStby, nav2StandbyFreqStr);
+    break;
+  default:
+    displayFrequency(comDisplay, com, com1ActiveFreqStr);
+    displayFrequency(comDisplay, comStby, com1StandbyFreqStr);
+    displayFrequency(comDisplay, nav, nav1ActiveFreqStr);
+    displayFrequency(comDisplay, navStby, nav1StandbyFreqStr);
+    break;
+  }
 }
 
 
