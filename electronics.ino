@@ -23,40 +23,45 @@ void defaultRotaryFunction(SerialMsg* s, rotary* r, float increment) {
   txAction(s, r->action, r->variable, r->index, increment);
 }
 
-// https://lastminuteengineers.com/rotary-encoder-arduino-tutorial/
-void processRotary(SerialMsg* s, rotary* r) {
-
+// TODO: validate that this is required given the new rotary model that only fires on a change of the A pin
+void defaultRotaryOnHighFunction(SerialMsg* s, rotary* r, float increment) {
   // If A state changed, then wheel has moved. Some integrated board and rotary switch generate both a HIGH and LOW voltage 
   // for a single change of the wheel but others generate a single change. React in software to avoid double count. 
   // For example the trim control uses an integrated circuit that generates both HIGH and LOW.
   if (r->aPin.getState() == HIGH) {
-    if (Debug) {
-      debugHandler->print("rotary a" + r->aPin.toString());
-      debugHandler->print(" b" + r->bPin.toString());
-    }
+    txAction(s, r->action, r->variable, r->index, increment);
+  }
+}
 
-    float increment = 1;
-    // If the B value is different than A value (HIGH),
-    // the encoder is rotating anti-clockwise
-    if (r->bPin.getState() != HIGH) {
-      increment = -1;
-    }
+// https://lastminuteengineers.com/rotary-encoder-arduino-tutorial/
+void processRotary(SerialMsg* s, rotary* r) {
 
-    if (Debug) {
-      debugHandler->print(" increment=");
-      debugHandler->println(increment);
-    }
+  if (Debug) {
+    debugHandler->print("rotary a" + r->aPin.toString());
+    debugHandler->print(" b" + r->bPin.toString());
+  }
 
-    if (r->function != NULL) {
-      r->function(s, r, increment);
-    }
-    else {
-      defaultRotaryFunction(s, r, increment);
-    }
+  float increment = 1;
+  // If the B value is different than A value,
+  // the encoder is rotating anti-clockwise
+  if (r->bPin.getState() != r->aPin.getState()) {
+    increment = -1;
+  }
 
-    if (Debug) {
-      debugHandler->flush();
-    }
+  if (Debug) {
+    debugHandler->print(" increment=");
+    debugHandler->println(increment);
+  }
+
+  if (r->function != NULL) {
+    r->function(s, r, increment);
+  }
+  else {
+    defaultRotaryFunction(s, r, increment);
+  }
+
+  if (Debug) {
+    debugHandler->flush();
   }
 }
 

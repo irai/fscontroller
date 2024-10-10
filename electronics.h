@@ -23,7 +23,8 @@ public:
   DigitalPin(int pin, unsigned long debounceTimeout)
     : pin(pin), debounceTime(debounceTimeout), timeout(0), previousState(LOW), state(LOW) {
     pinMode(pin, INPUT_PULLUP);
-    previousState = digitalRead(pin);
+    state = digitalRead(pin);
+    previousState = ~state; // force a change
   }
 
   void setDebounceTimeout(unsigned long timeout) {
@@ -36,7 +37,8 @@ public:
 
   bool update() {
     int reading = digitalRead(pin);
-    if (reading != previousState) {
+    if (reading != previousState) { // set timeout if state changed
+      previousState = reading;
       timeout = millis() + debounceTime;
     }
 
@@ -47,7 +49,6 @@ public:
       }
     }
 
-    previousState = reading;
     return false;
   }
 
