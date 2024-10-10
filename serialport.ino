@@ -14,6 +14,7 @@ uint8_t checksum(const char* buf, uint8_t n) {
 //             1.1.0 - add support for set, inc, set_n, inc_n actions         
 //             1.1.1 - changes to pin debounce logic to prevent fluctuations
 //             1.1.2 - removed logic to firelow on switch; use defaultSwitchFireOnLowFunction and defaultSwitchFireOnHighFunction
+//             1.1.3 - changed switch logic to fire on first read and rotary to handle raw EC12 dual rotary encoder
 const char serialVersion[] = "fw-1.1.3";
 
 void txPanel(SerialMsg* s, const char* name, const char* panelVersion) {
