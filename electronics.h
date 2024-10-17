@@ -22,8 +22,8 @@ class DigitalPin {
 public:
   DigitalPin(int pin, unsigned long debounceTimeout)
     : pin(pin), debounceTime(debounceTimeout), timeout(0), previousState(LOW), state(LOW) {
-    pinMode(pin, INPUT_PULLUP);
-    state = digitalRead(pin);
+    pinMode(pin, INPUT_PULLUP); // default to HIGH when not connected; LOW when connected to GND
+    state = ~digitalRead(pin); // read the pin and invert the value
     previousState = ~state; // force a change
   }
 
@@ -36,7 +36,7 @@ public:
   }
 
   bool update() {
-    int reading = digitalRead(pin);
+    int reading = ~digitalRead(pin); // read the pin and invert the value
     if (reading != previousState) { // set timeout if state changed
       previousState = reading;
       timeout = millis() + debounceTime;
