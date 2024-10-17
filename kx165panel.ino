@@ -18,8 +18,8 @@ button switchButtons[] = {
   {.pin = DigitalPin(2,4), .action = "set_n", .function = &turnOnCom1, .variable = "index 1", .index = -1, .setValue = 0}, // radio 1  
   {.pin = DigitalPin(3,4), .action = "set_n", .function = &turnOnCom2, .variable = "index 2", .index = -1, .setValue = 0}, // radio 2
   {.pin = DigitalPin(4,4), .action = "set_n", .function = &turnOnCom3, .variable = "index 3", .index = -1, .setValue = 0}, // radio 3
-  {.pin = DigitalPin(10,4), .action = "set_n", .function = &defaultSwitchFireOnLowFunction, .variable = "nav_radio_standby_swap", .index = -1, .setValue = 0},
-  {.pin = DigitalPin(22,4), .action = "set_n", .function = &defaultSwitchFireOnLowFunction, .variable = "com_radio_standby_swap", .index = -1, .setValue = 0},
+  {.pin = DigitalPin(10,4), .action = "set_n", .function = &defaultSwitchFireOnHighFunction, .variable = "nav_radio_standby_swap", .index = -1, .setValue = 0},
+  {.pin = DigitalPin(22,4), .action = "set_n", .function = &defaultSwitchFireOnHighFunction, .variable = "com_radio_standby_swap", .index = -1, .setValue = 0},
 };
 
 pot potControls[] = {};
@@ -78,7 +78,7 @@ void turnOn() {
 
 
 void turnOnCom1(SerialMsg* s, button* b) {
-  if (b->pin.getState() == LOW) {
+  if (b->pin.getState() == HIGH) {
     turnOn();
     updateIndex(1);
     return;
@@ -90,7 +90,7 @@ void turnOnCom1(SerialMsg* s, button* b) {
 }
 
 void turnOnCom2(SerialMsg* s, button* b) {
-  if (b->pin.getState() == LOW) {
+  if (b->pin.getState() == HIGH) {
     turnOn();
     updateIndex(2);
     return;
@@ -98,7 +98,7 @@ void turnOnCom2(SerialMsg* s, button* b) {
 }
 
 void turnOnCom3(SerialMsg* s, button* b) {
-  if (b->pin.getState() == LOW) {
+  if (b->pin.getState() == HIGH) {
     turnOn();
     updateIndex(3);
     return;
