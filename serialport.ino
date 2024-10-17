@@ -15,7 +15,8 @@ uint8_t checksum(const char* buf, uint8_t n) {
 //             1.1.1 - changes to pin debounce logic to prevent fluctuations
 //             1.1.2 - removed logic to firelow on switch; use defaultSwitchFireOnLowFunction and defaultSwitchFireOnHighFunction
 //             1.1.3 - changed switch logic to fire on first read and rotary to handle raw EC12 dual rotary encoder
-const char serialVersion[] = "fw-1.1.3";
+//             1.1.4 - closed switch will always send HIGH; open switch will always send LOW
+const char serialVersion[] = "fw-1.1.4";
 
 void txPanel(SerialMsg* s, const char* name, const char* panelVersion) {
   buildMsgStr(s, panelToken);
